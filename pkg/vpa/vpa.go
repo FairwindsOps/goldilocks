@@ -1,21 +1,20 @@
 package vpa
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang/glog"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-
 	autoscaling "k8s.io/api/autoscaling/v1"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // Create makes a vpa for every deployment in the namespace
-func Create(namespace string, kubeconfig *string) {
+func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 	glog.V(3).Infof("Using Kubeconfig: %s", *kubeconfig)
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
@@ -33,28 +32,46 @@ func Create(namespace string, kubeconfig *string) {
 		glog.Fatal(err.Error())
 	}
 
-	// List all the deployments
+	// This will run as a loop if run-once is not specified.
 	for {
+		//Get the list of deployments
 		deployments, err := clientset.ExtensionsV1beta1().Deployments(namespace).List(metav1.ListOptions{})
 		if err != nil {
 			glog.Fatal(err.Error())
 		}
-		glog.Infof("There are %d deployments in the namespace\n", len(deployments.Items))
-		var deploymentName string
+		var deploymentNames []string
+
+		existingVPAs, err := vpaClientSet.VerticalPodAutoscalers(namespace).List(metav1.ListOptions{})
+		if err != nil {
+			glog.Fatal(err.Error())
+		}
+		var vpaNames []string
+
+		glog.Infof("There are %d deployments in the namespace", len(deployments.Items))
 		for _, deployment := range deployments.Items {
-			deploymentName = deployment.ObjectMeta.Name
-			glog.Infof("%v\n", deployment.ObjectMeta.Name)
+			deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
+			glog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
+		}
+
+		for _, vpa := range existingVPAs.Items {
+			vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
+			glog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
+		}
+
+		vpaNeeded := difference(deploymentNames, vpaNames)
+		glog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
+		for _, vpaName := range vpaNeeded {
 
 			updateMode := v1beta2.UpdateModeOff
 			vpa := &v1beta2.VerticalPodAutoscaler{
 				ObjectMeta: metav1.ObjectMeta{
-					Name: deploymentName,
+					Name: vpaName,
 				},
 				Spec: v1beta2.VerticalPodAutoscalerSpec{
 					TargetRef: &autoscaling.CrossVersionObjectReference{
 						APIVersion: "extensions/v1beta1",
 						Kind:       "Deployment",
-						Name:       deploymentName,
+						Name:       vpaName,
 					},
 					UpdatePolicy: &v1beta2.PodUpdatePolicy{
 						UpdateMode: &updateMode,
@@ -62,15 +79,38 @@ func Create(namespace string, kubeconfig *string) {
 				},
 			}
 
-			glog.Infof("Creating vpa: %s", deploymentName)
-			glog.V(9).Infof("%v", vpa)
-
-			_, err := vpaClientSet.VerticalPodAutoscalers(namespace).Create(vpa)
-			if err != nil {
-				glog.Error(err)
+			if !dryrun {
+				glog.Infof("Creating vpa: %s", vpaName)
+				glog.V(9).Infof("%v", vpa)
+				_, err := vpaClientSet.VerticalPodAutoscalers(namespace).Create(vpa)
+				if err != nil {
+					glog.Errorf("Error creating vpa: %v", err)
+				}
+			} else {
+				glog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 			}
 		}
 
+		if runonce {
+			glog.Infof("Exiting due to run-once flag being set.")
+			os.Exit(0)
+		}
 		time.Sleep(10 * time.Second)
 	}
+}
+
+// Set Difference: A - B
+func difference(a, b []string) (diff []string) {
+	m := make(map[string]bool)
+
+	for _, item := range b {
+		m[item] = true
+	}
+
+	for _, item := range a {
+		if _, ok := m[item]; !ok {
+			diff = append(diff, item)
+		}
+	}
+	return
 }
