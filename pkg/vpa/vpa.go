@@ -66,6 +66,10 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 			vpa := &v1beta2.VerticalPodAutoscaler{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: vpaName,
+					Labels: map[string]string{
+						"owner":  "ReactiveOps",
+						"source": "vpa-analysis",
+					},
 				},
 				Spec: v1beta2.VerticalPodAutoscalerSpec{
 					TargetRef: &autoscaling.CrossVersionObjectReference{
@@ -99,7 +103,6 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 	}
 }
 
-// Set Difference: A - B
 func difference(a, b []string) (diff []string) {
 	m := make(map[string]bool)
 
