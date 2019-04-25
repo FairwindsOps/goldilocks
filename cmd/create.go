@@ -20,7 +20,7 @@ func init() {
 }
 
 var createCmd = &cobra.Command{
-	Use:   "create-vpa",
+	Use:   "create-vpas",
 	Short: "Create VPAs",
 	Long:  `Create a VPA for every deployment in the specified namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	"k8s.io/client-go/kubernetes"
@@ -41,7 +42,16 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 		}
 		var deploymentNames []string
 
-		existingVPAs, err := vpaClientSet.VerticalPodAutoscalers(namespace).List(metav1.ListOptions{})
+		vpaLabels := map[string]string{
+			"owner":  "ReactiveOps",
+			"source": "vpa-analysis",
+		}
+
+		vpaListOptions := metav1.ListOptions{
+			LabelSelector: labels.Set(vpaLabels).String(),
+		}
+
+		existingVPAs, err := vpaClientSet.VerticalPodAutoscalers(namespace).List(vpaListOptions)
 		if err != nil {
 			glog.Fatal(err.Error())
 		}
@@ -60,46 +70,52 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 
 		vpaNeeded := difference(deploymentNames, vpaNames)
 		glog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
-		for _, vpaName := range vpaNeeded {
 
-			updateMode := v1beta2.UpdateModeOff
-			vpa := &v1beta2.VerticalPodAutoscaler{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: vpaName,
-					Labels: map[string]string{
-						"owner":  "ReactiveOps",
-						"source": "vpa-analysis",
+		if len(vpaNeeded) == 0 {
+			glog.Info("All VPAs are in sync.")
+		} else if len(vpaNeeded) > 0 {
+			for _, vpaName := range vpaNeeded {
+				updateMode := v1beta2.UpdateModeOff
+				vpa := &v1beta2.VerticalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:   vpaName,
+						Labels: vpaLabels,
 					},
-				},
-				Spec: v1beta2.VerticalPodAutoscalerSpec{
-					TargetRef: &autoscaling.CrossVersionObjectReference{
-						APIVersion: "extensions/v1beta1",
-						Kind:       "Deployment",
-						Name:       vpaName,
+					Spec: v1beta2.VerticalPodAutoscalerSpec{
+						TargetRef: &autoscaling.CrossVersionObjectReference{
+							APIVersion: "extensions/v1beta1",
+							Kind:       "Deployment",
+							Name:       vpaName,
+						},
+						UpdatePolicy: &v1beta2.PodUpdatePolicy{
+							UpdateMode: &updateMode,
+						},
 					},
-					UpdatePolicy: &v1beta2.PodUpdatePolicy{
-						UpdateMode: &updateMode,
-					},
-				},
-			}
-
-			if !dryrun {
-				glog.Infof("Creating vpa: %s", vpaName)
-				glog.V(9).Infof("%v", vpa)
-				_, err := vpaClientSet.VerticalPodAutoscalers(namespace).Create(vpa)
-				if err != nil {
-					glog.Errorf("Error creating vpa: %v", err)
 				}
-			} else {
-				glog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
+
+				if !dryrun {
+					glog.Infof("Creating vpa: %s", vpaName)
+					glog.V(9).Infof("%v", vpa)
+					_, err := vpaClientSet.VerticalPodAutoscalers(namespace).Create(vpa)
+					if err != nil {
+						glog.Errorf("Error creating vpa: %v", err)
+					}
+				} else {
+					glog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
+				}
 			}
+		} else {
+			// This should never ever happen
+			glog.Fatal("Got a negative number of vpaNeeded")
 		}
 
 		if runonce {
 			glog.Infof("Exiting due to run-once flag being set.")
 			os.Exit(0)
 		}
-		time.Sleep(10 * time.Second)
+
+		// This controls the loop timing.
+		time.Sleep(30 * time.Second)
 	}
 }
 
