@@ -104,7 +104,7 @@ func Create(namespace string, kubeconfig *string, vpaLabels map[string]string, r
 		}
 
 		if runonce {
-			glog.Infof("Exiting due to run-once flag being set.")
+			glog.Infof("Exiting due to run-once=true.")
 			os.Exit(0)
 		}
 

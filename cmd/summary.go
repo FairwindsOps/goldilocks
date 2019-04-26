@@ -8,8 +8,6 @@ import (
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
-	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "qa", "Namespace to install the VPA objects in.")
-	summaryCmd.MarkFlagRequired("namespace")
 }
 
 var summaryCmd = &cobra.Command{

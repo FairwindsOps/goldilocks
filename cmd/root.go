@@ -27,7 +27,7 @@ func init() {
 
 	// Flags
 	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "$HOME/.kube/config", "Kubeconfig location.")
-	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "qa", "Namespace to install the VPA objects in.")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "Namespace to install the VPA objects in.")
 	rootCmd.MarkFlagRequired("namespace")
 
 	environmentVariables := map[string]string{
