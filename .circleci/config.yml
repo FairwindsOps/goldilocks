@@ -6,7 +6,7 @@ references:
       name: Install GoReleaser
       command: |
         curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.106.0/goreleaser_amd64.deb
-        echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha1sum -c
+        echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha256 -c
         sudo dpkg -i goreleaser.deb
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run: make test
   release:
-    working_directory: /go/src/github.com/reactiveops/rbac-lookup
+    working_directory: /go/src/github.com/reactiveops/vpa-analysis
     docker:
       - image: circleci/golang:1.12
         environment:
