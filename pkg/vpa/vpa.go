@@ -15,14 +15,13 @@ import (
 )
 
 // Create makes a vpa for every deployment in the namespace
-func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
+func Create(namespace string, kubeconfig *string, vpaLabels map[string]string, runonce bool, dryrun bool) {
 	glog.V(3).Infof("Using Kubeconfig: %s", *kubeconfig)
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		glog.Fatal(err.Error())
 	}
 
-	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		glog.Fatal(err.Error())
@@ -42,11 +41,6 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 		}
 		var deploymentNames []string
 
-		vpaLabels := map[string]string{
-			"owner":  "ReactiveOps",
-			"source": "vpa-analysis",
-		}
-
 		vpaListOptions := metav1.ListOptions{
 			LabelSelector: labels.Set(vpaLabels).String(),
 		}
@@ -57,7 +51,7 @@ func Create(namespace string, kubeconfig *string, runonce bool, dryrun bool) {
 		}
 		var vpaNames []string
 
-		glog.Infof("There are %d deployments in the namespace", len(deployments.Items))
+		glog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
 		for _, deployment := range deployments.Items {
 			deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
 			glog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
