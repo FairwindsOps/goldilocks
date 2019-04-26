@@ -29,8 +29,7 @@ var namespace string
 var vpaLabels map[string]string
 
 var (
-	// VERSION is set during build
-	VERSION string
+	version string
 )
 
 func init() {
@@ -75,7 +74,6 @@ var rootCmd = &cobra.Command{
 
 // Execute the stuff
 func Execute(version string) {
-	VERSION = version
 	if err := rootCmd.Execute(); err != nil {
 		glog.Error(err)
 		os.Exit(1)

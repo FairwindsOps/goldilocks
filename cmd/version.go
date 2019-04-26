@@ -29,6 +29,6 @@ var versionCmd = &cobra.Command{
 	Short: "Prints the current version of the tool.",
 	Long:  `Prints the current version.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(rootCmd.Use + " " + VERSION)
+		fmt.Println(rootCmd.Use + " " + version)
 	},
 }
