@@ -29,7 +29,8 @@ var namespace string
 var vpaLabels map[string]string
 
 var (
-	version string
+	VERSION string
+	COMMIT  string
 )
 
 func init() {
@@ -73,7 +74,9 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute the stuff
-func Execute(version string) {
+func Execute(version string, commit string) {
+	VERSION = version
+	COMMIT = commit
 	if err := rootCmd.Execute(); err != nil {
 		glog.Error(err)
 		os.Exit(1)

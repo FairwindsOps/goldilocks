@@ -4,11 +4,12 @@ GOBUILD=GO111MODULE=on $(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=GO111MODULE=on $(GOCMD) test
 BINARY_NAME=vpa-analysis
-VERSION := $(shell git rev-parse HEAD)
+COMMIT := $(shell git rev-parse HEAD)
+VERSION := "dev"
 
 all: test build
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.version=$(VERSION) -s -w" -v
+	$(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -s -w" -v
 test:
 	printf "Linter:\n"
 	GO111MODULE=on $(GOCMD) list ./... | xargs -L1 golint | tee golint-report.out
