@@ -3,7 +3,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: golang:1.12-stretch
+      - image: circleci/golang:1.12-stretch
         environment:
           GO111MODULE: "on"
     steps:
