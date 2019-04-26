@@ -1,0 +1,17 @@
+version: 2
+
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+          GO111MODULE: "on"
+    steps:
+      - checkout
+      - run: make test
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
