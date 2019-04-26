@@ -4,7 +4,7 @@ builds:
       - CGO_ENABLED=0
       - GO111MODULE=on
     ldflags:
-      - "-X main.VERSION=$(VERSION) -s -w"
+      - "-X main.VERSION=${CIRCLECI_TAG} -s -w"
     goarch:
       - amd64
       - arm
