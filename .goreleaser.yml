@@ -4,7 +4,7 @@ builds:
       - CGO_ENABLED=0
       - GO111MODULE=on
     ldflags:
-      - "-X main.VERSION=$(VERSION)"
+      - "-X main.VERSION=$(VERSION) -s -w"
 checksum:
   name_template: 'checksums.txt'
 changelog:

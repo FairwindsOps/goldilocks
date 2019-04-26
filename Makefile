@@ -8,7 +8,7 @@ VERSION := $(shell git rev-parse HEAD)
 
 all: test build
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION)" -v
+	$(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION) -s -w" -v
 test:
 	printf "Linter:\n"
 	GO111MODULE=on $(GOCMD) list ./... | xargs -L1 golint | tee golint-report.out
