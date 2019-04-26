@@ -1,12 +1,15 @@
 builds:
-- env:
-  - CGO_ENABLED=0
-  - GO111MODULE=on
+  - id: vpa-analysis
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    ldflags:
+      - "-X main.VERSION=$(VERSION)"
 checksum:
   name_template: 'checksums.txt'
 changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
+      - '^docs:'
+      - '^test:'
