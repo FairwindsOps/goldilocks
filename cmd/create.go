@@ -12,7 +12,7 @@ var dryrun bool
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	createCmd.PersistentFlags().BoolVarP(&runonce, "run-once", "", false, "Only run once and do not loop.")
+	createCmd.PersistentFlags().BoolVarP(&runonce, "run-once", "", true, "Only run once and do not loop.")
 	createCmd.PersistentFlags().BoolVarP(&dryrun, "dry-run", "", false, "Don't actually create the VPAs, just list which ones would get created.")
 }
 
