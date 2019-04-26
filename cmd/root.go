@@ -11,6 +11,8 @@ import (
 )
 
 var kubeconfig string
+var namespace string
+var vpaLabels map[string]string
 
 var (
 	// VERSION is set during build
@@ -25,6 +27,8 @@ func init() {
 
 	// Flags
 	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "$HOME/.kube/config", "Kubeconfig location.")
+	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "qa", "Namespace to install the VPA objects in.")
+	rootCmd.MarkFlagRequired("namespace")
 
 	environmentVariables := map[string]string{
 		"KUBECONFIG": "kubeconfig",
@@ -36,6 +40,11 @@ func init() {
 		if value := os.Getenv(env); value != "" {
 			flag.Value.Set(value)
 		}
+	}
+
+	vpaLabels = map[string]string{
+		"owner":  "ReactiveOps",
+		"source": "vpa-analysis",
 	}
 }
 
