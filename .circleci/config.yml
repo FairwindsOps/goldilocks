@@ -28,6 +28,9 @@ jobs:
       - checkout
       - run: go mod download && go mod verify
       - *install_goreleaser
+      - run:
+          name: Set VERSION
+          command echo 'export VERSION=$CIRCLE_TAG' >> BASH_ENV
       - run: goreleaser
 
 workflows:
