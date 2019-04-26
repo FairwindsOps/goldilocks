@@ -3,6 +3,7 @@ builds:
     env:
       - CGO_ENABLED=0
       - GO111MODULE=on
+      - CIRCLECI_TAG=$CIRCLECI_TAG
     ldflags:
       - "-X main.VERSION={{.Env.CIRCLECI_TAG}} -s -w"
     goarch:
