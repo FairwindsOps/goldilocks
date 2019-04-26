@@ -25,7 +25,12 @@ workflows:
   version: 2
   build:
     jobs:
-      - test
+      - test:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
   release:
     jobs:
       - release:
