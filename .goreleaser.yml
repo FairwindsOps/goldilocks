@@ -5,6 +5,13 @@ builds:
       - GO111MODULE=on
     ldflags:
       - "-X main.VERSION=$(VERSION) -s -w"
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
 checksum:
   name_template: 'checksums.txt'
 changelog:
