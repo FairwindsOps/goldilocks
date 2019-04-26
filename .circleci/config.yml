@@ -3,15 +3,34 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12-stretch
+      - image: golang:1.12-stretch
         environment:
           GO111MODULE: "on"
     steps:
       - checkout
       - run: make test
+  release:
+    working_directory: /go/src/github.com/reactiveops/rbac-lookup
+
+    docker:
+      - image: goreleaser/goreleaser:v0.106
+        environment:
+          GO111MODULE: "on"
+    steps:
+      - checkout
+      - run: go mod download && go mod verify
+      - run: goreleaser
 
 workflows:
   version: 2
   build:
     jobs:
       - test
+  release:
+    jobs:
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
