@@ -25,12 +25,12 @@ jobs:
         environment:
           GO111MODULE: "on"
     steps:
-      - checkout
-      - run: go mod download && go mod verify
-      - *install_goreleaser
       - run:
           name: Set VERSION
           command: echo 'export VERSION=$CIRCLE_TAG' >> BASH_ENV
+      - checkout
+      - run: go mod download && go mod verify
+      - *install_goreleaser
       - run: goreleaser
 
 workflows:
