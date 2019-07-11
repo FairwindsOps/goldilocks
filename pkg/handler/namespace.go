@@ -33,7 +33,7 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event utils.Event) {
 	case "delete":
 		klog.Info("Nothing to do on namespace deletion. The VPAs will be deleted as part of the ns.")
 	case "create", "update":
-		klog.Info("Namespace updated. Check the labels and see if VPAs need be destroyed/created.")
+		klog.Infof("Namespace %s updated. Check the labels.", namespace.ObjectMeta.Name)
 		for k, v := range namespace.ObjectMeta.Labels {
 			klog.V(7).Infof("Namespace label - %s: %s", k, v)
 			if strings.ToLower(k) == "fairwinds.com/vpa-analysis" && strings.ToLower(v) == "true" {
