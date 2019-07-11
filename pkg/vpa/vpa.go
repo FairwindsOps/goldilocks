@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 Fairwinds
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,115 +15,121 @@
 package vpa
 
 import (
-	"os"
-	"time"
-
-	"github.com/golang/glog"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
+
+	"github.com/fairwindsops/vpa-analysis/pkg/kube"
+	"github.com/fairwindsops/vpa-analysis/pkg/utils"
 )
 
-// Create makes a vpa for every deployment in the namespace
-func Create(namespace string, kubeconfig *string, vpaLabels map[string]string, runonce bool, dryrun bool) {
-	glog.V(3).Infof("Using Kubeconfig: %s", *kubeconfig)
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+// ReconcileNamespace makes a vpa for every deployment in the namespace.
+// TODO: This should also delete any VPAs that don't have deployments.
+func ReconcileNamespace(namespace string, create bool, dryrun bool) {
+	kubeClient := kube.GetInstance()
+	kubeClientVPA := kube.GetVPAInstance()
+
+	//Get the list of deployments
+	deployments, err := kubeClient.Client.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	if err != nil {
-		glog.Fatal(err.Error())
+		klog.Fatal(err.Error())
+	}
+	var deploymentNames []string
+
+	vpaListOptions := metav1.ListOptions{
+		LabelSelector: labels.Set(utils.VpaLabels).String(),
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	// Get the existing VPA List
+	existingVPAs, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
 	if err != nil {
-		glog.Fatal(err.Error())
+		klog.Fatal(err.Error())
+	}
+	var vpaNames []string
+
+	for _, vpa := range existingVPAs.Items {
+		vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
+		klog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
 	}
 
-	vpaClientSet, err := autoscalingv1beta2.NewForConfig(config)
-	if err != nil {
-		glog.Fatal(err.Error())
+	// If create is false, then we want to delete.
+	if !create {
+		if len(vpaNames) < 1 {
+			klog.Infof("Delete specified but no VPAs found to delete.")
+			return
+		}
+		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
+		for _, vpa := range vpaNames {
+			deleteVPA(kubeClientVPA, namespace, vpa, dryrun)
+		}
+		return
 	}
 
-	// This will run as a loop if run-once is not specified.
-	for {
-		//Get the list of deployments
-		deployments, err := clientset.ExtensionsV1beta1().Deployments(namespace).List(metav1.ListOptions{})
-		if err != nil {
-			glog.Fatal(err.Error())
+	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
+	for _, deployment := range deployments.Items {
+		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
+		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
+	}
+
+	vpaNeeded := difference(deploymentNames, vpaNames)
+	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
+
+	if len(vpaNeeded) == 0 {
+		klog.Info("All VPAs are in sync.")
+	} else if len(vpaNeeded) > 0 {
+		for _, vpaName := range vpaNeeded {
+			createVPA(kubeClientVPA, namespace, vpaName, dryrun)
 		}
-		var deploymentNames []string
+	} else {
+		// This should never ever happen
+		klog.Fatal("Got a negative number of vpaNeeded")
+	}
+}
 
-		vpaListOptions := metav1.ListOptions{
-			LabelSelector: labels.Set(vpaLabels).String(),
-		}
-
-		existingVPAs, err := vpaClientSet.VerticalPodAutoscalers(namespace).List(vpaListOptions)
-		if err != nil {
-			glog.Fatal(err.Error())
-		}
-		var vpaNames []string
-
-		glog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
-		for _, deployment := range deployments.Items {
-			deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
-			glog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
-		}
-
-		for _, vpa := range existingVPAs.Items {
-			vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
-			glog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
-		}
-
-		vpaNeeded := difference(deploymentNames, vpaNames)
-		glog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
-
-		if len(vpaNeeded) == 0 {
-			glog.Info("All VPAs are in sync.")
-		} else if len(vpaNeeded) > 0 {
-			for _, vpaName := range vpaNeeded {
-				updateMode := v1beta2.UpdateModeOff
-				vpa := &v1beta2.VerticalPodAutoscaler{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:   vpaName,
-						Labels: vpaLabels,
-					},
-					Spec: v1beta2.VerticalPodAutoscalerSpec{
-						TargetRef: &autoscaling.CrossVersionObjectReference{
-							APIVersion: "extensions/v1beta1",
-							Kind:       "Deployment",
-							Name:       vpaName,
-						},
-						UpdatePolicy: &v1beta2.PodUpdatePolicy{
-							UpdateMode: &updateMode,
-						},
-					},
-				}
-
-				if !dryrun {
-					glog.Infof("Creating vpa: %s", vpaName)
-					glog.V(9).Infof("%v", vpa)
-					_, err := vpaClientSet.VerticalPodAutoscalers(namespace).Create(vpa)
-					if err != nil {
-						glog.Errorf("Error creating vpa: %v", err)
-					}
-				} else {
-					glog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
-				}
-			}
+func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) {
+	if !dryrun {
+		deleteOptions := metav1.NewDeleteOptions(0)
+		errDelete := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Delete(vpaName, deleteOptions)
+		if errDelete != nil {
+			klog.Errorf("Error deleting vpa: %v", errDelete)
 		} else {
-			// This should never ever happen
-			glog.Fatal("Got a negative number of vpaNeeded")
+			klog.Infof("Deleted vpa: %s", vpaName)
 		}
+	} else {
+		klog.Infof("Not deleting %s due to dryrun.", vpaName)
+	}
+}
 
-		if runonce {
-			glog.Infof("Exiting due to run-once=true.")
-			os.Exit(0)
+func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) {
+	updateMode := v1beta2.UpdateModeOff
+	vpa := &v1beta2.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   vpaName,
+			Labels: utils.VpaLabels,
+		},
+		Spec: v1beta2.VerticalPodAutoscalerSpec{
+			TargetRef: &autoscaling.CrossVersionObjectReference{
+				APIVersion: "extensions/v1beta1",
+				Kind:       "Deployment",
+				Name:       vpaName,
+			},
+			UpdatePolicy: &v1beta2.PodUpdatePolicy{
+				UpdateMode: &updateMode,
+			},
+		},
+	}
+
+	if !dryrun {
+		klog.Infof("Creating vpa: %s", vpaName)
+		klog.V(9).Infof("%v", vpa)
+		_, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Create(vpa)
+		if err != nil {
+			klog.Errorf("Error creating vpa: %v", err)
 		}
-
-		// This controls the loop timing.
-		time.Sleep(30 * time.Second)
+	} else {
+		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 	}
 }
 

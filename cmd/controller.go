@@ -10,20 +10,25 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License..
+// limitations under the License.
 
-package main
+package cmd
 
 import (
-	"github.com/fairwindsops/vpa-analysis/cmd"
+	"github.com/spf13/cobra"
+
+	"github.com/fairwindsops/vpa-analysis/pkg/controller"
 )
 
-var (
-	// version is set during build
-	version = "development"
-	commit  = "n/a"
-)
+func init() {
+	rootCmd.AddCommand(controllerCmd)
+}
 
-func main() {
-	cmd.Execute(version, commit)
+var controllerCmd = &cobra.Command{
+	Use:   "controller",
+	Short: "Run vpa-analysis as a controller inside a kubernetes cluster.",
+	Long:  `Run vpa-analysis as a controller.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		controller.NewController()
+	},
 }

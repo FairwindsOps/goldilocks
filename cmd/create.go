@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 Fairwinds
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
 package cmd
 
 import (
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/klog"
 
-	"github.com/reactiveops/vpa-analysis/pkg/vpa"
+	"github.com/fairwindsops/vpa-analysis/pkg/vpa"
 )
 
-var runonce bool
 var dryrun bool
 
 func init() {
 	rootCmd.AddCommand(createCmd)
-	createCmd.PersistentFlags().BoolVarP(&runonce, "run-once", "", true, "Only run once and do not loop.")
 	createCmd.PersistentFlags().BoolVarP(&dryrun, "dry-run", "", false, "Don't actually create the VPAs, just list which ones would get created.")
+	createCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "Namespace to install the VPA objects in.")
+	createCmd.MarkFlagRequired("namespace")
 }
 
 var createCmd = &cobra.Command{
@@ -35,7 +35,7 @@ var createCmd = &cobra.Command{
 	Short: "Create VPAs",
 	Long:  `Create a VPA for every deployment in the specified namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		glog.V(4).Infof("Starting to create the VPA objects in namespace: %s", namespace)
-		vpa.Create(namespace, &kubeconfig, vpaLabels, runonce, dryrun)
+		klog.V(4).Infof("Starting to create the VPA objects in namespace: %s", namespace)
+		vpa.ReconcileNamespace(namespace, true, dryrun)
 	},
 }
