@@ -26,35 +26,26 @@ import (
 )
 
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
-// TODO: This should also delete any VPAs that don't have deployments.
 func ReconcileNamespace(namespace string, create bool, dryrun bool) {
 	kubeClient := kube.GetInstance()
 	kubeClientVPA := kube.GetVPAInstance()
 
-	//Get the list of deployments
+	//Get the list of deployments in the namespace
 	deployments, err := kubeClient.Client.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
 	if err != nil {
 		klog.Fatal(err.Error())
 	}
 	var deploymentNames []string
-
-	vpaListOptions := metav1.ListOptions{
-		LabelSelector: labels.Set(utils.VpaLabels).String(),
+	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
+	for _, deployment := range deployments.Items {
+		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
+		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
 	}
 
-	// Get the existing VPA List
-	existingVPAs, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
-	if err != nil {
-		klog.Fatal(err.Error())
-	}
-	var vpaNames []string
+	// Get the list of VPAs that already exist
+	vpaNames := listVPA(kubeClientVPA, namespace)
 
-	for _, vpa := range existingVPAs.Items {
-		vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
-		klog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
-	}
-
-	// If create is false, then we want to delete.
+	// If create is false, then we want to delete all the vpas in the namespace.
 	if !create {
 		if len(vpaNames) < 1 {
 			klog.Infof("Delete specified but no VPAs found to delete.")
@@ -67,12 +58,7 @@ func ReconcileNamespace(namespace string, create bool, dryrun bool) {
 		return
 	}
 
-	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
-	for _, deployment := range deployments.Items {
-		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
-		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
-	}
-
+	// Since create is true now, create any VPAs that need to be
 	vpaNeeded := difference(deploymentNames, vpaNames)
 	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
 
@@ -82,10 +68,39 @@ func ReconcileNamespace(namespace string, create bool, dryrun bool) {
 		for _, vpaName := range vpaNeeded {
 			createVPA(kubeClientVPA, namespace, vpaName, dryrun)
 		}
-	} else {
-		// This should never ever happen
-		klog.Fatal("Got a negative number of vpaNeeded")
 	}
+
+	// Now that this is one, we can delete any VPAs that don't have matching deployments.
+	vpaDelete := difference(vpaNames, deploymentNames)
+	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
+
+	if len(vpaDelete) == 0 {
+		klog.Info("No VPAs to delete.")
+	} else if len(vpaDelete) > 0 {
+		for _, vpaName := range vpaDelete {
+			deleteVPA(kubeClientVPA, namespace, vpaName, dryrun)
+		}
+	}
+}
+
+func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
+	// Get the existing owned VPA List
+
+	vpaListOptions := metav1.ListOptions{
+		LabelSelector: labels.Set(utils.VpaLabels).String(),
+	}
+
+	existingVPAs, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
+	if err != nil {
+		klog.Fatal(err.Error())
+	}
+	var vpaNames []string
+
+	for _, vpa := range existingVPAs.Items {
+		vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
+		klog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
+	}
+	return vpaNames
 }
 
 func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) {

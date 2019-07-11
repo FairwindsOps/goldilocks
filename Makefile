@@ -27,3 +27,6 @@ clean:
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION)" -v
+
+build-docker:
+	docker build -t vpa-analysis:dev .
