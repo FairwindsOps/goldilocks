@@ -48,7 +48,7 @@ func ReconcileNamespace(namespace string, create bool, dryrun bool) {
 	// If create is false, then we want to delete all the vpas in the namespace.
 	if !create {
 		if len(vpaNames) < 1 {
-			klog.Infof("Delete specified but no VPAs found to delete.")
+			klog.V(4).Infof("Delete specified but no VPAs found to delete.")
 			return
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
