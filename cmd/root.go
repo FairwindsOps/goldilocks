@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 Fairwinds
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 )
 
 var kubeconfig string
@@ -29,20 +29,17 @@ var namespace string
 var vpaLabels map[string]string
 
 var (
-	VERSION string
-	COMMIT  string
+	version string
+	commit  string
 )
 
 func init() {
-	// Init
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	flag.Set("logtostderr", "true")
-	flag.Parse()
-
 	// Flags
 	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "$HOME/.kube/config", "Kubeconfig location.")
-	rootCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "Namespace to install the VPA objects in.")
-	rootCmd.MarkFlagRequired("namespace")
+
+	klog.InitFlags(nil)
+	flag.Parse()
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 
 	environmentVariables := map[string]string{
 		"KUBECONFIG": "kubeconfig",
@@ -56,10 +53,6 @@ func init() {
 		}
 	}
 
-	vpaLabels = map[string]string{
-		"owner":  "ReactiveOps",
-		"source": "vpa-analysis",
-	}
 }
 
 var rootCmd = &cobra.Command{
@@ -67,7 +60,7 @@ var rootCmd = &cobra.Command{
 	Short: "vpa-analysis",
 	Long:  `A tool for analysis of kubernetes deployment resource usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		glog.Error("You must specify a sub-command.")
+		klog.Error("You must specify a sub-command.")
 		cmd.Help()
 		os.Exit(1)
 	},
@@ -75,10 +68,10 @@ var rootCmd = &cobra.Command{
 
 // Execute the stuff
 func Execute(version string, commit string) {
-	VERSION = version
-	COMMIT = commit
+	version = version
+	commit = commit
 	if err := rootCmd.Execute(); err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		os.Exit(1)
 	}
 }

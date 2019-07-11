@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run: make test
   release:
-    working_directory: /go/src/github.com/reactiveops/vpa-analysis
+    working_directory: /go/src/github.com/fairwindsops/vpa-analysis
     docker:
       - image: circleci/golang:1.12
         environment:

@@ -1,4 +1,4 @@
-// Copyright 2019 ReactiveOps
+// Copyright 2019 Fairwinds
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,6 @@ var versionCmd = &cobra.Command{
 	Short: "Prints the current version of the tool.",
 	Long:  `Prints the current version.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Version:" + VERSION + " Commit:" + COMMIT)
+		fmt.Println("Version:" + version + " Commit:" + commit)
 	},
 }
