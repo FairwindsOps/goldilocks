@@ -67,9 +67,9 @@ var rootCmd = &cobra.Command{
 }
 
 // Execute the stuff
-func Execute(version string, commit string) {
-	version = version
-	commit = commit
+func Execute(VERSION string, COMMIT string) {
+	version = VERSION
+	commit = COMMIT
 	if err := rootCmd.Execute(); err != nil {
 		klog.Error(err)
 		os.Exit(1)
