@@ -20,28 +20,20 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/utils"
-	"github.com/fairwindsops/vpa-analysis/pkg/vpa"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/vpa"
 )
 
 // OnNamespaceChanged is a handler that should be called when a namespace chanages.
 func OnNamespaceChanged(namespace *corev1.Namespace, event utils.Event) {
 	klog.V(7).Infof("Processing namespace: %s", namespace.ObjectMeta.Name)
-	create := false
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.Info("Nothing to do on namespace deletion. The VPAs will be deleted as part of the ns.")
 	case "create", "update":
 		klog.Infof("Namespace %s updated. Check the labels.", namespace.ObjectMeta.Name)
-		for k, v := range namespace.ObjectMeta.Labels {
-			klog.V(7).Infof("Namespace label - %s: %s", k, v)
-			if strings.ToLower(k) == "fairwinds.com/vpa-analysis" && strings.ToLower(v) == "true" {
-				klog.Info("Namespace is labelled for vpa-analysis.  Creating VPAs.")
-				create = true
-			}
-		}
-		vpa.ReconcileNamespace(namespace.ObjectMeta.Name, create, false)
+		vpa.ReconcileNamespace(namespace, false)
 	default:
 		klog.Infof("Update type %s is not valid, skipping.", event.EventType)
 	}

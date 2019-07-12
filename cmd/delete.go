@@ -18,13 +18,14 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/vpa"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/vpa"
 )
 
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.PersistentFlags().BoolVarP(&dryrun, "dry-run", "", false, "Don't actually create the VPAs, just list which ones would get created.")
-	deleteCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "Namespace to install the VPA objects in.")
+	deleteCmd.PersistentFlags().StringVarP(&nsName, "namespace", "n", "default", "Namespace to install the VPA objects in.")
 	deleteCmd.MarkFlagRequired("namespace")
 }
 
@@ -33,7 +34,8 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete VPAs",
 	Long:  `Delete VPAs created by this tool in a namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		klog.V(4).Infof("Starting to create the VPA objects in namespace: %s", namespace)
-		vpa.ReconcileNamespace(namespace, false, dryrun)
+		klog.V(4).Infof("Starting to create the VPA objects in namespace: %s", nsName)
+		namespace := kube.GetNamespace(nsName)
+		vpa.ReconcileNamespace(namespace, dryrun)
 	},
 }

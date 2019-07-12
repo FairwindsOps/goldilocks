@@ -26,5 +26,5 @@ type Event struct {
 // TODO: Replace this with the OwnerRef pattern
 var VpaLabels = map[string]string{
 	"creator": "Fairwinds",
-	"source":  "vpa-analysis",
+	"source":  "goldilocks",
 }

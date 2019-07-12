@@ -1,0 +1,41 @@
+{{define "dashboard"}}
+  <div class="card category">
+    <h3>Deployments</h3>
+    <div class="expandable-table">
+      {{ range $deployment := .VPAData.Deployments }}
+
+        <div class="resource-info">
+          <div class="status-bar">
+            <div class="status">
+              {{ $deployment.Namespace }}
+            </div>
+          </div>
+          <div class="name"><span class="caret-expander"></span>{{ $deployment.DeploymentName }}</div>
+            {{ range $container := $deployment.Containers}}
+            <div class="result-messages expandable-content">
+              <h4>{{ $container.ContainerName }}</h4>
+                <h5>Lower</h5>
+                <ul class="message-list">
+                  {{ range $metric, $reco := $container.LowerBound }}
+                    <li class="">
+                      <i class="">{{ $metric }}</i>
+                      <span class="message">{{ printResource $reco }}</span>
+                    </li>
+                    {{end}}
+                </ul>
+                <h5>Upper</h5>
+                <ul class="message-list">
+                    {{ range $metric, $reco := $container.UpperBound }}
+                    <li class="">
+                      <i class="">{{ $metric }}</i>
+                      <span class="message">{{ printResource $reco }}</span>
+                    </li>
+                    {{end}}
+                </ul>
+            </div>
+          {{ end }}
+          </div>
+      {{ end }} {{/* end range categories */}}
+    </div>
+  </div>
+{{end}}

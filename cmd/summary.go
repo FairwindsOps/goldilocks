@@ -15,15 +15,17 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
+	"encoding/json"
+	"fmt"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/summary"
+	"github.com/spf13/cobra"
+	"k8s.io/klog"
+
+	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
-	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "Namespace to install the VPA objects in.")
-	summaryCmd.MarkFlagRequired("namespace")
 }
 
 var summaryCmd = &cobra.Command{
@@ -31,6 +33,12 @@ var summaryCmd = &cobra.Command{
 	Short: "Genarate a summary of the vpa recommendations in a namespace.",
 	Long:  `Gather all the vpa data in a namespace and generaate a summary of the recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		summary.Run(namespace, &kubeconfig, vpaLabels)
+
+		data, _ := summary.Run(vpaLabels)
+		summaryJSON, err := json.Marshal(data)
+		if err != nil {
+			klog.Fatalf("Error marshalling JSON: %v", err)
+		}
+		fmt.Println(string(summaryJSON))
 	},
 }

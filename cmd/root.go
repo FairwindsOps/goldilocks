@@ -25,7 +25,7 @@ import (
 )
 
 var kubeconfig string
-var namespace string
+var nsName string
 var vpaLabels map[string]string
 
 var (
@@ -56,8 +56,8 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "vpa-analysis",
-	Short: "vpa-analysis",
+	Use:   "goldilocks",
+	Short: "goldilocks",
 	Long:  `A tool for analysis of kubernetes deployment resource usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		klog.Error("You must specify a sub-command.")

@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/fairwindsops/vpa-analysis/cmd"
+	"github.com/fairwindsops/goldilocks/cmd"
 )
 
 var (
