@@ -1,4 +1,4 @@
-// Copyright 2019 Fairwinds
+// Copyright 2019 ReactiveOps
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package dashboard
 
 import (
-	"github.com/spf13/cobra"
-
-	"github.com/fairwindsops/goldilocks/pkg/controller"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func init() {
-	rootCmd.AddCommand(controllerCmd)
-}
-
-var controllerCmd = &cobra.Command{
-	Use:   "controller",
-	Short: "Run goldilocks as a controller inside a kubernetes cluster.",
-	Long:  `Run goldilocks as a controller.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		controller.NewController()
-	},
+func printResource(quant resource.Quantity) string {
+	return quant.String()
 }

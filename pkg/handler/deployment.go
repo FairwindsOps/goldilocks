@@ -17,19 +17,32 @@ package handler
 import (
 	"strings"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
+
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/vpa"
 )
 
 // OnDeploymentChanged is a handler that should be called when a deployment chanages.
 func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
+	namespace, _ := getNamespaceForDeployment(deployment)
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.V(3).Infof("Deployment %s deleted. Deleting the VPA for it if it had one.", deployment.ObjectMeta.Name)
+		vpa.ReconcileNamespace(namespace, false)
 	case "create", "update":
 		klog.V(3).Infof("Deployment %s updated. Reconcile", deployment.ObjectMeta.Name)
+		vpa.ReconcileNamespace(namespace, false)
 	default:
 		klog.V(3).Infof("Update type %s is not valid, skipping.", event.EventType)
 	}
+}
+
+func getNamespaceForDeployment(deployment *appsv1.Deployment) (*corev1.Namespace, error) {
+	nsName := deployment.ObjectMeta.Namespace
+	namespace := kube.GetNamespace(nsName)
+	return namespace, nil
 }

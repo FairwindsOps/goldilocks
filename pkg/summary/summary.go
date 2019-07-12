@@ -15,16 +15,13 @@
 package summary
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"k8s.io/klog"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
 )
 
 type containerSummary struct {
@@ -36,6 +33,7 @@ type containerSummary struct {
 type deploymentSummary struct {
 	Containers     []containerSummary `json:"containers"`
 	DeploymentName string             `json:"deploymentName"`
+	Namespace      string             `json:"namespace"`
 }
 
 // Summary struct is for storing a summary of recommendation data.
@@ -43,11 +41,9 @@ type Summary struct {
 	Deployments []deploymentSummary `json:"deployments"`
 }
 
-// Run creates a summary of the vpa info
-func Run(namespace string, kubeconfig *string, vpaLabels map[string]string) {
-	klog.V(3).Infof("Gathering info for summary from namespace: %s", namespace)
-	klog.V(3).Infof("Using Kubeconfig: %s", *kubeconfig)
-	klog.V(3).Infof("Looking for vpa with labels: %v", vpaLabels)
+// Run creates a summary of the vpa info for all namespaces.
+func Run(vpaLabels map[string]string) (Summary, error) {
+	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
 
 	kubeClientVPA := kube.GetVPAInstance()
 
@@ -55,23 +51,26 @@ func Run(namespace string, kubeconfig *string, vpaLabels map[string]string) {
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}
 
-	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
+	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
 	if err != nil {
-		klog.Fatal(err.Error())
+		klog.Error(err.Error())
 	}
 	klog.V(10).Infof("Found vpas: %v", vpas)
 
-	if len(vpas.Items) <= 0 {
-		klog.Fatalf("No vpas were found in the %s namespace.", namespace)
-	}
 	var summary Summary
+	if len(vpas.Items) <= 0 {
+		return summary, nil
+	}
 	for _, vpa := range vpas.Items {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.ObjectMeta.Name)
-		// TODO: This will segfault if it is run before recommendations are generated.  Need to catch that.
-		klog.V(10).Info(vpa.Status.Recommendation.ContainerRecommendations)
 
 		var deployment deploymentSummary
 		deployment.DeploymentName = vpa.ObjectMeta.Name
+		deployment.Namespace = vpa.ObjectMeta.Namespace
+		if vpa.Status.Recommendation == nil {
+			klog.V(2).Infof("Empty status on %v", deployment.DeploymentName)
+			break
+		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
 			klog.V(2).Infof("No recommendations found in the %v vpa.", deployment.DeploymentName)
 			break
@@ -86,9 +85,6 @@ func Run(namespace string, kubeconfig *string, vpaLabels map[string]string) {
 		}
 		summary.Deployments = append(summary.Deployments, deployment)
 	}
-	summaryJSON, err := json.Marshal(summary)
-	if err != nil {
-		klog.Fatalf("Error marshalling JSON: %v", err)
-	}
-	fmt.Println(string(summaryJSON))
+
+	return summary, nil
 }

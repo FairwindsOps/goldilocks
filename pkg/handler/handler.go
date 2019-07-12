@@ -17,7 +17,7 @@ package handler
 import (
 	"strings"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"

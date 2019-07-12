@@ -9,6 +9,8 @@ import (
 
 	// v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	//autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 )
 
@@ -78,4 +80,15 @@ func getKubeClientVPA() autoscalingv1beta2.Interface {
 		klog.Fatalf("Error creating kubernetes client: %v", err)
 	}
 	return clientset
+}
+
+// GetNamespace returns a namespace object when given a name.
+func GetNamespace(nsName string) *corev1.Namespace {
+	kubeClient := GetInstance()
+
+	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(nsName, metav1.GetOptions{})
+	if err != nil {
+		klog.Errorf("Error getting namespace for deployment %s: %v", nsName, err)
+	}
+	return namespace
 }

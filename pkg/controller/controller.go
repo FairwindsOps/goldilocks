@@ -33,9 +33,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
-	"github.com/fairwindsops/vpa-analysis/pkg/handler"
-	"github.com/fairwindsops/vpa-analysis/pkg/kube"
-	"github.com/fairwindsops/vpa-analysis/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/handler"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 // KubeResourceWatcher contains the informer that watches Kubernetes objects and the queue that processes updates.

@@ -1,9 +1,9 @@
 # Go parameters
-GOCMD=go
-GOBUILD=GO111MODULE=on $(GOCMD) build
+GOCMD=GO111MODULE=on go
+GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
-GOTEST=GO111MODULE=on $(GOCMD) test
-BINARY_NAME=vpa-analysis
+GOTEST=$(GOCMD) test
+BINARY_NAME=goldilocks
 COMMIT := $(shell git rev-parse HEAD)
 VERSION := "dev"
 
@@ -18,15 +18,16 @@ test:
 	GO111MODULE=on $(GOCMD) vet 2> govet-report.out
 	GO111MODULE=on $(GOCMD) tool cover -html=cover-report.out -o cover-report.html
 	printf "\nCoverage report available at cover-report.html\n\n"
-
+tidy:
+	$(GOCMD) mod tidy
 clean:
 	$(GOCLEAN)
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
-
+	$(GOCMD) tidy
+	packr2 clean
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION)" -v
-
 build-docker:
-	docker build -t vpa-analysis:dev .
+	docker build -t goldilocks:dev .

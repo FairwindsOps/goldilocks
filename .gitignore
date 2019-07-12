@@ -1,3 +1,6 @@
-vpa-analysis
+goldilocks
 cover*
 goreleaser.deb
+*-packr.go
+dist
+packrd
