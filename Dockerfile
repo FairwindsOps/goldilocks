@@ -1,5 +1,5 @@
 FROM golang:1.12.4 AS build-env
-WORKDIR /go/src/github.com/reactiveops/goldilocks/
+WORKDIR /go/src/github.com/fairwindsops/goldilocks/
 
 ENV GO111MODULE=on
 COPY . .
@@ -12,8 +12,8 @@ RUN apk --no-cache add ca-certificates
 
 RUN addgroup -S goldilocks && adduser -u 1200 -S goldilocks -G goldilocks
 USER 1200
-COPY --from=build-env /go/src/github.com/fairwindsops/goldilocks .
+COPY --from=build-env /go/src/github.com/fairwindsops/goldilocks /
 
 WORKDIR /opt/app
 
-CMD ["goldilocks", "version"]
+CMD ["/goldilocks"]

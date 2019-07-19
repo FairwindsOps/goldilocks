@@ -1,0 +1,28 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goldilocks-controller
+  labels:
+    app.kubernetes.io/name: goldilocks
+    app.kubernetes.io/component: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: goldilocks
+      app.kubernetes.io/component: controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: goldilocks
+        app.kubernetes.io/component: controller
+    spec:
+      serviceAccountName: goldilocks
+      containers:
+        - name: goldilocks
+          image: "quay.io/reactiveops/goldilocks:master"
+          imagePullPolicy: Always
+          command:
+            - /goldilocks
+            - controller
