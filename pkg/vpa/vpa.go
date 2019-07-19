@@ -29,13 +29,8 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
-// If the deployment has the label "fairwinds.com/goldilocks=analyze"
-// then return "create" to create a VPA.
-// If it has the label "fairwinds.com/goldilocks=exclue" then delete
-// any VPA associated with the deployment.
-// If it doesn't have the label at all, then return "nolabel" so that we can
-// decide what to do with the deployment.
-// NOTE: This is not used right now.  Deployments have been scrapped
+// NOTE: This is not used right now.  Deployments have been scrapped.
+// Keeping this here for future development.
 func checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
