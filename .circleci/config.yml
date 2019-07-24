@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  rok8s-scripts: fairwinds/rok8s-scripts@v9.0.5
+
 references:
   install_goreleaser: &install_goreleaser
     run:
@@ -8,16 +11,6 @@ references:
         curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.106.0/goreleaser_amd64.deb
         echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha256sum -c
         sudo dpkg -i goreleaser.deb
-
-  set_environment_variables: &set_environment_variables
-    run:
-      name: Set Environment Variables
-      command: |
-        echo 'export CI_SHA1=$CIRCLE_SHA1' >> ${BASH_ENV}
-        echo 'export CI_BRANCH=$CIRCLE_BRANCH' >> ${BASH_ENV}
-        echo 'export CI_BUILD_NUM=$CIRCLE_BUILD_NUM' >> ${BASH_ENV}
-        echo 'export CI_TAG=$CIRCLE_TAG' >> ${BASH_ENV}
-        echo 'export GO111MODULE=on' >> ${BASH_ENV}
 
 jobs:
   test:
@@ -28,19 +21,6 @@ jobs:
     steps:
       - checkout
       - run: make test
-  build-docker:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v8.1-stretch
-    steps:
-      - checkout
-      - setup_remote_docker
-      - *set_environment_variables
-      - run:
-          name: Build Docker Container
-          command: |
-            docker login -u="reactiveops+circleci" -p="${quay_token}" quay.io
-            docker-build -f deploy/build.config
-            docker-push -f deploy/build.config
 
   release:
     working_directory: /go/src/github.com/fairwindsops/vpa-analysis
@@ -64,8 +44,13 @@ workflows:
               only: /.*/
             tags:
               ignore: /.*/
-      - build-docker:
+      - rok8s/docker_build_and_push:
+          config_file: deploy/build.config
           context: org-global
+          docker-login: true
+          password-variable: fairwinds_quay_token
+          registry: quay.io
+          username: fairwinds+circleci
           requires:
             - test
           filters:
