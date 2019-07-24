@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@v9.0.5
+  rok8s-scripts: fairwinds/rok8s-scripts@9.0.5
 
 references:
   install_goreleaser: &install_goreleaser
@@ -44,7 +44,7 @@ workflows:
               only: /.*/
             tags:
               ignore: /.*/
-      - rok8s/docker_build_and_push:
+      - rok8s-scripts/docker_build_and_push:
           config_file: deploy/build.config
           context: org-global
           docker-login: true
