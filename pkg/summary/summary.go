@@ -27,9 +27,11 @@ import (
 )
 
 type containerSummary struct {
-	LowerBound    v1.ResourceList `json:"lowerBound"`
-	UpperBound    v1.ResourceList `json:"upperBound"`
-	ContainerName string          `json:"containerName"`
+	LowerBound       v1.ResourceList `json:"lowerBound"`
+	UpperBound       v1.ResourceList `json:"upperBound"`
+	ExistingLimits   v1.ResourceList `json:"existingLimits"`
+	ExistingRequests v1.ResourceList `json:"existingRequests"`
+	ContainerName    string          `json:"containerName"`
 }
 
 type deploymentSummary struct {
@@ -48,6 +50,7 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
 
 	kubeClientVPA := kube.GetVPAInstance()
+	kubeClient := kube.GetInstance()
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
@@ -68,15 +71,21 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 	for _, vpa := range vpas.Items {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.ObjectMeta.Name)
 
-		var deployment deploymentSummary
-		deployment.DeploymentName = vpa.ObjectMeta.Name
-		deployment.Namespace = vpa.ObjectMeta.Namespace
+		var deploy deploymentSummary
+		deploy.DeploymentName = vpa.ObjectMeta.Name
+		deploy.Namespace = vpa.ObjectMeta.Namespace
+
+		deployment, err := kubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
+		if err != nil {
+			klog.Errorf("Error retrieving deployment from API: %v", err)
+		}
+
 		if vpa.Status.Recommendation == nil {
-			klog.V(2).Infof("Empty status on %v", deployment.DeploymentName)
+			klog.V(2).Infof("Empty status on %v", deploy.DeploymentName)
 			break
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No recommendations found in the %v vpa.", deployment.DeploymentName)
+			klog.V(2).Infof("No recommendations found in the %v vpa.", deploy.DeploymentName)
 			break
 		}
 
@@ -88,14 +97,30 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 					continue CONTAINER_REC_LOOP
 				}
 			}
-			container := containerSummary{
-				ContainerName: containerRecommendation.ContainerName,
-				UpperBound:    containerRecommendation.UpperBound,
-				LowerBound:    containerRecommendation.LowerBound,
+			
+			var container containerSummary
+			for _, c := range deployment.Spec.Template.Spec.Containers {
+				if c.Name == containerRecommendation.ContainerName {
+					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
+					container = containerSummary{
+						ContainerName:    containerRecommendation.ContainerName,
+						UpperBound:       containerRecommendation.UpperBound,
+						LowerBound:       containerRecommendation.LowerBound,
+						ExistingLimits:   c.Resources.Limits,
+						ExistingRequests: c.Resources.Requests,
+					}
+				} else {
+					container = containerSummary{
+						ContainerName: containerRecommendation.ContainerName,
+						UpperBound:    containerRecommendation.UpperBound,
+						LowerBound:    containerRecommendation.LowerBound,
+					}
+				}
 			}
-			deployment.Containers = append(deployment.Containers, container)
+
+			deploy.Containers = append(deploy.Containers, container)
 		}
-		summary.Deployments = append(summary.Deployments, deployment)
+		summary.Deployments = append(summary.Deployments, deploy)
 	}
 
 	return summary, nil
