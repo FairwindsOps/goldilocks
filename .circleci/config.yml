@@ -21,6 +21,7 @@ jobs:
     steps:
       - checkout
       - run: make test
+      - run: bash <(curl -s https://codecov.io/bash)
 
   release:
     working_directory: /go/src/github.com/fairwindsops/vpa-analysis
