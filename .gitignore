@@ -5,3 +5,4 @@ goreleaser.deb
 dist
 packrd
 coverage.txt
+*.out
