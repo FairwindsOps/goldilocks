@@ -4,3 +4,4 @@ goreleaser.deb
 *-packr.go
 dist
 packrd
+*.out
