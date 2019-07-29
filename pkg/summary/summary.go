@@ -15,9 +15,11 @@
 package summary
 
 import (
+	"strings"
+
 	"k8s.io/klog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
@@ -42,7 +44,7 @@ type Summary struct {
 }
 
 // Run creates a summary of the vpa info for all namespaces.
-func Run(vpaLabels map[string]string) (Summary, error) {
+func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error) {
 	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
 
 	kubeClientVPA := kube.GetVPAInstance()
@@ -50,6 +52,8 @@ func Run(vpaLabels map[string]string) (Summary, error) {
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}
+
+	containerExclusions := strings.Split(excludeContainers, ",")
 
 	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
 	if err != nil {
@@ -75,7 +79,15 @@ func Run(vpaLabels map[string]string) (Summary, error) {
 			klog.V(2).Infof("No recommendations found in the %v vpa.", deployment.DeploymentName)
 			break
 		}
+
+	CONTAINER_REC_LOOP:
 		for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
+			for _, exclusion := range containerExclusions {
+				if exclusion == containerRecommendation.ContainerName {
+					klog.V(2).Infof("Excluding container %v", containerRecommendation.ContainerName)
+					continue CONTAINER_REC_LOOP
+				}
+			}
 			container := containerSummary{
 				ContainerName: containerRecommendation.ContainerName,
 				UpperBound:    containerRecommendation.UpperBound,
