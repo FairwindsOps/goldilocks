@@ -22,6 +22,7 @@ import (
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/summary"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 func init() {
@@ -34,7 +35,7 @@ var summaryCmd = &cobra.Command{
 	Long:  `Gather all the vpa data in a namespace and generaate a summary of the recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		data, _ := summary.Run(vpaLabels)
+		data, _ := summary.Run(utils.VpaLabels)
 		summaryJSON, err := json.Marshal(data)
 		if err != nil {
 			klog.Fatalf("Error marshalling JSON: %v", err)
