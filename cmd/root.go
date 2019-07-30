@@ -26,7 +26,6 @@ import (
 
 var kubeconfig string
 var nsName string
-var vpaLabels map[string]string
 
 var (
 	version string

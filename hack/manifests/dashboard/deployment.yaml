@@ -26,6 +26,8 @@ spec:
           command:
             - /goldilocks
             - dashboard
+            - --exclude-containers=linkerd-proxy,istio-proxy
+            - -v3
           ports:
             - name: http
               containerPort: 8080
