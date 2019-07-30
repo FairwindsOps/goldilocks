@@ -125,7 +125,7 @@ func writeTemplate(tmpl *template.Template, data *templateData, w http.ResponseW
 }
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
-func GetRouter(port int, basePath string, vpaLabels map[string]string) *mux.Router {
+func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeContainers string) *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
@@ -148,7 +148,7 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string) *mux.Rout
 			return
 		}
 
-		data, err := summary.Run(vpaLabels, "")
+		data, err := summary.Run(vpaLabels, excludeContainers)
 		if err != nil {
 			klog.Errorf("Error getting data: %v", err)
 			http.Error(w, "Error running summary.", 500)
@@ -183,8 +183,8 @@ func MainHandler(w http.ResponseWriter, r *http.Request, vpaData summary.Summary
 }
 
 // JSONHandler gets template data and renders json with it.
-func JSONHandler(w http.ResponseWriter, r *http.Request, vpaLabels map[string]string) {
-	data, err := summary.Run(vpaLabels, "")
+func JSONHandler(w http.ResponseWriter, r *http.Request, vpaLabels map[string]string, excludeContainers string) {
+	data, err := summary.Run(vpaLabels, excludeContainers)
 	if err != nil {
 		http.Error(w, "Error Fetching Summary", http.StatusInternalServerError)
 		return
