@@ -31,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(dashboardCmd)
 	dashboardCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the dashboard on.")
 	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served")
+	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -39,7 +40,7 @@ var dashboardCmd = &cobra.Command{
 	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		router := dashboard.GetRouter(serverPort, basePath, vpaLabels)
+		router := dashboard.GetRouter(serverPort, basePath, vpaLabels, excludeContainers)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
