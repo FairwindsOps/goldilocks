@@ -87,7 +87,7 @@
   font-size: 24px;
 }
 
-.cluster .expandable-table ul.message-list {
+.cluster .expandable-table table.container-results {
   margin: 10px 26px;
 }
 
@@ -148,7 +148,6 @@
   font-weight: bold;
 }
 
-
 .category .category-info {
   font-size: 14px;
   line-height: 21px;
@@ -174,10 +173,6 @@
   width: 100%;
   border-spacing: 0;
   border-collapse: collapse;
-}
-
-.expandable-table tr {
-  height: 50px;
 }
 
 .expandable-table .resource-info {
@@ -222,27 +217,27 @@
 .namespace .result-messages h4 {
   font-weight: bold;
   font-size: 15px;
-  margin: 15px 25px 6px;
+  border-bottom: 1px solid #eee;
+  grid-area: container;
 }
 
-ul.message-list {
+table.container-results {
   list-style-type: none;
   font-size: 13px;
   line-height: 20px;
-  margin: 5px 35px;
   padding: 0;
   color: #6a6a6a;
 }
 
-.cluster-overview ul.message-list {
+.cluster-overview table.container-results {
   margin: 0px;
 }
 
-ul.message-list li {
+table.container-results li {
   margin-bottom: 5px;
 }
 
-ul.message-list li i.message-icon {
+table.container-results li i.message-icon {
   display: inline-block;
   margin-right: 7px;
   text-align: center;
@@ -253,15 +248,15 @@ ul.message-list li i.message-icon {
   bottom: -3px;
 }
 
-.result-messages .success i.message-icon {
+.result-messages i.message-icon.success {
   color: #8BD2DC;
 }
 
-.result-messages .warning i.message-icon {
+.result-messages i.message-icon.warning {
   color: #f26c21;
 }
 
-.result-messages .error i.message-icon {
+.result-messages i.message-icon.error {
   color: #a11f4c;
 }
 
@@ -279,7 +274,6 @@ a.more-info {
 a.more-info:hover {
   color: #555;
 }
-
 
 .card .status-bar {
   padding-top: 7px;
@@ -318,4 +312,73 @@ a.more-info:hover {
 @keyframes fadeIn {
   0% {opacity: 0;}
   100% {opacity: 1;}
+}
+
+.expandable-table {
+  --caret-expander-width: 15px;
+  --caret-expander-margin-right: 10px;
+}
+
+.expandable-table .resource-info .caret-expander {
+  width: var(--caret-expander-width);
+  margin-right: var(--caret-expander-margin-right);
+}
+
+.expandable-table .resource-info .expandable-content {
+  margin: 10px calc(2 * (var(--caret-expander-width) + var(--caret-expander-margin-right)));
+}
+
+.expandable-table .resource-info.expanded .expandable-content {
+  align-items: start;
+  display: grid;
+  grid-gap: 0 1em;
+  grid-template-areas: "container container" "status code-title" "status code";
+  grid-template-columns: 2fr 1fr;
+}
+
+table.container-results {
+  grid-area: status;
+  text-align: left;
+}
+
+table.container-results td {
+  padding: 0 1em;
+}
+
+table.container-results td:nth-child(3) {
+  text-align: center;
+}
+
+table.container-results td:nth-child(2)
+, table.container-results th:nth-child(2) {
+  text-align: right;
+}
+
+table.container-results th {
+  padding: 0 1em;
+}
+
+.resource-info pre {
+  background: #eee;
+  border-radius: 5px;
+  font-size: 13px;
+  grid-area: code;
+  line-height: normal;
+  margin: 0;
+  padding: 5px;
+}
+
+.result-messages .code-title {
+  margin: 0;
+  grid-area: code-title;
+}
+
+pre[class*="language-"].fix-yaml {
+  padding: 5px;
+}
+
+pre.fix-yaml code[class*="language-"]
+, pre[class*="language-"].fix-yaml {
+  font-size: 12px;
+  line-height: normal;
 }

@@ -12,23 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package utils
 
 import (
-	"fmt"
+	"testing"
 
-	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
+func TestUniqueString(t *testing.T) {
+	for _, tc := range testUniqueStringCases {
+		res := UniqueString(tc.testData)
+		assert.Equal(t, res, tc.expected)
+	}
 }
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Prints the current version of the tool.",
-	Long:  `Prints the current version.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Version:" + version + " Commit:" + commit)
+var testUniqueStringCases = []struct {
+	description string
+	testData    []string
+	expected    []string
+}{
+	{
+		description: "three duplicates, one output",
+		testData:    []string{"test", "test", "test"},
+		expected:    []string{"test"},
+	},
+	{
+		description: "no duplicates",
+		testData:    []string{"one", "two", "three"},
+		expected:    []string{"one", "two", "three"},
 	},
 }

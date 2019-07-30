@@ -15,9 +15,35 @@
 package dashboard
 
 import (
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func printResource(quant resource.Quantity) string {
+	if quant.IsZero() {
+		return "Not Set"
+	}
 	return quant.String()
+}
+
+func getStatusIcon(existing resource.Quantity, recommendation resource.Quantity) string {
+	if existing.IsZero() {
+		return "fa-exclamation error"
+	}
+
+	comparison := existing.Cmp(recommendation)
+	if comparison == 0 {
+		return "fa-equals success"
+	}
+	if comparison < 0 {
+		return "fa-less-than warning"
+	}
+	if comparison > 0 {
+		return "fa-greater-than warning"
+	}
+	return ""
+}
+
+func resourceName(name string) v1.ResourceName {
+	return v1.ResourceName(name)
 }
