@@ -1,6 +1,3 @@
 # Changelog
 
-# x.x.x (next release)
-
-# v0.0.1
-* Initial release.  Working CLI and basic controller.
+See the [Releases](https://github.com/FairwindsOps/goldilocks/releases) page for relevant changes.

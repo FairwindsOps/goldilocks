@@ -27,7 +27,7 @@ We label issues with the ["good first issue" tag](https://github.com/FairwindsOp
 * Install the project with `go get github.com/fairwindsops/goldilocks`
 * Change into the goldilocks directory which is installed at `$GOPATH/src/github.com/fairwindsops/goldilocks`
 * Use `make tidy` or `make build` to ensure all dependencies are downloaded.
-* See the dashboard with `go run main.go dashboard`, then open http://localhost:8080/
+* See the dashboard with `go run main.go dashboard`, then open http://localhost:8080/.  This assumes that you have a working KUBECONFIG in place with access to a cluster.
 
 ## Creating a New Issue
 
@@ -49,4 +49,4 @@ Each new pull request should:
 
 ## Creating a new release
 
-Push a new annotated tag.
+Push a new annotated tag.  This tag should contain a changelog of pertinent changes.

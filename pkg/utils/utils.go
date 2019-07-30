@@ -1,4 +1,4 @@
-// Copyright 2019 Fairwinds
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,4 +27,17 @@ type Event struct {
 var VpaLabels = map[string]string{
 	"creator": "Fairwinds",
 	"source":  "goldilocks",
+}
+
+// UniqueString returns a unique string from a slice.
+func UniqueString(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

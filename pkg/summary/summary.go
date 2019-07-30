@@ -1,4 +1,4 @@
-// Copyright 2019 Fairwinds
+// Copyright 2019 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,14 +24,15 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 type containerSummary struct {
-	LowerBound       v1.ResourceList `json:"lowerBound"`
-	UpperBound       v1.ResourceList `json:"upperBound"`
-	ExistingLimits   v1.ResourceList `json:"existingLimits"`
-	ExistingRequests v1.ResourceList `json:"existingRequests"`
-	ContainerName    string          `json:"containerName"`
+	LowerBound    v1.ResourceList `json:"lowerBound"`
+	UpperBound    v1.ResourceList `json:"upperBound"`
+	Limits        v1.ResourceList `json:"limits"`
+	Requests      v1.ResourceList `json:"requests"`
+	ContainerName string          `json:"containerName"`
 }
 
 type deploymentSummary struct {
@@ -43,6 +44,7 @@ type deploymentSummary struct {
 // Summary struct is for storing a summary of recommendation data.
 type Summary struct {
 	Deployments []deploymentSummary `json:"deployments"`
+	Namespaces  []string            `json:"namespaces"`
 }
 
 // Run creates a summary of the vpa info for all namespaces.
@@ -75,6 +77,8 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 		deploy.DeploymentName = vpa.ObjectMeta.Name
 		deploy.Namespace = vpa.ObjectMeta.Namespace
 
+		summary.Namespaces = append(summary.Namespaces, deploy.Namespace)
+
 		deployment, err := kubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("Error retrieving deployment from API: %v", err)
@@ -97,17 +101,17 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 					continue CONTAINER_REC_LOOP
 				}
 			}
-			
+
 			var container containerSummary
 			for _, c := range deployment.Spec.Template.Spec.Containers {
 				if c.Name == containerRecommendation.ContainerName {
 					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
 					container = containerSummary{
-						ContainerName:    containerRecommendation.ContainerName,
-						UpperBound:       containerRecommendation.UpperBound,
-						LowerBound:       containerRecommendation.LowerBound,
-						ExistingLimits:   c.Resources.Limits,
-						ExistingRequests: c.Resources.Requests,
+						ContainerName: containerRecommendation.ContainerName,
+						UpperBound:    containerRecommendation.UpperBound,
+						LowerBound:    containerRecommendation.LowerBound,
+						Limits:        c.Resources.Limits,
+						Requests:      c.Resources.Requests,
 					}
 				} else {
 					container = containerSummary{
@@ -123,5 +127,6 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 		summary.Deployments = append(summary.Deployments, deploy)
 	}
 
+	summary.Namespaces = utils.UniqueString(summary.Namespaces)
 	return summary, nil
 }

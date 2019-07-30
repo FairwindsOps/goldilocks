@@ -25,6 +25,7 @@ import (
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/summary"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 const (
@@ -85,6 +86,8 @@ type templateData struct {
 func GetBaseTemplate(name string) (*template.Template, error) {
 	tmpl := template.New(name).Funcs(template.FuncMap{
 		"printResource": printResource,
+		"getStatusIcon": getStatusIcon,
+		"resourceName":  resourceName,
 	})
 
 	templateFileNames := []string{
@@ -162,11 +165,16 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 // MainHandler gets template data and renders the dashboard with it.
 func MainHandler(w http.ResponseWriter, r *http.Request, vpaData summary.Summary, basePath string) {
 	jsonData, err := json.Marshal(vpaData)
-
 	if err != nil {
 		http.Error(w, "Error serializing summary data", 500)
 		return
 	}
+
+	var namespaces []string
+	for _, deploy := range vpaData.Deployments {
+		namespaces = append(namespaces, deploy.Namespace)
+	}
+	namespaces = utils.UniqueString(namespaces)
 
 	data := templateData{
 		BasePath: basePath,

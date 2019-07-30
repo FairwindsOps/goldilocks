@@ -24,7 +24,6 @@ clean:
 	$(GOCLEAN)
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
-	$(GOCMD) tidy
 	packr2 clean
 # Cross compilation
 build-linux:
