@@ -18,6 +18,10 @@ By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/
 
 [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported. In order to take long-term data into account, we recommend that you install prometheus and configure your vertical pod autoscaler install to use it.
 
+## Installation
+
+The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster. For example, use `kubectl apply -f hack/manifests/controller` to install the controller and related resources in a cluster.
+
 ## Usage
 
 ```
@@ -61,8 +65,18 @@ Use "goldilocks [command] --help" for more information about a command.
 
 This will search for any deployments in the given namespace and generate a VPA for each of them.  Each vpa will be labelled for use by this tool.
 
+### dashboard
+
+`goldilocks dashboard`
+
+Runs the goldilocks dashboard web server that will display recommendations. Listens on port `8080` by default.
+
 ### summary
 
 `goldilocks summary`
 
 Queries all the VPA objects that are labelled for this tool and summarizes their suggestions into a JSON object.
+
+### Container Exclusions
+
+The `dashboard` and `summary` commands can exclude recommendations for a list of comma separate container names using the `--excludes-containers` argument. This option can be useful for hiding recommendations for sidecar containers for things like Linkerd and Istio.
