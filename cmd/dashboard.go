@@ -22,6 +22,7 @@ import (
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 var serverPort int
@@ -40,7 +41,7 @@ var dashboardCmd = &cobra.Command{
 	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		router := dashboard.GetRouter(serverPort, basePath, vpaLabels, excludeContainers)
+		router := dashboard.GetRouter(serverPort, basePath, utils.VpaLabels, excludeContainers)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
