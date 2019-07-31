@@ -121,7 +121,7 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) {
 	}
 
 	// Create any VPAs that need to be
-	vpaNeeded := difference(deploymentNames, vpaNames)
+	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
 	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
 
 	if len(vpaNeeded) == 0 {
@@ -133,7 +133,7 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) {
 	}
 
 	// Now that this is one, we can delete any VPAs that don't have matching deployments.
-	vpaDelete := difference(vpaNames, deploymentNames)
+	vpaDelete := utils.Difference(vpaNames, deploymentNames)
 	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
 
 	if len(vpaDelete) == 0 {
@@ -208,19 +208,4 @@ func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName stri
 	} else {
 		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 	}
-}
-
-func difference(a, b []string) (diff []string) {
-	m := make(map[string]bool)
-
-	for _, item := range b {
-		m[item] = true
-	}
-
-	for _, item := range a {
-		if _, ok := m[item]; !ok {
-			diff = append(diff, item)
-		}
-	}
-	return
 }
