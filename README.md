@@ -14,6 +14,16 @@ By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/
 * metrics-server (a requirement of vpa)
 * golang 1.11+
 
+### GKE
+
+Google has provided the vertical pod autoscaler as a beta feature in GKE. You can see the docs [here](https://cloud.google.com/kubernetes-engine/docs/how-to/vertical-pod-autoscaling), or just enable it like so:
+
+```
+gcloud beta container clusters update [CLUSTER-NAME] --enable-vertical-pod-autoscaling
+```
+
+NOTE: This does not support using prometheus as a data backend.
+
 ## Recommended Requirements
 
 [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported. In order to take long-term data into account, we recommend that you install prometheus and configure your vertical pod autoscaler install to use it.
