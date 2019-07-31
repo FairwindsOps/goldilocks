@@ -17,11 +17,11 @@ package summary
 import (
 	"strings"
 
-	"k8s.io/klog"
-
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -52,13 +52,10 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
 
 	kubeClientVPA := kube.GetVPAInstance()
-	kubeClient := kube.GetInstance()
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}
-
-	containerExclusions := strings.Split(excludeContainers, ",")
 
 	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
 	if err != nil {
@@ -66,10 +63,20 @@ func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error)
 	}
 	klog.V(10).Infof("Found vpas: %v", vpas)
 
+	summary, _ := constructSummary(vpas, excludeContainers)
+	return summary, nil
+}
+
+func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers string) (Summary, error) {
 	var summary Summary
 	if len(vpas.Items) <= 0 {
 		return summary, nil
 	}
+
+	kubeClient := kube.GetInstance()
+
+	containerExclusions := strings.Split(excludeContainers, ",")
+
 	for _, vpa := range vpas.Items {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.ObjectMeta.Name)
 

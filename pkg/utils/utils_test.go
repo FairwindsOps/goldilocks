@@ -43,3 +43,38 @@ var testUniqueStringCases = []struct {
 		expected:    []string{"one", "two", "three"},
 	},
 }
+
+func TestDifference(t *testing.T) {
+	for _, tc := range testDifferenceCases {
+		res := Difference(tc.testData1, tc.testData2)
+		assert.Equal(t, res, tc.expected)
+	}
+}
+
+var empty []string
+
+var testDifferenceCases = []struct {
+	description string
+	testData1   []string
+	testData2   []string
+	expected    []string
+}{
+	{
+		description: "empty case",
+		testData1:   []string{"a", "b", "c"},
+		testData2:   []string{"a", "b", "c"},
+		expected:    empty,
+	},
+	{
+		description: "extra item on right",
+		testData1:   []string{"a", "b"},
+		testData2:   []string{"a", "b", "c"},
+		expected:    empty,
+	},
+	{
+		description: "extra item on left",
+		testData1:   []string{"a", "b", "c"},
+		testData2:   []string{"a", "b"},
+		expected:    []string{"c"},
+	},
+}
