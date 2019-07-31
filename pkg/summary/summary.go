@@ -111,21 +111,15 @@ func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers
 
 			var container containerSummary
 			for _, c := range deployment.Spec.Template.Spec.Containers {
+				container = containerSummary{
+					ContainerName: containerRecommendation.ContainerName,
+					UpperBound:    containerRecommendation.UpperBound,
+					LowerBound:    containerRecommendation.LowerBound,
+				}
 				if c.Name == containerRecommendation.ContainerName {
 					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
-					container = containerSummary{
-						ContainerName: containerRecommendation.ContainerName,
-						UpperBound:    containerRecommendation.UpperBound,
-						LowerBound:    containerRecommendation.LowerBound,
-						Limits:        c.Resources.Limits,
-						Requests:      c.Resources.Requests,
-					}
-				} else {
-					container = containerSummary{
-						ContainerName: containerRecommendation.ContainerName,
-						UpperBound:    containerRecommendation.UpperBound,
-						LowerBound:    containerRecommendation.LowerBound,
-					}
+					container.Limits = c.Resources.Limits
+					container.Requests = c.Resources.Requests
 				}
 			}
 
