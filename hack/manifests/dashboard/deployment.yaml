@@ -49,9 +49,9 @@ spec:
               memory: 32Mi
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
