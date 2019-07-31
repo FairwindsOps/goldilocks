@@ -28,11 +28,13 @@ import (
 )
 
 type containerSummary struct {
-	LowerBound    v1.ResourceList `json:"lowerBound"`
-	UpperBound    v1.ResourceList `json:"upperBound"`
-	Limits        v1.ResourceList `json:"limits"`
-	Requests      v1.ResourceList `json:"requests"`
-	ContainerName string          `json:"containerName"`
+	LowerBound     v1.ResourceList `json:"lowerBound"`
+	UpperBound     v1.ResourceList `json:"upperBound"`
+	Target         v1.ResourceList `json:"target"`
+	UncappedTarget v1.ResourceList `json:"uncappedTarget"`
+	Limits         v1.ResourceList `json:"limits"`
+	Requests       v1.ResourceList `json:"requests"`
+	ContainerName  string          `json:"containerName"`
 }
 
 type deploymentSummary struct {
@@ -116,9 +118,11 @@ func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers
 			var container containerSummary
 			for _, c := range deployment.Spec.Template.Spec.Containers {
 				container = containerSummary{
-					ContainerName: containerRecommendation.ContainerName,
-					UpperBound:    containerRecommendation.UpperBound,
-					LowerBound:    containerRecommendation.LowerBound,
+					ContainerName:  containerRecommendation.ContainerName,
+					UpperBound:     containerRecommendation.UpperBound,
+					LowerBound:     containerRecommendation.LowerBound,
+					Target:         containerRecommendation.Target,
+					UncappedTarget: containerRecommendation.UncappedTarget,
 				}
 				if c.Name == containerRecommendation.ContainerName {
 					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)

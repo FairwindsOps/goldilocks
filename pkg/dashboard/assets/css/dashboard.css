@@ -215,38 +215,18 @@
 }
 
 .namespace .result-messages h4 {
-  font-weight: bold;
-  font-size: 15px;
   border-bottom: 1px solid #eee;
-  grid-area: container;
-}
-
-table.container-results {
-  list-style-type: none;
-  font-size: 13px;
-  line-height: 20px;
-  padding: 0;
-  color: #6a6a6a;
 }
 
 .cluster-overview table.container-results {
   margin: 0px;
 }
 
-table.container-results li {
-  margin-bottom: 5px;
+.result-messages .code-container {
+  flex: 0 1 45%;
+  margin-left: 1em;
 }
 
-table.container-results li i.message-icon {
-  display: inline-block;
-  margin-right: 7px;
-  text-align: center;
-  width: 20px;
-  font-size: 17px;
-  font-weight: bold;
-  position: relative;
-  bottom: -3px;
-}
 
 .result-messages i.message-icon.success {
   color: #8BD2DC;
@@ -258,6 +238,10 @@ table.container-results li i.message-icon {
 
 .result-messages i.message-icon.error {
   color: #a11f4c;
+}
+
+.result-message i.message-icon.unknown {
+  color: gray;
 }
 
 .controller-type {
@@ -328,17 +312,28 @@ a.more-info:hover {
   margin: 10px calc(2 * (var(--caret-expander-width) + var(--caret-expander-margin-right)));
 }
 
-.expandable-table .resource-info.expanded .expandable-content {
-  align-items: start;
-  display: grid;
-  grid-gap: 0 1em;
-  grid-template-areas: "container container" "status code-title" "status code";
-  grid-template-columns: 2fr 1fr;
+table.container-results {
+  list-style-type: none;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 0;
+  color: #6a6a6a;
+  flex: 0 2 auto;
 }
 
-table.container-results {
-  grid-area: status;
-  text-align: left;
+table.container-results li {
+  margin-bottom: 5px;
+}
+
+table.container-results li i.message-icon {
+  display: inline-block;
+  margin-right: 7px;
+  text-align: center;
+  width: 20px;
+  font-size: 17px;
+  font-weight: bold;
+  position: relative;
+  bottom: -3px;
 }
 
 table.container-results td {
@@ -381,4 +376,78 @@ pre.fix-yaml code[class*="language-"]
 , pre[class*="language-"].fix-yaml {
   font-size: 12px;
   line-height: normal;
+}
+
+
+/* tab-container */
+.tab-container {
+  display: grid;
+  grid-template-areas: ". radio1 radio2 ." "tab tab tab tab";
+  grid-template-columns: 1fr auto auto 1fr;
+  grid-gap: 0 1em;
+  overflow: hidden;
+  transition: 0.8s;
+}
+
+.tab-container label {
+  display: block;
+  cursor: pointer;
+  font-weight: bold;
+  border: 1px solid rgba(106, 106, 106, 0.5);
+  padding: 0.5em;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  color: rgba(106, 106, 106, 0.5);
+  transition: all ease 0.2s;
+  font-size: 13px;
+}
+
+.tab-container label[for^="tabone"] {
+  grid-area: radio1;
+}
+
+.tab-container label[for^="tabtwo"] {
+  grid-area: radio2;
+}
+
+.tab-container .tab-content {
+  display: flex;
+  padding: 1rem;
+  justify-content: space-between;
+  grid-area: tab;
+  overflow: hidden;
+  transform: translateY(200%);
+  transition: inherit;
+}
+
+.tab-container input[type="radio"] {
+  display: none;
+}
+
+.tab-container input[type="radio"]:checked + label {
+  background: #eee;
+  color: inherit;
+}
+
+.tab-container input[type="radio"]:checked + label + .tab-content {
+  transform: translateY(0);
+  transition: inherit;
+}
+
+@media (max-width: 45em) {
+  .tab-container .tab-content,
+  .tab-container label {
+    order: initial;
+  }
+
+  .tab-container label {
+    width: 100%;
+    margin-right: 0;
+    margin-top: 0.2rem;
+  }
+}
+
+/* Accessibility */
+.sr-only {
+  display: none
 }

@@ -26,21 +26,95 @@ func printResource(quant resource.Quantity) string {
 	return quant.String()
 }
 
-func getStatusIcon(existing resource.Quantity, recommendation resource.Quantity) string {
+func getStatus(existing resource.Quantity, recommendation resource.Quantity, style string) string {
 	if existing.IsZero() {
-		return "fa-exclamation error"
+		switch style {
+		case "text":
+			return "error - not set"
+		case "icon":
+			return "fa-exclamation error"
+		default:
+			return ""
+		}
 	}
 
 	comparison := existing.Cmp(recommendation)
 	if comparison == 0 {
-		return "fa-equals success"
+		switch style {
+		case "text":
+			return "equal"
+		case "icon":
+			return "fa-equals success"
+		default:
+			return ""
+		}
 	}
 	if comparison < 0 {
-		return "fa-less-than warning"
+		switch style {
+		case "text":
+			return "less than"
+		case "icon":
+			return "fa-less-than warning"
+		default:
+			return ""
+		}
 	}
 	if comparison > 0 {
-		return "fa-greater-than warning"
+		switch style {
+		case "text":
+			return "greater than"
+		case "icon":
+			return "fa-greater-than warning"
+		default:
+			return ""
+		}
 	}
+	return ""
+}
+
+func getStatusRange(existing, lower, upper resource.Quantity, style string) string {
+	if existing.IsZero() {
+		switch style {
+		case "text":
+			return "error - not set"
+		case "icon":
+			return "fa-exclamation error"
+		default:
+			return ""
+		}
+	}
+
+	comparisonLower := existing.Cmp(lower)
+	comparisonUpper := existing.Cmp(upper)
+	if comparisonUpper <= 0 && comparisonLower >= 0 {
+		switch style {
+		case "text":
+			return "equals"
+		case "icon":
+			return "fa-equals success"
+		default:
+			return ""
+		}
+	}
+
+	if comparisonLower < 0 {
+		switch style {
+		case "text":
+			return "less than"
+		case "icon":
+			return "fa-less-than warning"
+		}
+	}
+
+	if comparisonUpper > 0 {
+		switch style {
+		case "text":
+			return "greater than"
+		case "icon":
+			return "fa-greater-than warning"
+		}
+	}
+
 	return ""
 }
 

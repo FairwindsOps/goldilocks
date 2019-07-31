@@ -32,7 +32,7 @@ The intent of goldilocks is to utilize an already somewhat-stable resource recom
 
 Right now, goldilocks labels all VPA objects that are created with two unique labels. These are used to keep track of the objects that it creates.
 
-In addition, namespace labels are utilized. The label `fairwinds.com/goldilocks=true` is used to signify that the deployments in a namespace should be given VPAs.
+In addition, namespace labels are utilized. The label `goldilocks.fairwinds.com/enabled=true` is used to signify that the deployments in a namespace should be given VPAs.
 
 ### Controller
 
