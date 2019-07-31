@@ -1,6 +1,6 @@
 # goldilocks [![CircleCI](https://circleci.com/gh/FairwindsOps/goldilocks.svg?style=svg&circle-token=affdde2880ec2669f26be783f3f9e412b0d2fb62)](https://circleci.com/gh/FairwindsOps/goldilocks) [![codecov](https://codecov.io/gh/FairwindsOps/goldilocks/branch/master/graph/badge.svg?token=jkXRJcqr49)](https://codecov.io/gh/FairwindsOps/goldilocks) [![Apache 2.0 license](https://img.shields.io/badge/licence-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Get your resource requests Just Right™
+Get your resource requests "Just Right"
 
 ## How?
 
@@ -18,9 +18,31 @@ By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/
 
 [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported. In order to take long-term data into account, we recommend that you install prometheus and configure your vertical pod autoscaler install to use it.
 
-## Installation
+## Installation (Quickstart)
 
-The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster. For example, use `kubectl apply -f hack/manifests/controller` to install the controller and related resources in a cluster.
+First, make sure you satisfy the requirements above.
+
+The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster.
+
+```
+kubectl create namespace goldilocks
+kubectl apply -f hack/manifests/controller
+kubectl apply -f hack/manifests/dashboard
+```
+
+Now pick an application namespace and label it like so:
+
+```
+kubectl label ns goldilocks fairwinds.com/goldilocks=true
+```
+
+You should see start to see VPA objects in that namespace. Then you can checkout the dashboard:
+
+```
+kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8080:80
+```
+
+Then open your browser to [http://localhost:8080](http://localhost:8080)
 
 ## Usage
 
