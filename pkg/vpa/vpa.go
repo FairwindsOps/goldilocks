@@ -35,7 +35,7 @@ func checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == "fairwinds.com/goldilocks" {
+			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" {
 				if strings.ToLower(v) == "true" {
 					return true, nil
 				}
@@ -77,7 +77,7 @@ func checkNamespaceLabel(namespace *corev1.Namespace) (bool, error) {
 	if len(namespace.ObjectMeta.Labels) > 0 {
 		for k, v := range namespace.ObjectMeta.Labels {
 			klog.V(7).Infof("Namespace label - %s: %s", k, v)
-			if strings.ToLower(k) == "fairwinds.com/goldilocks" && strings.ToLower(v) == "true" {
+			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" && strings.ToLower(v) == "true" {
 				klog.Info("Namespace is labelled for goldilocks.")
 				return true, nil
 			}
