@@ -100,8 +100,8 @@ func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers
 			break
 		}
 
-		if annotationValue, annotationFound := deployment.Annotations["goldilocks.fairwinds.com/exclude-containers"]; annotationFound {
-			containerExclusions = append(containerExclusions, strings.Split(annotationValue, ",")...)
+		if labelValue, labelFound := deployment.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {
+			containerExclusions = append(containerExclusions, strings.Split(labelValue, ",")...)
 		}
 
 	CONTAINER_REC_LOOP:
