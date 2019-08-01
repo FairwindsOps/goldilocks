@@ -112,3 +112,7 @@ Queries all the VPA objects that are labelled for this tool and summarizes their
 ### Container Exclusions
 
 The `dashboard` and `summary` commands can exclude recommendations for a list of comma separate container names using the `--excludes-containers` argument. This option can be useful for hiding recommendations for sidecar containers for things like Linkerd and Istio.
+
+Containers can be excluded for individual deployments by applying an annotation to any deployment. The annotation value should be a list of comma separated container names. The annotation value will be combined with any values provided through the `--excludes-containers` argument.
+
+`goldilocks.fairwinds.com/exclude-container: linkerd-proxy`
