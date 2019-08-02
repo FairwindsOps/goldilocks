@@ -1,0 +1,39 @@
+replicaCount: 2
+
+influx:
+  enabled: false
+
+loadScript: |
+  import http from "k6/http";
+  import { check, fail } from "k6";
+  import { Rate } from "k6/metrics";
+
+  export let options = {
+      noConnectionReuse: true,
+      thresholds: {
+          "errors": ["rate<0.05"]
+      }
+  };
+
+  export let url = "http://basic-demo.demo"
+  export let errorRate = new Rate("errors");
+
+  export default function() {
+
+      let params = {
+          headers: {
+                      "User-Agent": "k6"
+                   },
+          redirects: 5,
+          tags: { "k6test": "yes" }
+      };
+      let jar = http.cookieJar();
+      jar.set(url, "testing", "always");
+
+      let res = http.get(url, params);
+
+      errorRate.add(res.status != 200);
+      check(res, {
+          "Status 200": (r) => r.status === 200
+      });
+  };

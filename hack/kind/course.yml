@@ -1,0 +1,38 @@
+repository: stable
+minimum_versions:
+  helm: 2.13.1
+  reckoner: 1.4.0
+repositories:
+  incubator:
+    url: https://kubernetes-charts-incubator.storage.googleapis.com
+  stable:
+    url: https://kubernetes-charts.storage.googleapis.com
+  fairwinds-stable:
+    url: https://charts.fairwinds.com/stable
+  fairwinds-incubator:
+    url: https://charts.fairwinds.com/incubator
+charts:
+  metrics-server:
+    namespace: metrics-server
+    version: "2.8.2"
+    set-values:
+      args:
+        - --kubelet-insecure-tls
+        - --kubelet-preferred-address-types=InternalIP
+        - --metric-resolution=30s
+        - --v=3
+  load-generator:
+    namespace: demo
+    version: 0.1.1
+    repository: fairwinds-incubator
+    files:
+      - load-generator-values.yaml
+  basic-demo:
+    namespace: demo
+    version: 0.2.1
+    hooks:
+      post_install:
+        - kubectl label ns demo --overwrite fairwinds.com/goldilocks=true
+    repository: reactiveops-incubator
+    files:
+      - demo-values.yaml

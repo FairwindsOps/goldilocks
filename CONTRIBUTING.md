@@ -18,7 +18,25 @@ Goldilocks can run in 3 modes.  There is a CLI that allows the manipulation of V
 We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/goldilocks/labels/good%20first%20issue) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
 
 ## Setting Up Your Development Environment
-### Prerequisites
+
+### Using Kind
+
+Make sure you have the following installed:
+
+* [kind 0.4.0](https://github.com/kubernetes-sigs/kind/releases) or higher
+* [reckoner v1.4.0](https://github.com/FairwindsOps/reckoner/releases) or higher
+* [helm 2.13.1](https://github.com/helm/helm/releases) or higher
+* git
+* kubectl
+
+Go into the [/hack/kind](/hack/kind) directory and run `./setup.sh`
+
+This will create a kind cluster, place a demo app, install VPA, and install the latest goldilocks. You can run your local development against this cluster.
+
+### Using your own cluster
+
+Prerequisites:
+
 * A properly configured Golang environment with Go 1.11 or higher
 * If you want to see the local changes you make on a dashboard, you will need access to a Kubernetes cluster defined in `~/.kube/config` or the KUBECONFIG variable.
 * The [vertical pod autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) will need to be installed in the cluster.

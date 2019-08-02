@@ -1,0 +1,24 @@
+linkerd:
+  serviceProfile: false
+  enableRetry: false
+demo:
+  title: "Testing Demo"
+  metadata: "Brought to you by Fairwinds"
+  refreshInterval: 400
+hpa:
+  cpuTarget: 60
+  customMetric:
+    enabled: false
+  max: 30
+  min: 3
+vpa:
+  enabled: false
+ingress:
+  enabled: false
+resources:
+  limits:
+    cpu: 6m
+    memory: 131072k
+  requests:
+    cpu: 6m
+    memory: 131072k
