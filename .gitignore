@@ -7,3 +7,5 @@ packrd
 coverage.txt
 *.out
 debug
+
+hack/kind/autoscaler
