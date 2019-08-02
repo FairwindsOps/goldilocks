@@ -21,7 +21,7 @@ spec:
       serviceAccountName: goldilocks
       containers:
         - name: goldilocks
-          image: "quay.io/reactiveops/goldilocks:master"
+          image: "quay.io/fairwinds/goldilocks:master"
           imagePullPolicy: Always
           command:
             - /goldilocks
