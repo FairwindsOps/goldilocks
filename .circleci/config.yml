@@ -49,9 +49,9 @@ workflows:
           config_file: deploy/build.config
           context: org-global
           docker-login: true
-          password-variable: quay_token
+          password-variable: fairwinds_quay_token
           registry: quay.io
-          username: reactiveops+circleci
+          username: fairwinds+circleci
           requires:
             - test
           filters:
