@@ -206,8 +206,18 @@
   display: none;
 }
 
+.expandable-table .resource-info .expandable-content::after {
+  content: "";
+  grid-column: 1 / -1;
+  grid-row: 1;
+  border-bottom: 1px solid #eee;
+  display: none;
+  border-color: teal;
+  z-index: -1;
+}
+
 .expandable-table .resource-info.expanded .expandable-content {
-  display: block;
+  display: grid;
 }
 
 .namespace .resource-info .result-messages {
@@ -216,6 +226,9 @@
 
 .namespace .result-messages h4 {
   border-bottom: 1px solid #eee;
+  grid-area: container;
+  margin: 0;
+  align-self: end;
 }
 
 .cluster-overview table.container-results {
@@ -240,7 +253,7 @@
   color: #a11f4c;
 }
 
-.result-message i.message-icon.unknown {
+.result-messages i.message-icon.unknown {
   color: gray;
 }
 
@@ -309,7 +322,12 @@ a.more-info:hover {
 }
 
 .expandable-table .resource-info .expandable-content {
-  margin: 10px calc(2 * (var(--caret-expander-width) + var(--caret-expander-margin-right)));
+  margin: 1em calc(2 * (var(--caret-expander-width) + var(--caret-expander-margin-right)));
+  grid-template-areas: "container radio1 radio2" ". radio1 radio2" "tab tab tab";
+  grid-template-columns: 1fr auto auto;
+  grid-gap: 0 0.5em;
+  grid-template-rows: 1fr 1fr auto;
+  transition: 0.8s;
 }
 
 table.container-results {
@@ -389,28 +407,30 @@ pre.fix-yaml code[class*="language-"]
   transition: 0.8s;
 }
 
-.tab-container label {
+.result-messages label {
   display: block;
   cursor: pointer;
   font-weight: bold;
   border: 1px solid rgba(106, 106, 106, 0.5);
-  padding: 0.5em;
+  padding: 0.25em;
   border-radius: 5px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   color: rgba(106, 106, 106, 0.5);
   transition: all ease 0.2s;
   font-size: 13px;
+  align-self: center;
+  justify-self: center;
 }
 
-.tab-container label[for^="tabone"] {
+.result-messages label[for^="tabone"] {
   grid-area: radio1;
 }
 
-.tab-container label[for^="tabtwo"] {
+.result-messages label[for^="tabtwo"] {
   grid-area: radio2;
 }
 
-.tab-container .tab-content {
+.result-messages .tab-content {
   display: flex;
   padding: 1rem;
   justify-content: space-between;
@@ -420,27 +440,31 @@ pre.fix-yaml code[class*="language-"]
   transition: inherit;
 }
 
-.tab-container input[type="radio"] {
+.result-messages input[type="radio"] {
   display: none;
 }
 
-.tab-container input[type="radio"]:checked + label {
+.result-messages input[type="radio"]:checked + label {
   background: #eee;
   color: inherit;
 }
 
-.tab-container input[type="radio"]:checked + label + .tab-content {
+.result-messages input[type="radio"]:not(:checked) + label {
+  z-index: 100;
+}
+
+.result-messages input[type="radio"]:checked + label + .tab-content {
   transform: translateY(0);
   transition: inherit;
 }
 
 @media (max-width: 45em) {
-  .tab-container .tab-content,
-  .tab-container label {
+  .result-messages .tab-content,
+  .result-messages label {
     order: initial;
   }
 
-  .tab-container label {
+  .result-messages label {
     width: 100%;
     margin-right: 0;
     margin-top: 0.2rem;
