@@ -58,7 +58,7 @@ workflows:
             branches:
               only: /.*/
             tags:
-              ignore: /.*/
+              only: /.*/
   release:
     jobs:
       - release:
@@ -66,4 +66,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /v.*/
+              ignore: /v.*/
