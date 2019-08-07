@@ -328,6 +328,7 @@ a.more-info:hover {
   grid-gap: 0 0.5em;
   grid-template-rows: 1fr 1fr auto;
   transition: 0.8s;
+  overflow: hidden;
 }
 
 table.container-results {
@@ -435,7 +436,6 @@ pre.fix-yaml code[class*="language-"]
   padding: 1rem;
   justify-content: space-between;
   grid-area: tab;
-  overflow: hidden;
   transform: translateY(200%);
   transition: inherit;
 }
