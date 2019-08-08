@@ -44,7 +44,7 @@ workflows:
             branches:
               only: /.*/
             tags:
-              ignore: /.*/
+              only: /.*/
       - rok8s-scripts/docker_build_and_push:
           config_file: deploy/build.config
           context: org-global
