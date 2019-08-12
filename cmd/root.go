@@ -48,7 +48,10 @@ func init() {
 		flag := rootCmd.PersistentFlags().Lookup(flag)
 		flag.Usage = fmt.Sprintf("%v [%v]", flag.Usage, env)
 		if value := os.Getenv(env); value != "" {
-			flag.Value.Set(value)
+			err := flag.Value.Set(value)
+			if err != nil {
+				klog.Errorf("Error setting flag %v to %s from environment variable %s", flag, value, env)
+			}
 		}
 	}
 
@@ -60,7 +63,10 @@ var rootCmd = &cobra.Command{
 	Long:  `A tool for analysis of kubernetes deployment resource usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		klog.Error("You must specify a sub-command.")
-		cmd.Help()
+		err := cmd.Help()
+		if err != nil {
+			klog.Error(err)
+		}
 		os.Exit(1)
 	},
 }

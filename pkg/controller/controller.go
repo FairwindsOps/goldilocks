@@ -16,13 +16,11 @@ package controller
 
 import (
 	"fmt"
-	"k8s.io/klog"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
-	"k8s.io/api/apps/v1"
+	"k8s.io/klog"
+
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -116,7 +114,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 }
 
 // NewController starts a controller for watching Kubernetes objects.
-func NewController() {
+func NewController(stop <-chan bool) {
 	klog.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
 
@@ -160,11 +158,11 @@ func NewController() {
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
 
-	// create a channel to respond to SIGTERMs
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGTERM)
-	signal.Notify(signals, syscall.SIGINT)
-	<-signals
+	if <-stop {
+		klog.Info("Shutting down controller.")
+		return
+	}
+
 }
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {

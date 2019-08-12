@@ -17,7 +17,7 @@ package summary
 import (
 	"strings"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -28,13 +28,13 @@ import (
 )
 
 type containerSummary struct {
-	LowerBound     v1.ResourceList `json:"lowerBound"`
-	UpperBound     v1.ResourceList `json:"upperBound"`
-	Target         v1.ResourceList `json:"target"`
-	UncappedTarget v1.ResourceList `json:"uncappedTarget"`
-	Limits         v1.ResourceList `json:"limits"`
-	Requests       v1.ResourceList `json:"requests"`
-	ContainerName  string          `json:"containerName"`
+	LowerBound     corev1.ResourceList `json:"lowerBound"`
+	UpperBound     corev1.ResourceList `json:"upperBound"`
+	Target         corev1.ResourceList `json:"target"`
+	UncappedTarget corev1.ResourceList `json:"uncappedTarget"`
+	Limits         corev1.ResourceList `json:"limits"`
+	Requests       corev1.ResourceList `json:"requests"`
+	ContainerName  string              `json:"containerName"`
 }
 
 type deploymentSummary struct {
@@ -95,11 +95,11 @@ func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers
 
 		if vpa.Status.Recommendation == nil {
 			klog.V(2).Infof("Empty status on %v", deploy.DeploymentName)
-			break
+			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
 			klog.V(2).Infof("No recommendations found in the %v vpa.", deploy.DeploymentName)
-			break
+			continue
 		}
 
 		if labelValue, labelFound := deployment.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {

@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: goldilocks
         app.kubernetes.io/component: controller
     spec:
-      serviceAccountName: goldilocks
+      serviceAccountName: goldilocks-controller
       containers:
         - name: goldilocks
           image: "quay.io/fairwinds/goldilocks:master"

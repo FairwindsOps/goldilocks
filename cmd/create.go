@@ -15,6 +15,9 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
@@ -28,7 +31,6 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 	createCmd.PersistentFlags().BoolVarP(&dryrun, "dry-run", "", false, "Don't actually create the VPAs, just list which ones would get created.")
 	createCmd.PersistentFlags().StringVarP(&nsName, "namespace", "n", "default", "Namespace to install the VPA objects in.")
-	createCmd.MarkFlagRequired("namespace")
 }
 
 var createCmd = &cobra.Command{
@@ -37,7 +39,16 @@ var createCmd = &cobra.Command{
 	Long:  `Create a VPA for every deployment in the specified namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		klog.V(4).Infof("Starting to create the VPA objects in namespace: %s", nsName)
-		namespace := kube.GetNamespace(nsName)
-		vpa.ReconcileNamespace(namespace, dryrun)
+		kubeClient := kube.GetInstance()
+		namespace, err := kube.GetNamespace(kubeClient, nsName)
+		if err != nil {
+			fmt.Println("Error getting namespace. Exiting.")
+			os.Exit(1)
+		}
+		errReconcile := vpa.ReconcileNamespace(namespace, dryrun)
+		if errReconcile != nil {
+			fmt.Println("Errors encountered during reconciliation.")
+			os.Exit(1)
+		}
 	},
 }

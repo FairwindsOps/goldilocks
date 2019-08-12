@@ -33,7 +33,10 @@ func OnNamespaceChanged(namespace *corev1.Namespace, event utils.Event) {
 		klog.Info("Nothing to do on namespace deletion. The VPAs will be deleted as part of the ns.")
 	case "create", "update":
 		klog.Infof("Namespace %s updated. Check the labels.", namespace.ObjectMeta.Name)
-		vpa.ReconcileNamespace(namespace, false)
+		err := vpa.ReconcileNamespace(namespace, false)
+		if err != nil {
+			klog.Errorf("Error reconciling: %v", err)
+		}
 	default:
 		klog.Infof("Update type %s is not valid, skipping.", event.EventType)
 	}

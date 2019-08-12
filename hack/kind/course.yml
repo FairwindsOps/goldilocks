@@ -32,7 +32,8 @@ charts:
     version: 0.2.1
     hooks:
       post_install:
+        - kubectl get ns demo || kubectl create ns demo
         - kubectl label ns demo --overwrite goldilocks.fairwinds.com/enabled=true
-    repository: reactiveops-incubator
+    repository: fairwinds-incubator
     files:
       - demo-values.yaml
