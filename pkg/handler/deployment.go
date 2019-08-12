@@ -28,7 +28,7 @@ import (
 
 // OnDeploymentChanged is a handler that should be called when a deployment chanages.
 func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
-	namespace, _ := getNamespaceForDeployment(deployment)
+	namespace, _ := getNamespaceFromName(event.Namespace)
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.V(3).Infof("Deployment %s deleted. Deleting the VPA for it if it had one.", deployment.ObjectMeta.Name)
@@ -41,8 +41,7 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
 	}
 }
 
-func getNamespaceForDeployment(deployment *appsv1.Deployment) (*corev1.Namespace, error) {
-	nsName := deployment.ObjectMeta.Namespace
+func getNamespaceFromName(nsName string) (*corev1.Namespace, error) {
 	namespace := kube.GetNamespace(nsName)
 	return namespace, nil
 }
