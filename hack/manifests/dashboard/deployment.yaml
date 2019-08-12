@@ -18,7 +18,7 @@ spec:
         app.kubernetes.io/name: goldilocks
         app.kubernetes.io/component: dashboard
     spec:
-      serviceAccountName: goldilocks
+      serviceAccountName: goldilocks-dashboard
       containers:
         - name: goldilocks
           image: "quay.io/fairwinds/goldilocks:master"

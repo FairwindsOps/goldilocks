@@ -3,8 +3,10 @@
 set -e
 
 kind_required_version=0.4.0
-kind_node_image="node:v1.12.9@sha256:bcb79eb3cd6550c1ba9584ce57c832dcd6e442913678d2785307a7ad9addc029"
+kind_node_image="node:v1.13.7@sha256:f3f1cfc2318d1eb88d91253a9c5fa45f6e9121b6b1e65aea6c7ef59f1549aaaf"
 vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
+install_vpa=${1:-true}
+install_goldilocks=${2:-true}
 
 ## Test Infra Setup
 ## This will use Kind, Reckoner, and Helm to setup a test infrastructure locally for goldilocks
@@ -41,17 +43,19 @@ until kubectl cluster-info; do
     sleep 3
 done
 
-## Install VPA
+if $install_vpa; then
+  ## Install VPA
 
-if [ ! -d "autoscaler" ] ; then
-    git clone "https://github.com/kubernetes/autoscaler.git"
+  if [ ! -d "autoscaler" ] ; then
+      git clone "https://github.com/kubernetes/autoscaler.git"
+  fi
+
+  cd autoscaler/vertical-pod-autoscaler
+  git checkout "$vertical_pod_autoscaler_tag"
+  ./hack/vpa-up.sh
+
+  cd ../../
 fi
-
-cd autoscaler/vertical-pod-autoscaler
-git checkout "$vertical_pod_autoscaler_tag"
-./hack/vpa-up.sh
-
-cd ../../
 
 ## Helm Init
 kubectl -n kube-system create sa tiller --dry-run -o yaml --save-config | kubectl apply -f -;
@@ -63,12 +67,11 @@ helm init --wait --upgrade --service-account tiller
 
 reckoner plot course.yml
 
-## Install Goldilocks
-
-kubectl get ns goldilocks || kubectl create ns goldilocks
-kubectl -n goldilocks apply -f ../manifests/controller
-kubectl -n goldilocks apply -f ../manifests/dashboard
-
-kubectl get vpa --all-namespaces
+if $install_goldilocks; then
+  ## Install Goldilocks
+  kubectl get ns goldilocks || kubectl create ns goldilocks
+  kubectl -n goldilocks apply -f ../manifests/controller
+  kubectl -n goldilocks apply -f ../manifests/dashboard
+fi
 
 echo "Use 'kind get kubeconfig-path --name=test-infra' to get your kubeconfig"

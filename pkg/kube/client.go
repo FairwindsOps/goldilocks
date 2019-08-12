@@ -21,8 +21,6 @@ import (
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	// v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	//autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -67,11 +65,6 @@ func GetVPAInstance() *VPAClientInstance {
 	return kubeClientVPA
 }
 
-// SetInstance sets the Kubernetes interface to use - this is for testing only
-func SetInstance(kc ClientInstance) {
-	kubeClient = &kc
-}
-
 func getKubeClient() kubernetes.Interface {
 	kubeConf, err := config.GetConfig()
 	if err != nil {
@@ -97,12 +90,12 @@ func getKubeClientVPA() autoscalingv1beta2.Interface {
 }
 
 // GetNamespace returns a namespace object when given a name.
-func GetNamespace(nsName string) *corev1.Namespace {
-	kubeClient := GetInstance()
+func GetNamespace(kubeClient *ClientInstance, nsName string) (*corev1.Namespace, error) {
 
 	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(nsName, metav1.GetOptions{})
 	if err != nil {
-		klog.Errorf("Error getting namespace for deployment %s: %v", nsName, err)
+		klog.Errorf("Error getting namespace from name %s: %v", nsName, err)
+		return nil, err
 	}
-	return namespace
+	return namespace, nil
 }

@@ -2,14 +2,14 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: goldilocks
+  name: goldilocks-dashboard
   labels:
     app: goldilocks
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: goldilocks
+  name: goldilocks-dashboard
 subjects:
   - kind: ServiceAccount
-    name: goldilocks
+    name: goldilocks-dashboard
     namespace: goldilocks

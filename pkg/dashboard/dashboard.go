@@ -25,7 +25,6 @@ import (
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/summary"
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 const (
@@ -123,17 +122,24 @@ func writeTemplate(tmpl *template.Template, data *templateData, w http.ResponseW
 	buf := &bytes.Buffer{}
 	err := tmpl.Execute(buf, data)
 	if err != nil {
+		klog.Errorf("Error executing template: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		klog.Errorf("Error writing template: %v", err)
+	}
 }
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeContainers string) *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		if err != nil {
+			klog.Errorf("Error writing healthcheck: %v", err)
+		}
 	})
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		favicon, err := GetAssetBox().Find("favicon-32x32.png")
@@ -142,7 +148,10 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 			http.Error(w, "Error getting favicon", http.StatusInternalServerError)
 			return
 		}
-		w.Write(favicon)
+		_, err = w.Write(favicon)
+		if err != nil {
+			klog.Errorf("Error writing favicon: %v", err)
+		}
 	})
 
 	fileServer := http.FileServer(GetAssetBox())
@@ -172,12 +181,6 @@ func MainHandler(w http.ResponseWriter, r *http.Request, vpaData summary.Summary
 		return
 	}
 
-	var namespaces []string
-	for _, deploy := range vpaData.Deployments {
-		namespaces = append(namespaces, deploy.Namespace)
-	}
-	namespaces = utils.UniqueString(namespaces)
-
 	data := templateData{
 		BasePath: basePath,
 		VPAData:  vpaData,
@@ -190,17 +193,4 @@ func MainHandler(w http.ResponseWriter, r *http.Request, vpaData summary.Summary
 		return
 	}
 	writeTemplate(tmpl, &data, w)
-}
-
-// JSONHandler gets template data and renders json with it.
-func JSONHandler(w http.ResponseWriter, r *http.Request, vpaLabels map[string]string, excludeContainers string) {
-	data, err := summary.Run(vpaLabels, excludeContainers)
-	if err != nil {
-		http.Error(w, "Error Fetching Summary", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(data)
 }

@@ -17,10 +17,11 @@ package handler
 import (
 	"strings"
 
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
+
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 // OnUpdate is a handler that should be called when an object is updated.

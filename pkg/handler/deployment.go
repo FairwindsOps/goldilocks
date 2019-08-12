@@ -19,7 +19,6 @@ import (
 
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
@@ -28,20 +27,26 @@ import (
 
 // OnDeploymentChanged is a handler that should be called when a deployment chanages.
 func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
-	namespace, _ := getNamespaceFromName(event.Namespace)
+	kubeClient := kube.GetInstance()
+	namespace, err := kube.GetNamespace(kubeClient, event.Namespace)
+	if err != nil {
+		klog.Error("Handler got error retrieving namespace object. Breaking.")
+		return
+	}
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.V(3).Infof("Deployment %s deleted. Deleting the VPA for it if it had one.", deployment.ObjectMeta.Name)
-		vpa.ReconcileNamespace(namespace, false)
+		err := vpa.ReconcileNamespace(namespace, false)
+		if err != nil {
+			klog.Errorf("Error reconciling: %v", err)
+		}
 	case "create", "update":
 		klog.V(3).Infof("Deployment %s updated. Reconcile", deployment.ObjectMeta.Name)
-		vpa.ReconcileNamespace(namespace, false)
+		err := vpa.ReconcileNamespace(namespace, false)
+		if err != nil {
+			klog.Errorf("Error reconciling: %v", err)
+		}
 	default:
 		klog.V(3).Infof("Update type %s is not valid, skipping.", event.EventType)
 	}
-}
-
-func getNamespaceFromName(nsName string) (*corev1.Namespace, error) {
-	namespace := kube.GetNamespace(nsName)
-	return namespace, nil
 }

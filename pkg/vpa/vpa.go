@@ -48,70 +48,49 @@ func checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	return false, nil
 }
 
-// ReconcileDeployment makes a vpa for a deployment in a namespace.
-func ReconcileDeployment(deployment *appsv1.Deployment, create bool, dryrun bool) {
-
-	if !create {
-		kubeClientVPA := kube.GetVPAInstance()
-		deleteVPA(kubeClientVPA, deployment.ObjectMeta.Namespace, deployment.ObjectMeta.Name, dryrun)
-	}
-
-	return
-	// kubeClientVPA := kube.GetVPAInstance()
-	// namespace := deployment.ObjectMeta.Namespace
-	// deploymentName := deployment.ObjectMeta.Name
-
-	// if create {
-	// 	label, _ := checkDeploymentLabels(deployment)
-	// 	if label {
-	// 		klog.Infof("Need a VPA for this deployment: %s", deployment.ObjectMeta.Name)
-	// 		createVPA(kubeClientVPA, namespace, deploymentName, dryrun)
-	// 	}
-	// } else {
-	// 	klog.V(3).Infof("Delete this vpa.")
-	// 	deleteVPA(kubeClientVPA, namespace, deploymentName, dryrun)
-	// }
-}
-
-func checkNamespaceLabel(namespace *corev1.Namespace) (bool, error) {
+func checkNamespaceLabel(namespace *corev1.Namespace) bool {
 	if len(namespace.ObjectMeta.Labels) > 0 {
 		for k, v := range namespace.ObjectMeta.Labels {
 			klog.V(7).Infof("Namespace label - %s: %s", k, v)
 			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" && strings.ToLower(v) == "true" {
 				klog.Info("Namespace is labelled for goldilocks.")
-				return true, nil
+				return true
 			}
 		}
 	}
-	return false, nil
+	return false
 }
 
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
 // Check if deployment has label for false before applying vpa.
-func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) {
+func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	kubeClient := kube.GetInstance()
 	kubeClientVPA := kube.GetVPAInstance()
 
 	nsName := namespace.ObjectMeta.Name
 	vpaNames := listVPA(kubeClientVPA, nsName)
 
-	if create, _ := checkNamespaceLabel(namespace); !create {
+	if create := checkNamespaceLabel(namespace); !create {
 		// Get the list of VPAs that already exist
 		if len(vpaNames) < 1 {
 			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
-			return
+			return nil
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
 		for _, vpa := range vpaNames {
-			deleteVPA(kubeClientVPA, nsName, vpa, dryrun)
+			err := deleteVPA(kubeClientVPA, nsName, vpa, dryrun)
+			if err != nil {
+				return err
+			}
 		}
-		return
+		return nil
 	}
 
 	//Get the list of deployments in the namespace
 	deployments, err := kubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
 	if err != nil {
 		klog.Error(err.Error())
+		return err
 	}
 	var deploymentNames []string
 	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
@@ -128,7 +107,10 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) {
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			createVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			err := createVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -140,13 +122,16 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) {
 		klog.Info("No VPAs to delete.")
 	} else if len(vpaDelete) > 0 {
 		for _, vpaName := range vpaDelete {
-			deleteVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			err := deleteVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			if err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
-	// Get the existing owned VPA List
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(utils.VpaLabels).String(),
@@ -155,6 +140,7 @@ func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
 	existingVPAs, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
 	if err != nil {
 		klog.Error(err.Error())
+		return nil
 	}
 	var vpaNames []string
 
@@ -165,21 +151,23 @@ func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
 	return vpaNames
 }
 
-func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) {
-	if !dryrun {
-		deleteOptions := metav1.NewDeleteOptions(0)
-		errDelete := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Delete(vpaName, deleteOptions)
-		if errDelete != nil {
-			klog.Errorf("Error deleting vpa: %v", errDelete)
-		} else {
-			klog.Infof("Deleted vpa: %s", vpaName)
-		}
-	} else {
+func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
+
+	if dryrun {
 		klog.Infof("Not deleting %s due to dryrun.", vpaName)
+		return nil
 	}
+	deleteOptions := metav1.NewDeleteOptions(0)
+	errDelete := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Delete(vpaName, deleteOptions)
+	if errDelete != nil {
+		klog.Errorf("Error deleting vpa: %v", errDelete)
+		return errDelete
+	}
+	klog.Infof("Deleted vpa: %s", vpaName)
+	return nil
 }
 
-func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) {
+func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
 	updateMode := v1beta2.UpdateModeOff
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -204,8 +192,10 @@ func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName stri
 		_, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Create(vpa)
 		if err != nil {
 			klog.Errorf("Error creating vpa: %v", err)
+			return err
 		}
 	} else {
 		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 	}
+	return nil
 }
