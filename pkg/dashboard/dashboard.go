@@ -89,6 +89,7 @@ func GetBaseTemplate(name string) (*template.Template, error) {
 		"getStatus":      getStatus,
 		"getStatusRange": getStatusRange,
 		"resourceName":   resourceName,
+		"getUUID":        getUUID,
 	})
 
 	templateFileNames := []string{

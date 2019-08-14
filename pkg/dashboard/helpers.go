@@ -15,6 +15,7 @@
 package dashboard
 
 import (
+	"github.com/satori/go.uuid"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -89,7 +90,7 @@ func getStatusRange(existing, lower, upper resource.Quantity, style string) stri
 	if comparisonUpper <= 0 && comparisonLower >= 0 {
 		switch style {
 		case "text":
-			return "equals"
+			return "equal"
 		case "icon":
 			return "fa-equals success"
 		default:
@@ -120,4 +121,8 @@ func getStatusRange(existing, lower, upper resource.Quantity, style string) stri
 
 func resourceName(name string) v1.ResourceName {
 	return v1.ResourceName(name)
+}
+
+func getUUID() string {
+	return uuid.NewV4().String()
 }
