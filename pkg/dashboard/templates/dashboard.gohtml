@@ -24,11 +24,12 @@
                 {{ $memTarget := (index $container.Target (resourceName "memory")) }}
                 {{ $icon := "icon"}}
                 {{ $text := "text" }}
+                {{ $uuid := getUUID }}
 
                 <div class="result-messages expandable-content">
                   <h4>Container: {{ $container.ContainerName }}</h4>
-                  <input type="radio" name="{{$container.ContainerName}}" id="tabone-{{$container.ContainerName}}" checked>
-                  <label for="tabone-{{$container.ContainerName}}">Guaranteed QoS</label>
+                  <input type="radio" name="{{$uuid}}" id="tabone-{{$uuid}}" checked>
+                  <label for="tabone-{{$uuid}}">Guaranteed QoS</label>
                   <div class="tab-content"> {{/*Begin Guaranteed QoS Tab */}}
                     <table class="container-results">
                       <thead>
@@ -93,8 +94,8 @@
 
                   </div> {{/* End Guaranteed Tab */}}
 
-                  <input type="radio" name="{{$container.ContainerName}}" id="tabtwo-{{$container.ContainerName}}">
-                  <label for="tabtwo-{{$container.ContainerName}}">Burstable QoS</label>
+                  <input type="radio" name="{{$uuid}}" id="tabtwo-{{$uuid}}">
+                  <label for="tabtwo-{{$uuid}}">Burstable QoS</label>
                   <div class="tab-content"> {{/* Start Burstable Tab */}}
                     <table class="container-results">
                       <thead>
