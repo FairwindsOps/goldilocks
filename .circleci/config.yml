@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@dev:sudermanjr/add-orb-e2e-test-setup
+  rok8s-scripts: fairwinds/rok8s-scripts@9.2.0
 
 references:
   install_goreleaser: &install_goreleaser
