@@ -50,10 +50,8 @@ type Summary struct {
 }
 
 // Run creates a summary of the vpa info for all namespaces.
-func Run(vpaLabels map[string]string, excludeContainers string) (Summary, error) {
+func Run(kubeClientVPA *kube.VPAClientInstance, vpaLabels map[string]string, excludeContainers string) (Summary, error) {
 	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
-
-	kubeClientVPA := kube.GetVPAInstance()
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),

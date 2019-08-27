@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 
+	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/summary"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
@@ -40,8 +41,9 @@ var summaryCmd = &cobra.Command{
 	Short: "Genarate a summary of the vpa recommendations in a namespace.",
 	Long:  `Gather all the vpa data in a namespace and generaate a summary of the recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		kubeClientVPA := kube.GetVPAInstance()
 
-		data, _ := summary.Run(utils.VpaLabels, excludeContainers)
+		data, _ := summary.Run(kubeClientVPA, utils.VpaLabels, excludeContainers)
 		summaryJSON, err := json.Marshal(data)
 		if err != nil {
 			klog.Fatalf("Error marshalling JSON: %v", err)
