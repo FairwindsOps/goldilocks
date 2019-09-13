@@ -14,9 +14,16 @@ By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/
 * metrics-server (a requirement of vpa)
 * golang 1.11+
 
-### Recommended Requirements
+### Installing Vertical Pod Autoscaler
 
-[VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported. In order to take long-term data into account, we recommend that you install prometheus and configure your vertical pod autoscaler install to use it.
+There are multiple ways to install VPA for use with Goldilocks:
+
+* Install using the `hack/vpa-up.sh` script from the [vertical-pod-autoscaler repository](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler)
+* Set the value `installVPA=true` when doing the Helm chart installation of Goldilocks. This will run the script from VPA in your cluster.
+
+### Prometheus (optional)
+
+[VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported.
 
 ### GKE Notes
 
@@ -28,31 +35,47 @@ gcloud beta container clusters update [CLUSTER-NAME] --enable-vertical-pod-autos
 
 NOTE: This does not support using prometheus as a data backend.
 
-## Installation (Quickstart)
+## Installation
 
 First, make sure you satisfy the requirements above.
+
+### Method 1 - Helm (preferred)
+
+```
+helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
+helm install --name goldilocks --namespace goldilocks fairwinds-incubator/goldilocks
+```
+
+### Method 2 - Manifests
 
 The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster.
 
 ```
 kubectl create namespace goldilocks
-kubectl apply -f hack/manifests/controller
-kubectl apply -f hack/manifests/dashboard
+kubectl -n goldilocks apply -f hack/manifests/controller
+kubectl -n goldilocks apply -f hack/manifests/dashboard
 ```
 
-Now pick an application namespace and label it like so:
+### Enable Namespace
+
+Pick an application namespace and label it like so in order to see some data:
 
 ```
 kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
 ```
 
-You should see start to see VPA objects in that namespace. Then you can checkout the dashboard:
+After that you should start to see VPA objects in that namespace.
+
+### Viewing the Dashboard
+
+The default installation creates a ClusterIP service for the dashboard. You can access via port forward:
 
 ```
 kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8080:80
 ```
 
 Then open your browser to [http://localhost:8080](http://localhost:8080)
+
 
 ## Usage
 
