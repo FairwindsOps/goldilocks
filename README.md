@@ -76,8 +76,9 @@ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8080:80
 
 Then open your browser to [http://localhost:8080](http://localhost:8080)
 
+## CLI Usage (not recommended)
 
-## Usage
+Normally we recommend installing as a controller in-cluster. However, it can be run as a CLI if desired.
 
 ```
 A tool for analysis of kubernetes deployment resource usage.
@@ -113,12 +114,19 @@ Flags:
 
 Use "goldilocks [command] --help" for more information about a command.
 ```
+### controller
+
+This starts the goldilocks controller. Used by the Docker container, it will create vpas for properly labelled namespaces.
 
 ### create-vpas
 
 `goldilocks create-vpas -n some-namespace`
 
 This will search for any deployments in the given namespace and generate a VPA for each of them.  Each vpa will be labelled for use by this tool.
+
+### delete-vpas
+
+This will delete all vpa objects in a namespace that are labelled for use by this tool.
 
 ### dashboard
 
@@ -130,7 +138,7 @@ Runs the goldilocks dashboard web server that will display recommendations. List
 
 `goldilocks summary`
 
-Queries all the VPA objects that are labelled for this tool and summarizes their suggestions into a JSON object.
+Queries all the VPA objects that are labelled for this tool across all namespaces and summarizes their suggestions into a JSON object.
 
 ### Container Exclusions
 
