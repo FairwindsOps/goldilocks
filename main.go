@@ -19,12 +19,12 @@ import (
 )
 
 var (
-	// VERSION is set during build
-	VERSION = "development"
-	// COMMIT is set during build
-	COMMIT = "n/a"
+	// version is set during build
+	version = "development"
+	// commit is set during build
+	commit = "n/a"
 )
 
 func main() {
-	cmd.Execute(VERSION, COMMIT)
+	cmd.Execute(version, commit)
 }
