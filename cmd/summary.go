@@ -17,6 +17,9 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
@@ -26,10 +29,12 @@ import (
 )
 
 var excludeContainers string
+var outputFile string
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
+	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "o", "", "File to write output from audit.")
 }
 
 var summaryCmd = &cobra.Command{
@@ -42,6 +47,19 @@ var summaryCmd = &cobra.Command{
 		summaryJSON, err := json.Marshal(data)
 		if err != nil {
 			klog.Fatalf("Error marshalling JSON: %v", err)
+		}
+
+		if outputFile != "" {
+			fo, err := os.Create(outputFile)
+			if err != nil {
+				klog.Fatalf("Failed to Create file path: %v", err)
+			}
+			defer fo.Close()
+
+			_, err = io.Copy(fo, strings.NewReader(string(summaryJSON)))
+			if err != nil {
+				klog.Fatalf("Failed to write to the file: %v", err)
+			}
 		}
 		fmt.Println(string(summaryJSON))
 	},
