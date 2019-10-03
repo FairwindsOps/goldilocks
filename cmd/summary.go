@@ -53,7 +53,7 @@ var summaryCmd = &cobra.Command{
 				klog.Fatalf("Failed to write summary to file: %v", err)
 			}
 
-			fmt.Println("Summary has been writen to", outputFile)
+			fmt.Println("Summary has been written to", outputFile)
 
 		} else {
 			fmt.Println(string(summaryJSON))
