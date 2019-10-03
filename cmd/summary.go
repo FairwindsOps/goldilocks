@@ -17,9 +17,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	"strings"
+	"io/ioutil"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
@@ -34,7 +32,7 @@ var outputFile string
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
-	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "o", "", "File to write output from audit.")
+	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "f", "", "File to write output from audit.")
 }
 
 var summaryCmd = &cobra.Command{
@@ -50,17 +48,15 @@ var summaryCmd = &cobra.Command{
 		}
 
 		if outputFile != "" {
-			fo, err := os.Create(outputFile)
+			err := ioutil.WriteFile(outputFile, summaryJSON, 0644)
 			if err != nil {
-				klog.Fatalf("Failed to Create file path: %v", err)
+				klog.Fatalf("Failed to write summary to file: %v", err)
 			}
-			defer fo.Close()
 
-			_, err = io.Copy(fo, strings.NewReader(string(summaryJSON)))
-			if err != nil {
-				klog.Fatalf("Failed to write to the file: %v", err)
-			}
+			fmt.Println("Summary has been writen to", outputFile)
+
+		} else {
+			fmt.Println(string(summaryJSON))
 		}
-		fmt.Println(string(summaryJSON))
 	},
 }
