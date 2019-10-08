@@ -37,7 +37,7 @@ require (
 	k8s.io/autoscaler v0.0.0-20190809133526-8303a2355e55
 	k8s.io/client-go v0.0.0
 	k8s.io/klog v0.3.3
-	sigs.k8s.io/controller-runtime v0.1.12
+	sigs.k8s.io/controller-runtime v0.2.2
 )
 
 replace (
