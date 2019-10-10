@@ -1,8 +1,13 @@
-# goldilocks [![CircleCI](https://circleci.com/gh/FairwindsOps/goldilocks.svg?style=svg&circle-token=affdde2880ec2669f26be783f3f9e412b0d2fb62)](https://circleci.com/gh/FairwindsOps/goldilocks) [![codecov](https://codecov.io/gh/FairwindsOps/goldilocks/branch/master/graph/badge.svg?token=jkXRJcqr49)](https://codecov.io/gh/FairwindsOps/goldilocks) [![Apache 2.0 license](https://img.shields.io/badge/licence-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+<div align="center">
+<img src="/pkg/dashboard/assets/images/goldilocks.svg" height="150" alt="Goldilocks" style="padding-bottom: 20px" />
+<br>
 
-Get your resource requests "Just Right"
+<h3>Get your resource requests "Just Right"</h3>
 
-## How?
+[![CircleCI](https://circleci.com/gh/FairwindsOps/goldilocks.svg?style=svg&circle-token=affdde2880ec2669f26be783f3f9e412b0d2fb62)](https://circleci.com/gh/FairwindsOps/goldilocks) [![codecov](https://codecov.io/gh/FairwindsOps/goldilocks/branch/master/graph/badge.svg?token=jkXRJcqr49)](https://codecov.io/gh/FairwindsOps/goldilocks) [![Apache 2.0 license](https://img.shields.io/badge/licence-Apache2-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+</div>
+
+## How can this help with my resource settings?
 
 By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) in recommendation mode, we can see a suggestion for resource requests on each of our apps. This tool creates a VPA for each deployment in a namespace and then queries them for information.
 

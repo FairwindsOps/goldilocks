@@ -142,7 +142,7 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 		}
 	})
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		favicon, err := GetAssetBox().Find("favicon-32x32.png")
+		favicon, err := GetAssetBox().Find("images/favicon-32x32.png")
 		if err != nil {
 			klog.Errorf("Error getting favicon: %v", err)
 			http.Error(w, "Error getting favicon", http.StatusInternalServerError)
