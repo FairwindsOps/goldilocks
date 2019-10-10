@@ -1,5 +1,23 @@
 {{define "dashboard"}}
 
+  {{/* If there's not any data, display the help text. */}}
+  {{ if not .VPAData.Namespaces }}
+  <div class="card namespace">
+    <h3>No VPA Data Found</h3>
+    <div class="expandable-table">
+    Most likely you have not labelled any of the namespaces in your cluster for VPA, or you don't have
+    any deployments in a labelled namespace.
+    You can try:
+      <div class="code-container">
+        <code class="language-bash">
+          kubectl label ns [namespace-name] goldilocks.fairwinds.com/enabled=true
+        </code>
+      </div>
+    </div>
+
+  </div>
+  {{ end }}
+
   {{ range $namespace := .VPAData.Namespaces }}
     <div class="card namespace">
       <h3>Namespace: <strong>{{ $namespace }}</strong></h3>
