@@ -5,14 +5,27 @@
   <div class="card namespace">
     <h3>No VPA Data Found</h3>
     <div class="expandable-table">
-    Most likely you have not labelled any of the namespaces in your cluster for VPA, or you don't have
+
+    A few scenarios are possible:
+
+    <ol>
+      <li>
+        You just need to wait a few seconds and refresh. Sometimes data takes a second to populate.
+      </li>
+      <li>
+        More likely - you have not labelled any of the namespaces in your cluster for VPA, or you don't have
     any deployments in a labelled namespace.
+
     You can try:
       <div class="code-container">
         <code class="language-bash">
           kubectl label ns [namespace-name] goldilocks.fairwinds.com/enabled=true
         </code>
       </div>
+      </li>
+      <li>
+        You have no available metrics in the metrics api. You should look at the docs <a href="https://github.com/FairwindsOps/goldilocks/blob/master/README.md#requirements"> in the repo</a>.
+      </li>
     </div>
 
   </div>
