@@ -98,7 +98,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d // indirect
 	k8s.io/utils v0.0.0-20190923111123-69764acb6e8e // indirect
 	modernc.org/strutil v1.1.0 // indirect
-	sigs.k8s.io/controller-runtime v0.2.2
+	sigs.k8s.io/controller-runtime v0.3.0
 	sigs.k8s.io/structured-merge-diff v0.0.0-20191009170950-ae447d53f5c3 // indirect
 	sigs.k8s.io/testing_frameworks v0.1.2 // indirect
 )
