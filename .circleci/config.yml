@@ -27,7 +27,7 @@ jobs:
       - run: bash <(curl -s https://codecov.io/bash)
 
   release:
-    working_directory: /go/src/github.com/fairwindsops/vpa-analysis
+    working_directory: /go/src/github.com/fairwindsops/goldilocks
     docker:
       - image: circleci/golang:1.12
         environment:
