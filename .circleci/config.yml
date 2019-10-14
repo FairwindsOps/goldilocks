@@ -47,7 +47,7 @@ workflows:
             branches:
               only: /.*/
             tags:
-              only: /.*/
+              only: /v.*/
       - rok8s-scripts/docker_build_and_push:
           config_file: deploy/build.config
           context: org-global
@@ -61,7 +61,7 @@ workflows:
             branches:
               only: /.*/
             tags:
-              only: /.*/
+              only: /v.*/
       - rok8s-scripts/kubernetes_e2e_tests:
           pre_script: e2e/pre.sh
           script: e2e/test.sh
@@ -72,12 +72,13 @@ workflows:
             branches:
               only: /.*/
             tags:
-              ignore: /.*/
-  release:
-    jobs:
+              ignore: /v.*/
       - release:
+          requires:
+            - test
+            - rok8s-scripts/docker_build_and_push
           filters:
             branches:
               ignore: /.*/
             tags:
-              ignore: /v.*/
+              only: /v.*/
