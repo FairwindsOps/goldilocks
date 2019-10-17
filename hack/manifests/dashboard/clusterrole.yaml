@@ -13,3 +13,10 @@ rules:
     verbs:
       - 'get'
       - 'list'
+  - apiGroups:
+      - 'apps'
+    resources:
+      - 'deployments'
+    verbs:
+      - 'get'
+      - 'list'
