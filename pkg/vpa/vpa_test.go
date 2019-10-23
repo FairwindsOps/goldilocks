@@ -29,6 +29,9 @@ func setupVPAForTests() {
 	testVPAReconciler := GetInstance()
 	testVPAReconciler.VPAClient = kube.GetMockVPAClient()
 	testVPAReconciler.KubeClient = kube.GetMockClient()
+	testVPAReconciler.OnByDefault = false
+	testVPAReconciler.IncludeNamespaces = []string{}
+	testVPAReconciler.ExcludeNamespaces = []string{}
 }
 
 func Test_createVPADryRun(t *testing.T) {
@@ -96,12 +99,12 @@ func Test_checkNamespaceLabel(t *testing.T) {
 	}{
 		{
 			name:      "Labeled correctly",
-			namespace: nsLabeledCorrectly,
+			namespace: nsLabeledTrue,
 			want:      true,
 		},
 		{
 			name:      "Labeled Incorrectly",
-			namespace: nsLabeledIncorrectly,
+			namespace: nsLabeledFalse,
 			want:      false,
 		},
 		{
@@ -116,6 +119,54 @@ func Test_checkNamespaceLabel(t *testing.T) {
 			assert.Equal(t, got, tt.want)
 		})
 	}
+}
+
+func Test_checkNamespaceLists(t *testing.T) {
+	setupVPAForTests()
+	vpaReconciler := GetInstance()
+
+	vpaReconciler.OnByDefault = false
+	vpaReconciler.IncludeNamespaces = []string{}
+	vpaReconciler.ExcludeNamespaces = []string{}
+	got := vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	assert.Equal(t, false, got)
+
+	vpaReconciler.OnByDefault = true
+	vpaReconciler.IncludeNamespaces = []string{}
+	vpaReconciler.ExcludeNamespaces = []string{}
+	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	assert.Equal(t, true, got)
+
+	vpaReconciler.OnByDefault = false
+	vpaReconciler.IncludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
+	vpaReconciler.ExcludeNamespaces = []string{}
+	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	assert.Equal(t, true, got)
+
+	vpaReconciler.OnByDefault = true
+	vpaReconciler.IncludeNamespaces = []string{}
+	vpaReconciler.ExcludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
+	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	assert.Equal(t, false, got)
+
+	// Labels take precedence over CLI options
+	vpaReconciler.OnByDefault = true
+	vpaReconciler.IncludeNamespaces = []string{}
+	vpaReconciler.ExcludeNamespaces = []string{}
+	got = vpaReconciler.checkNamespaceLabel(nsLabeledFalse)
+	assert.Equal(t, false, got)
+
+	vpaReconciler.OnByDefault = false
+	vpaReconciler.IncludeNamespaces = []string{nsLabeledFalse.ObjectMeta.Name}
+	vpaReconciler.ExcludeNamespaces = []string{}
+	got = vpaReconciler.checkNamespaceLabel(nsLabeledFalse)
+	assert.Equal(t, false, got)
+
+	vpaReconciler.OnByDefault = false
+	vpaReconciler.IncludeNamespaces = []string{}
+	vpaReconciler.ExcludeNamespaces = []string{nsLabeledTrue.ObjectMeta.Name}
+	got = vpaReconciler.checkNamespaceLabel(nsLabeledTrue)
+	assert.Equal(t, true, got)
 }
 
 func Test_checkDeploymentLabels(t *testing.T) {
@@ -172,15 +223,15 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledIncorrectly)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledFalse)
 	assert.NoError(t, err)
-	nsName := nsLabeledIncorrectly.ObjectMeta.Name
+	nsName := nsLabeledFalse.ObjectMeta.Name
 
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
 
-	// Incorrect labels should generate 0 vpa objects
-	err = GetInstance().ReconcileNamespace(nsLabeledIncorrectly, false)
+	// False labels should generate 0 vpa objects
+	err = GetInstance().ReconcileNamespace(nsLabeledFalse, false)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -194,15 +245,15 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
 	assert.NoError(t, err)
-	nsName := nsLabeledCorrectly.ObjectMeta.Name
+	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
 
 	// This should create a single VPA
-	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -216,18 +267,18 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
 	assert.NoError(t, err)
-	nsName := nsLabeledCorrectly.ObjectMeta.Name
+	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create deploy, reconcile, delete deploy, reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(testDeployment.ObjectMeta.Name, &metav1.DeleteOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 
 	// No VPA objects left after deleted deployment
@@ -244,14 +295,14 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
 	assert.NoError(t, err)
-	nsName := nsLabeledCorrectly.ObjectMeta.Name
+	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create a deployment in the namespace and reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 
 	// Update the namespace labels to be false and reconcile

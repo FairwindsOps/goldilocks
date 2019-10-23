@@ -15,7 +15,6 @@
 package vpa
 
 import (
-	"fmt"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,10 +30,11 @@ import (
 )
 
 type VPAReconciler struct {
-	OnByDefault       bool
-	ExcludeNamespaces []string
 	KubeClient        *kube.ClientInstance
 	VPAClient         *kube.VPAClientInstance
+	OnByDefault       bool
+	IncludeNamespaces []string
+	ExcludeNamespaces []string
 }
 
 var singleton *VPAReconciler
@@ -80,8 +80,20 @@ func (vpa VPAReconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
 		} else if v == "false" {
 			return false
 		}
-		klog.V(2).Infof("Unknown label value on namespace %s: %s", k, v)
+		klog.V(2).Infof("Unknown label value on namespace %s: %s=%s", namespace.ObjectMeta.Name, k, v)
 	}
+
+	for _, included := range vpa.IncludeNamespaces {
+		if namespace.ObjectMeta.Name == included {
+			return true
+		}
+	}
+	for _, excluded := range vpa.ExcludeNamespaces {
+		if namespace.ObjectMeta.Name == excluded {
+			return false
+		}
+	}
+
 	return vpa.OnByDefault
 }
 
@@ -130,7 +142,6 @@ func (vpa VPAReconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun 
 		for _, vpaName := range vpaNeeded {
 			err := createVPA(vpa.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
-				fmt.Println("error while creating vpa", err)
 				return err
 			}
 		}

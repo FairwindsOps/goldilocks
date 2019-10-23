@@ -24,7 +24,7 @@ import (
 )
 
 // Some namespaces that can be used for tests
-var nsLabeledCorrectly = &corev1.Namespace{
+var nsLabeledTrue = &corev1.Namespace{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "labeled-true",
 		Labels: map[string]string{
@@ -33,7 +33,7 @@ var nsLabeledCorrectly = &corev1.Namespace{
 	},
 }
 
-var nsLabeledIncorrectly = &corev1.Namespace{
+var nsLabeledFalse = &corev1.Namespace{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "labeled-false",
 		Labels: map[string]string{
