@@ -33,8 +33,8 @@ var excludeNamespaces []string
 func init() {
 	rootCmd.AddCommand(controllerCmd)
 	summaryCmd.PersistentFlags().BoolVarP(&onByDefault, "on-by-default", "", false, "Add goldilocks to every namespace that isn't explicitly excluded.")
-	summaryCmd.PersistentFlags().StringArrayVarP(&includeNamespaces, "include-namespaces", "i", []string{}, "Comma delimited list of namespaces to include from recommendations.")
-	summaryCmd.PersistentFlags().StringArrayVarP(&excludeNamespaces, "exclude-namespaces", "e", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
+	summaryCmd.PersistentFlags().StringArrayVarP(&includeNamespaces, "include-namespaces", "", []string{}, "Comma delimited list of namespaces to include from recommendations.")
+	summaryCmd.PersistentFlags().StringArrayVarP(&excludeNamespaces, "exclude-namespaces", "", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
 }
 
 var controllerCmd = &cobra.Command{
