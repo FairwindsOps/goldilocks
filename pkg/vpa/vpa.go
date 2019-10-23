@@ -29,7 +29,8 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
-type VPAReconciler struct {
+// Reconciler checks if VPA objects should be created or deleted
+type Reconciler struct {
 	KubeClient        *kube.ClientInstance
 	VPAClient         *kube.VPAClientInstance
 	OnByDefault       bool
@@ -37,11 +38,12 @@ type VPAReconciler struct {
 	ExcludeNamespaces []string
 }
 
-var singleton *VPAReconciler
+var singleton *Reconciler
 
-func GetInstance() *VPAReconciler {
+// GetInstance returns a Reconciler singleton
+func GetInstance() *Reconciler {
 	if singleton == nil {
-		singleton = &VPAReconciler{
+		singleton = &Reconciler{
 			KubeClient: kube.GetInstance(),
 			VPAClient:  kube.GetVPAInstance(),
 		}
@@ -51,7 +53,7 @@ func GetInstance() *VPAReconciler {
 
 // NOTE: This is not used right now.  Deployments have been scrapped.
 // Keeping this here for future development.
-func (vpa VPAReconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
+func (vpa Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
@@ -68,7 +70,7 @@ func (vpa VPAReconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (b
 	return false, nil
 }
 
-func (vpa VPAReconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
+func (vpa Reconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
 		klog.V(7).Infof("Namespace label - %s: %s", k, v)
 		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
@@ -99,7 +101,7 @@ func (vpa VPAReconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
 
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
 // Check if deployment has label for false before applying vpa.
-func (vpa VPAReconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
+func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	nsName := namespace.ObjectMeta.Name
 	vpaNames := listVPA(vpa.VPAClient, nsName)
 
