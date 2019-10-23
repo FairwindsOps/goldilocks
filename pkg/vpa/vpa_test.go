@@ -25,8 +25,15 @@ import (
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 )
 
+func setupVPAForTests() {
+	testVPAReconciler := GetInstance()
+	testVPAReconciler.VPAClient = kube.GetMockVPAClient()
+	testVPAReconciler.KubeClient = kube.GetMockClient()
+}
+
 func Test_createVPADryRun(t *testing.T) {
-	VPAClient := kube.GetMockVPAClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
 	err := createVPA(VPAClient, "testing", "test-vpa", true)
@@ -43,8 +50,8 @@ func Test_createVPADryRun(t *testing.T) {
 }
 
 func Test_deleteVPA(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
 
 	_, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPA)
 	assert.NoError(t, err)
@@ -63,8 +70,8 @@ func Test_deleteVPA(t *testing.T) {
 }
 
 func Test_listVPA(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
 
 	_ = createVPA(VPAClient, "ns", "test1", false)
 	_ = createVPA(VPAClient, "ns", "test2", false)
@@ -105,7 +112,7 @@ func Test_checkNamespaceLabel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := checkNamespaceLabel(tt.namespace)
+			got := GetInstance().checkNamespaceLabel(tt.namespace)
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -150,7 +157,7 @@ func Test_checkDeploymentLabels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := checkDeploymentLabels(tt.deployment)
+			got, err := GetInstance().checkDeploymentLabels(tt.deployment)
 			if tt.wantErr {
 				assert.EqualError(t, err, tt.err)
 			} else {
@@ -161,9 +168,9 @@ func Test_checkDeploymentLabels(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceNoLabels(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
-	KubeClient := kube.GetMockClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
 
 	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledIncorrectly)
 	assert.NoError(t, err)
@@ -173,7 +180,7 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Incorrect labels should generate 0 vpa objects
-	err = ReconcileNamespace(nsLabeledIncorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledIncorrectly, false)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -183,9 +190,9 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceWithLabels(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
-	KubeClient := kube.GetMockClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
 
 	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
 	assert.NoError(t, err)
@@ -195,7 +202,7 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	assert.NoError(t, err)
 
 	// This should create a single VPA
-	err = ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -205,9 +212,9 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
-	KubeClient := kube.GetMockClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
 
 	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
 	assert.NoError(t, err)
@@ -216,11 +223,11 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	// Create deploy, reconcile, delete deploy, reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
 	assert.NoError(t, err)
 	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(testDeployment.ObjectMeta.Name, &metav1.DeleteOptions{})
 	assert.NoError(t, err)
-	err = ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
 	assert.NoError(t, err)
 
 	// No VPA objects left after deleted deployment
@@ -232,9 +239,9 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
-
-	VPAClient := kube.GetMockVPAClient()
-	KubeClient := kube.GetMockClient()
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
 	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledCorrectly)
@@ -244,7 +251,7 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	// Create a deployment in the namespace and reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = ReconcileNamespace(nsLabeledCorrectly, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledCorrectly, false)
 	assert.NoError(t, err)
 
 	// Update the namespace labels to be false and reconcile
@@ -258,7 +265,7 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	}
 	_, err = KubeClient.Client.CoreV1().Namespaces().Update(updatedNS)
 	assert.NoError(t, err)
-	err = ReconcileNamespace(updatedNS, false)
+	err = GetInstance().ReconcileNamespace(updatedNS, false)
 	assert.NoError(t, err)
 
 	// There should be zero vpa objects

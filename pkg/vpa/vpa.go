@@ -15,6 +15,7 @@
 package vpa
 
 import (
+	"fmt"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -29,9 +30,28 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
+type VPAReconciler struct {
+	OnByDefault       bool
+	ExcludeNamespaces []string
+	KubeClient        *kube.ClientInstance
+	VPAClient         *kube.VPAClientInstance
+}
+
+var singleton *VPAReconciler
+
+func GetInstance() *VPAReconciler {
+	if singleton == nil {
+		singleton = &VPAReconciler{
+			KubeClient: kube.GetInstance(),
+			VPAClient:  kube.GetVPAInstance(),
+		}
+	}
+	return singleton
+}
+
 // NOTE: This is not used right now.  Deployments have been scrapped.
 // Keeping this here for future development.
-func checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
+func (vpa VPAReconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
@@ -48,37 +68,38 @@ func checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
 	return false, nil
 }
 
-func checkNamespaceLabel(namespace *corev1.Namespace) bool {
-	if len(namespace.ObjectMeta.Labels) > 0 {
-		for k, v := range namespace.ObjectMeta.Labels {
-			klog.V(7).Infof("Namespace label - %s: %s", k, v)
-			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" && strings.ToLower(v) == "true" {
-				klog.Info("Namespace is labelled for goldilocks.")
-				return true
-			}
+func (vpa VPAReconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
+	for k, v := range namespace.ObjectMeta.Labels {
+		klog.V(7).Infof("Namespace label - %s: %s", k, v)
+		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
+			continue
 		}
+		v = strings.ToLower(v)
+		if v == "true" {
+			return true
+		} else if v == "false" {
+			return false
+		}
+		klog.V(2).Infof("Unknown label value on namespace %s: %s", k, v)
 	}
-	return false
+	return vpa.OnByDefault
 }
 
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
 // Check if deployment has label for false before applying vpa.
-func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
-	kubeClient := kube.GetInstance()
-	kubeClientVPA := kube.GetVPAInstance()
-
+func (vpa VPAReconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	nsName := namespace.ObjectMeta.Name
-	vpaNames := listVPA(kubeClientVPA, nsName)
+	vpaNames := listVPA(vpa.VPAClient, nsName)
 
-	if create := checkNamespaceLabel(namespace); !create {
+	if create := vpa.checkNamespaceLabel(namespace); !create {
 		// Get the list of VPAs that already exist
 		if len(vpaNames) < 1 {
 			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
 			return nil
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
-		for _, vpa := range vpaNames {
-			err := deleteVPA(kubeClientVPA, nsName, vpa, dryrun)
+		for _, vpaName := range vpaNames {
+			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}
@@ -87,7 +108,7 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	}
 
 	//Get the list of deployments in the namespace
-	deployments, err := kubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
+	deployments, err := vpa.KubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
 	if err != nil {
 		klog.Error(err.Error())
 		return err
@@ -107,8 +128,9 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := createVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			err := createVPA(vpa.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
+				fmt.Println("error while creating vpa", err)
 				return err
 			}
 		}
@@ -122,7 +144,7 @@ func ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 		klog.Info("No VPAs to delete.")
 	} else if len(vpaDelete) > 0 {
 		for _, vpaName := range vpaDelete {
-			err := deleteVPA(kubeClientVPA, nsName, vpaName, dryrun)
+			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}

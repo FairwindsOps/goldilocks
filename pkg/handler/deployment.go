@@ -36,13 +36,13 @@ func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.V(3).Infof("Deployment %s deleted. Deleting the VPA for it if it had one.", deployment.ObjectMeta.Name)
-		err := vpa.ReconcileNamespace(namespace, false)
+		err := vpa.GetInstance().ReconcileNamespace(namespace, false)
 		if err != nil {
 			klog.Errorf("Error reconciling: %v", err)
 		}
 	case "create", "update":
 		klog.V(3).Infof("Deployment %s updated. Reconcile", deployment.ObjectMeta.Name)
-		err := vpa.ReconcileNamespace(namespace, false)
+		err := vpa.GetInstance().ReconcileNamespace(namespace, false)
 		if err != nil {
 			klog.Errorf("Error reconciling: %v", err)
 		}
