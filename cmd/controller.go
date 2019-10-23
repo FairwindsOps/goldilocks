@@ -23,10 +23,18 @@ import (
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/controller"
+	"github.com/fairwindsops/goldilocks/pkg/vpa"
 )
+
+var onByDefault bool
+var includeNamespaces []string
+var excludeNamespaces []string
 
 func init() {
 	rootCmd.AddCommand(controllerCmd)
+	summaryCmd.PersistentFlags().BoolVarP(&onByDefault, "on-by-default", "", false, "Add goldilocks to every namespace that isn't explicitly excluded.")
+	summaryCmd.PersistentFlags().StringArrayVarP(&includeNamespaces, "include-namespaces", "i", []string{}, "Comma delimited list of namespaces to include from recommendations.")
+	summaryCmd.PersistentFlags().StringArrayVarP(&excludeNamespaces, "exclude-namespaces", "e", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
 }
 
 var controllerCmd = &cobra.Command{
@@ -34,6 +42,10 @@ var controllerCmd = &cobra.Command{
 	Short: "Run goldilocks as a controller inside a kubernetes cluster.",
 	Long:  `Run goldilocks as a controller.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		vpaReconciler := vpa.GetInstance()
+		vpaReconciler.OnByDefault = onByDefault
+		vpaReconciler.IncludeNamespaces = includeNamespaces
+		vpaReconciler.ExcludeNamespaces = excludeNamespaces
 
 		// create a channel for sending a stop to kube watcher threads
 		stop := make(chan bool, 1)
