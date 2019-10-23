@@ -110,6 +110,9 @@ sed -i '/            - controller/ a \
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
 
+sleep 5
+
 echo "** No-label VPAs: "
-kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo
+kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label
+kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo-no-label
 
