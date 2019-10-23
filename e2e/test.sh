@@ -102,8 +102,8 @@ echo "** Run on-by-default test **"
 echo "****************************"
 printf "\n\n"
 
-sed '/            - controller/ a \
-                  - --on-by-default' /hack/manifests/controller
+sed -i '/            - controller/ a \
+            - --on-by-default' /hack/manifests/controller/deployment.yaml
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
 
