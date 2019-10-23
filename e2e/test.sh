@@ -1,6 +1,7 @@
 #!/bin/bash
 
 vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
+timeout=120s
 
 printf "\n\n"
 echo "**************************"
@@ -55,11 +56,12 @@ echo "********************************************************************"
 printf "\n\n"
 
 kubectl create ns goldilocks
+
 kubectl -n goldilocks apply -f /hack/manifests/dashboard/
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 
-kubectl -n goldilocks wait deployment --timeout=60s --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
-kubectl -n goldilocks wait deployment --timeout=60s --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
+kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
 
 kubectl get po --all-namespaces
 
@@ -71,8 +73,10 @@ printf "\n\n"
 
 helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
 helm install fairwinds-incubator/basic-demo --namespace demo -n basic-demo --version=0.2.1
+helm install fairwinds-incubator/basic-demo --namespace demo-no-label -n basic-demo-no-label --version=0.2.1
 
-kubectl -n demo wait deployment --timeout=60s --for condition=available -l app.kubernetes.io/name=basic-demo
+kubectl -n demo wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
+kubectl -n demo wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
 
 printf "\n\n"
 echo "**********************"
@@ -91,3 +95,18 @@ sleep 5
 echo
 echo "** New VPAs: "
 kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo basic-demo
+
+printf "\n\n"
+echo "****************************"
+echo "** Run on-by-default test **"
+echo "****************************"
+printf "\n\n"
+
+sed '/            - controller/ a \
+                  - --on-by-default' /hack/manifests/controller
+kubectl -n goldilocks apply -f /hack/manifests/controller/
+kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+
+echo "** No-label VPAs: "
+kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo
+
