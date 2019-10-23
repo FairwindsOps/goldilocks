@@ -51,6 +51,15 @@ func GetInstance() *Reconciler {
 	return singleton
 }
 
+// SetInstance sets the singleton using preconstructed k8s and vpa clients. Used for testing.
+func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconciler {
+	singleton = &Reconciler{
+		KubeClient: k8s,
+		VPAClient:  vpa,
+	}
+	return singleton
+}
+
 // NOTE: This is not used right now.  Deployments have been scrapped.
 // Keeping this here for future development.
 func (vpa Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {

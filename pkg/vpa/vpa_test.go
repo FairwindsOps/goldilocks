@@ -26,9 +26,9 @@ import (
 )
 
 func setupVPAForTests() {
-	testVPAReconciler := GetInstance()
-	testVPAReconciler.VPAClient = kube.GetMockVPAClient()
-	testVPAReconciler.KubeClient = kube.GetMockClient()
+	kubeClient := kube.GetMockClient()
+	vpaClient := kube.GetMockVPAClient()
+	testVPAReconciler := SetInstance(kubeClient, vpaClient)
 	testVPAReconciler.OnByDefault = false
 	testVPAReconciler.IncludeNamespaces = []string{}
 	testVPAReconciler.ExcludeNamespaces = []string{}
@@ -49,7 +49,6 @@ func Test_createVPADryRun(t *testing.T) {
 	newVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, testVPA, newVPA)
-
 }
 
 func Test_deleteVPA(t *testing.T) {
