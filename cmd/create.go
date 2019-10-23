@@ -45,7 +45,7 @@ var createCmd = &cobra.Command{
 			fmt.Println("Error getting namespace. Exiting.")
 			os.Exit(1)
 		}
-		errReconcile := vpa.ReconcileNamespace(namespace, dryrun)
+		errReconcile := vpa.GetInstance().ReconcileNamespace(namespace, dryrun)
 		if errReconcile != nil {
 			fmt.Println("Errors encountered during reconciliation.")
 			os.Exit(1)
