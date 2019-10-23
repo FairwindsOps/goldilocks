@@ -60,10 +60,8 @@ kubectl create ns goldilocks
 kubectl -n goldilocks apply -f /hack/manifests/dashboard/
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 
-sleep 20
+sleep 5
 kubectl get all -n goldilocks
-kubectl -n goldilocks logs -f $(kubectl -n goldilocks get pods | awk '/goldilocks-controller/ {print $1;exit}')
-kubectl -n goldilocks describe deployment/goldilocks-controller
 
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
