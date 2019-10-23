@@ -107,6 +107,7 @@ printf "\n\n"
 
 sed -i '/            - controller/ a \
             - --on-by-default' /hack/manifests/controller/deployment.yaml
+cat /hack/manifests/controller/deployment.yaml
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
 
