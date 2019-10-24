@@ -2,6 +2,7 @@
 
 vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
 timeout=60s
+reinstall_wait=30s
 
 printf "\n\n"
 echo "**************************"
@@ -62,7 +63,7 @@ kubectl create ns goldilocks
 kubectl -n goldilocks apply -f /hack/manifests/dashboard/
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 
-sleep 5
+sleep $reinstall_wait
 kubectl get all -n goldilocks
 
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
@@ -99,7 +100,7 @@ kubectl get verticalpodautoscalers.autoscaling.k8s.io --all-namespaces -owide
 echo
 echo "** Label the Namespace"
 kubectl label ns demo goldilocks.fairwinds.com/enabled=true --overwrite
-sleep 5
+sleep $reinstall_wait
 
 echo
 echo "** New VPAs: "
@@ -114,7 +115,7 @@ printf "\n\n"
 yq w -i /hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--on-by-default'
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
-sleep 5
+sleep $reinstall_wait
 
 echo "** No-label VPAs: "
 kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo-no-label
@@ -128,7 +129,7 @@ printf "\n\n"
 yq w -i /hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--include-namespaces=demo-included'
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
-sleep 5
+sleep $reinstall_wait
 
 echo "** Included VPAs: "
 kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-included basic-demo-included
@@ -143,7 +144,7 @@ yq w -i /hack/manifests/controller/deployment.yaml -- spec.template.spec.contain
 yq w -i /hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[3] '--exclude-namespaces=demo-excluded'
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
-sleep 5
+sleep $reinstall_wait
 
 echo "** Excluded VPAs: "
 kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-excluded
