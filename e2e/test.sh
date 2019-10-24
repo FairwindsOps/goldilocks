@@ -63,7 +63,6 @@ kubectl create ns goldilocks
 kubectl -n goldilocks apply -f /hack/manifests/dashboard/
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 
-sleep $reinstall_wait
 kubectl get all -n goldilocks
 
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
