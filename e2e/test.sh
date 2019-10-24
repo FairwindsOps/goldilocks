@@ -1,7 +1,7 @@
 #!/bin/bash
 
 vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
-timeout=120s
+timeout=60s
 
 printf "\n\n"
 echo "**************************"
@@ -81,7 +81,7 @@ helm install fairwinds-incubator/basic-demo --namespace demo -n basic-demo --ver
 helm install fairwinds-incubator/basic-demo --namespace demo-no-label -n basic-demo-no-label --version=0.2.1
 
 kubectl -n demo wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
-kubectl -n demo wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
+kubectl -n demo-no-label wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
 
 printf "\n\n"
 echo "**********************"
@@ -108,10 +108,11 @@ echo "****************************"
 printf "\n\n"
 
 yq w -i /hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--on-by-default'
+cat  /hack/manifests/controller/deployment.yaml
 kubectl -n goldilocks apply -f /hack/manifests/controller/
 kubectl -n goldilocks wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
 
-sleep 5
+sleep $timeout
 
 echo "** No-label VPAs: "
 kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label
