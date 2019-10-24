@@ -128,6 +128,13 @@ Use "goldilocks [command] --help" for more information about a command.
 
 This starts the goldilocks controller. Used by the Docker container, it will create vpas for properly labelled namespaces.
 
+#### Flags
+You can set the default behavior for VPA creation using some flags. When specified, labels will always take precedence over the command line flags.
+
+* `--on-by-default` - create VPAs in all namespaces
+* `--include-namespaces` - create VPAs in these namespaces, in addition to any that are labeled
+* `--exclude-namespaces` - when `--on-by-default` is set, exclude this comma-separated list of namespaces
+
 ### create-vpas
 
 `goldilocks create-vpas -n some-namespace`
