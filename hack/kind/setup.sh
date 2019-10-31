@@ -74,4 +74,4 @@ if $install_goldilocks; then
   kubectl -n goldilocks apply -f ../manifests/dashboard
 fi
 
-echo "Use 'kind get kubeconfig-path --name=test-infra' to get your kubeconfig"
+echo "Use 'export KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"' to set your kubeconfig to work with the kind cluster"
