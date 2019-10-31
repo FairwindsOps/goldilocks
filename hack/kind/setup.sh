@@ -22,7 +22,7 @@ for cli in $required_clis; do
   command -v "$cli" >/dev/null 2>&1 || { echo >&2 "I require $cli but it's not installed.  Aborting."; exit 1; }
 done
 
-kind_version=$(kind version | cut -d+ -f1)
+kind_version=$(kind version | cut -c2-)
 
 if version_gt "$kind_required_version" "$kind_version"; then
      echo "This script requires kind version greater than or equal to $kind_required_version!"
@@ -37,7 +37,7 @@ kind create cluster \
   --image="kindest/$kind_node_image" || true
 
 # shellcheck disable=SC2034
-KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"
+export KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"
 until kubectl cluster-info; do
     echo "Waiting for cluster to become available...."
     sleep 3
@@ -74,4 +74,4 @@ if $install_goldilocks; then
   kubectl -n goldilocks apply -f ../manifests/dashboard
 fi
 
-echo "Use 'kind get kubeconfig-path --name=test-infra' to get your kubeconfig"
+echo "Use 'export KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"' to set your kubeconfig to work with the kind cluster"
