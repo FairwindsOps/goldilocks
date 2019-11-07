@@ -39,13 +39,16 @@ func Test_createVPADryRun(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
-	err := createVPA(VPAClient, "testing", "test-vpa", true)
+	rec := GetInstance()
+	rec.DryRun = true
+	err := rec.createVPA("testing", "test-vpa")
 	assert.NoError(t, err)
 	_, err = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, err, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
 
 	// Now actually create and compare
-	errCreate := createVPA(VPAClient, "testing", "test-vpa", false)
+	rec.DryRun = false
+	errCreate := rec.createVPA("testing", "test-vpa")
 	newVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, testVPA, newVPA)
@@ -59,13 +62,16 @@ func Test_deleteVPA(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test deletion dryrun
-	errDeleteDryRun := deleteVPA(VPAClient, "testing", "test-vpa", true)
+	rec := GetInstance()
+	rec.DryRun = true
+	errDeleteDryRun := rec.deleteVPA("testing", "test-vpa")
 	assert.NoError(t, errDeleteDryRun)
 	oldVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.EqualValues(t, testVPA, oldVPA)
 
 	// Test actual deletion
-	errDelete := deleteVPA(VPAClient, "testing", "test-vpa", false)
+	rec.DryRun = false
+	errDelete := rec.deleteVPA("testing", "test-vpa")
 	assert.NoError(t, errDelete)
 	_, errNotFound := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, errNotFound, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
@@ -73,20 +79,20 @@ func Test_deleteVPA(t *testing.T) {
 
 func Test_listVPA(t *testing.T) {
 	setupVPAForTests()
-	VPAClient := GetInstance().VPAClient
+	rec := GetInstance()
 
-	_ = createVPA(VPAClient, "ns", "test1", false)
-	_ = createVPA(VPAClient, "ns", "test2", false)
-	_ = createVPA(VPAClient, "ns2", "test3", false)
+	_ = rec.createVPA("ns", "test1")
+	_ = rec.createVPA("ns", "test2")
+	_ = rec.createVPA("ns2", "test3")
 
-	vpaList1 := listVPA(VPAClient, "ns")
+	vpaList1 := rec.listVPA("ns")
 	assert.EqualValues(t, vpaList1, []string{"test1", "test2"})
 
-	vpaList2 := listVPA(VPAClient, "")
+	vpaList2 := rec.listVPA("")
 	assert.EqualValues(t, vpaList2, []string{"test1", "test2", "test3"})
 
 	var expected []string
-	vpaList3 := listVPA(VPAClient, "nonexistent")
+	vpaList3 := rec.listVPA("nonexistent")
 	assert.EqualValues(t, vpaList3, expected)
 }
 
