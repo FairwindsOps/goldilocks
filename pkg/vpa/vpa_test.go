@@ -41,6 +41,7 @@ func Test_createVPADryRun(t *testing.T) {
 	// First test the dryrun
 	rec := GetInstance()
 	rec.DryRun = true
+	rec.VPAUpdateMode = v1beta2.UpdateModeOff
 	err := rec.createVPA("testing", "test-vpa")
 	assert.NoError(t, err)
 	_, err = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})

@@ -37,6 +37,7 @@ type Reconciler struct {
 	DryRun            bool
 	IncludeNamespaces []string
 	ExcludeNamespaces []string
+	VPAUpdateMode     v1beta2.UpdateMode
 }
 
 var singleton *Reconciler
@@ -227,7 +228,6 @@ func (r Reconciler) deleteVPA(namespace string, vpaName string) error {
 }
 
 func (r Reconciler) createVPA(namespace string, vpaName string) error {
-	updateMode := v1beta2.UpdateModeOff
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   vpaName,
@@ -240,7 +240,7 @@ func (r Reconciler) createVPA(namespace string, vpaName string) error {
 				Name:       vpaName,
 			},
 			UpdatePolicy: &v1beta2.PodUpdatePolicy{
-				UpdateMode: &updateMode,
+				UpdateMode: &r.VPAUpdateMode,
 			},
 		},
 	}
