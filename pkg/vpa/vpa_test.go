@@ -230,7 +230,7 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	assert.NoError(t, err)
 
 	// False labels should generate 0 vpa objects
-	err = GetInstance().ReconcileNamespace(nsLabeledFalse, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledFalse)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -252,7 +252,7 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	assert.NoError(t, err)
 
 	// This should create a single VPA
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
@@ -273,11 +273,11 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	// Create deploy, reconcile, delete deploy, reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(testDeployment.ObjectMeta.Name, &metav1.DeleteOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// No VPA objects left after deleted deployment
@@ -301,7 +301,7 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	// Create a deployment in the namespace and reconcile
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// Update the namespace labels to be false and reconcile
@@ -315,7 +315,7 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	}
 	_, err = KubeClient.Client.CoreV1().Namespaces().Update(updatedNS)
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(updatedNS, false)
+	err = GetInstance().ReconcileNamespace(updatedNS)
 	assert.NoError(t, err)
 
 	// There should be zero vpa objects

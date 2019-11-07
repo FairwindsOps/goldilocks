@@ -34,6 +34,7 @@ type Reconciler struct {
 	KubeClient        *kube.ClientInstance
 	VPAClient         *kube.VPAClientInstance
 	OnByDefault       bool
+	DryRun            bool
 	IncludeNamespaces []string
 	ExcludeNamespaces []string
 }
@@ -62,7 +63,7 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconci
 
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
 // Check if deployment has label for false before applying vpa.
-func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
+func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	nsName := namespace.ObjectMeta.Name
 	vpaNames := listVPA(r.VPAClient, nsName)
 
@@ -74,7 +75,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool)
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
 		for _, vpaName := range vpaNames {
-			err := deleteVPA(r.VPAClient, nsName, vpaName, dryrun)
+			err := deleteVPA(r.VPAClient, nsName, vpaName, r.DryRun)
 			if err != nil {
 				return err
 			}
@@ -103,7 +104,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool)
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := createVPA(r.VPAClient, nsName, vpaName, dryrun)
+			err := createVPA(r.VPAClient, nsName, vpaName, r.DryRun)
 			if err != nil {
 				return err
 			}
@@ -118,7 +119,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool)
 		klog.Info("No VPAs to delete.")
 	} else if len(vpaDelete) > 0 {
 		for _, vpaName := range vpaDelete {
-			err := deleteVPA(r.VPAClient, nsName, vpaName, dryrun)
+			err := deleteVPA(r.VPAClient, nsName, vpaName, r.DryRun)
 			if err != nil {
 				return err
 			}
