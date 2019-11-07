@@ -60,61 +60,13 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconci
 	return singleton
 }
 
-// NOTE: This is not used right now.  Deployments have been scrapped.
-// Keeping this here for future development.
-func (vpa Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
-	if len(deployment.ObjectMeta.Labels) > 0 {
-		for k, v := range deployment.ObjectMeta.Labels {
-			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" {
-				if strings.ToLower(v) == "true" {
-					return true, nil
-				}
-				if strings.ToLower(v) == "false" {
-					return false, nil
-				}
-			}
-		}
-	}
-	return false, nil
-}
-
-func (vpa Reconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
-	for k, v := range namespace.ObjectMeta.Labels {
-		klog.V(7).Infof("Namespace label - %s: %s", k, v)
-		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
-			continue
-		}
-		v = strings.ToLower(v)
-		if v == "true" {
-			return true
-		} else if v == "false" {
-			return false
-		}
-		klog.V(2).Infof("Unknown label value on namespace %s: %s=%s", namespace.ObjectMeta.Name, k, v)
-	}
-
-	for _, included := range vpa.IncludeNamespaces {
-		if namespace.ObjectMeta.Name == included {
-			return true
-		}
-	}
-	for _, excluded := range vpa.ExcludeNamespaces {
-		if namespace.ObjectMeta.Name == excluded {
-			return false
-		}
-	}
-
-	return vpa.OnByDefault
-}
-
 // ReconcileNamespace makes a vpa for every deployment in the namespace.
 // Check if deployment has label for false before applying vpa.
-func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
+func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	nsName := namespace.ObjectMeta.Name
-	vpaNames := listVPA(vpa.VPAClient, nsName)
+	vpaNames := listVPA(r.VPAClient, nsName)
 
-	if create := vpa.checkNamespaceLabel(namespace); !create {
+	if create := r.checkNamespaceLabel(namespace); !create {
 		// Get the list of VPAs that already exist
 		if len(vpaNames) < 1 {
 			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
@@ -122,7 +74,7 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
 		for _, vpaName := range vpaNames {
-			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			err := deleteVPA(r.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}
@@ -131,7 +83,7 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 	}
 
 	//Get the list of deployments in the namespace
-	deployments, err := vpa.KubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
+	deployments, err := r.KubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
 	if err != nil {
 		klog.Error(err.Error())
 		return err
@@ -151,7 +103,7 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := createVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			err := createVPA(r.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}
@@ -166,13 +118,61 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 		klog.Info("No VPAs to delete.")
 	} else if len(vpaDelete) > 0 {
 		for _, vpaName := range vpaDelete {
-			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			err := deleteVPA(r.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+// NOTE: This is not used right now.  Deployments have been scrapped.
+// Keeping this here for future development.
+func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
+	if len(deployment.ObjectMeta.Labels) > 0 {
+		for k, v := range deployment.ObjectMeta.Labels {
+			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
+			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" {
+				if strings.ToLower(v) == "true" {
+					return true, nil
+				}
+				if strings.ToLower(v) == "false" {
+					return false, nil
+				}
+			}
+		}
+	}
+	return false, nil
+}
+
+func (r Reconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
+	for k, v := range namespace.ObjectMeta.Labels {
+		klog.V(7).Infof("Namespace label - %s: %s", k, v)
+		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
+			continue
+		}
+		v = strings.ToLower(v)
+		if v == "true" {
+			return true
+		} else if v == "false" {
+			return false
+		}
+		klog.V(2).Infof("Unknown label value on namespace %s: %s=%s", namespace.ObjectMeta.Name, k, v)
+	}
+
+	for _, included := range r.IncludeNamespaces {
+		if namespace.ObjectMeta.Name == included {
+			return true
+		}
+	}
+	for _, excluded := range r.ExcludeNamespaces {
+		if namespace.ObjectMeta.Name == excluded {
+			return false
+		}
+	}
+
+	return r.OnByDefault
 }
 
 func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
