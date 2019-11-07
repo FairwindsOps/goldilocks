@@ -65,30 +65,43 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconci
 // Check if deployment has label for false before applying vpa.
 func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	nsName := namespace.ObjectMeta.Name
-	vpaNames := r.listVPA(nsName)
+	vpaNames := r.listVPAs(nsName)
 
-	if isManaged := r.namespaceIsManaged(namespace); !isManaged {
+	if !r.namespaceIsManaged(namespace) {
 		// Namespaced used to be managed, but isn't anymore. Delete all of the
 		// VPAs that we control.
-		if len(vpaNames) < 1 {
-			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
-			return nil
-		}
-		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
-		for _, vpaName := range vpaNames {
-			err := r.deleteVPA(nsName, vpaName)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
+		return r.cleanUpManagedVPAsInNamespace(nsName, vpaNames)
 	}
 
-	//Get the list of deployments in the namespace
-	deployments, err := r.KubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
+	deploymentNames, err := r.listDeployments(nsName)
 	if err != nil {
 		klog.Error(err.Error())
 		return err
+	}
+
+	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames)
+}
+
+func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpaNames []string) error {
+	if len(vpaNames) < 1 {
+		klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
+		return nil
+	}
+	klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
+	for _, vpaName := range vpaNames {
+		err := r.deleteVPA(namespace, vpaName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r Reconciler) listDeployments(namespace string) ([]string, error) {
+	deployments, err := r.KubeClient.Client.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		klog.Error(err.Error())
+		return nil, err
 	}
 	var deploymentNames []string
 	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
@@ -96,37 +109,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
 		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
 	}
-
-	// Create any VPAs that need to be
-	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
-	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
-
-	if len(vpaNeeded) == 0 {
-		klog.Info("All VPAs are in sync.")
-	} else if len(vpaNeeded) > 0 {
-		for _, vpaName := range vpaNeeded {
-			err := r.createVPA(nsName, vpaName)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	// Now that this is one, we can delete any VPAs that don't have matching deployments.
-	vpaDelete := utils.Difference(vpaNames, deploymentNames)
-	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
-
-	if len(vpaDelete) == 0 {
-		klog.Info("No VPAs to delete.")
-	} else if len(vpaDelete) > 0 {
-		for _, vpaName := range vpaDelete {
-			err := r.deleteVPA(nsName, vpaName)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return deploymentNames, nil
 }
 
 // NOTE: This is not used right now.  Deployments have been scrapped.
@@ -177,7 +160,40 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) listVPA(namespace string) []string {
+func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string) error {
+	// Create any VPAs that need to be
+	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
+	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
+
+	if len(vpaNeeded) == 0 {
+		klog.Info("All VPAs are in sync.")
+	} else if len(vpaNeeded) > 0 {
+		for _, vpaName := range vpaNeeded {
+			err := r.createVPA(nsName, vpaName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Now that this is one, we can delete any VPAs that don't have matching deployments.
+	vpaDelete := utils.Difference(vpaNames, deploymentNames)
+	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
+
+	if len(vpaDelete) == 0 {
+		klog.Info("No VPAs to delete.")
+	} else if len(vpaDelete) > 0 {
+		for _, vpaName := range vpaDelete {
+			err := r.deleteVPA(nsName, vpaName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (r Reconciler) listVPAs(namespace string) []string {
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(utils.VpaLabels).String(),
 	}

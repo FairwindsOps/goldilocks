@@ -85,14 +85,14 @@ func Test_listVPA(t *testing.T) {
 	_ = rec.createVPA("ns", "test2")
 	_ = rec.createVPA("ns2", "test3")
 
-	vpaList1 := rec.listVPA("ns")
+	vpaList1 := rec.listVPAs("ns")
 	assert.EqualValues(t, vpaList1, []string{"test1", "test2"})
 
-	vpaList2 := rec.listVPA("")
+	vpaList2 := rec.listVPAs("")
 	assert.EqualValues(t, vpaList2, []string{"test1", "test2", "test3"})
 
 	var expected []string
-	vpaList3 := rec.listVPA("nonexistent")
+	vpaList3 := rec.listVPAs("nonexistent")
 	assert.EqualValues(t, vpaList3, expected)
 }
 
