@@ -67,8 +67,9 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	nsName := namespace.ObjectMeta.Name
 	vpaNames := r.listVPA(nsName)
 
-	if create := r.checkNamespaceLabel(namespace); !create {
-		// Get the list of VPAs that already exist
+	if isManaged := r.namespaceIsManaged(namespace); !isManaged {
+		// Namespaced used to be managed, but isn't anymore. Delete all of the
+		// VPAs that we control.
 		if len(vpaNames) < 1 {
 			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
 			return nil
@@ -147,7 +148,7 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 	return false, nil
 }
 
-func (r Reconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
+func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
 		klog.V(7).Infof("Namespace label - %s: %s", k, v)
 		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {

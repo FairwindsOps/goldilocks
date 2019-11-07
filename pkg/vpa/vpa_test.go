@@ -96,7 +96,7 @@ func Test_listVPA(t *testing.T) {
 	assert.EqualValues(t, vpaList3, expected)
 }
 
-func Test_checkNamespaceLabel(t *testing.T) {
+func Test_namespaceIsManaged(t *testing.T) {
 	tests := []struct {
 		name      string
 		namespace *corev1.Namespace
@@ -120,7 +120,7 @@ func Test_checkNamespaceLabel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetInstance().checkNamespaceLabel(tt.namespace)
+			got := GetInstance().namespaceIsManaged(tt.namespace)
 			assert.Equal(t, got, tt.want)
 		})
 	}
@@ -133,44 +133,44 @@ func Test_checkNamespaceLists(t *testing.T) {
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got := vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	got := vpaReconciler.namespaceIsManaged(nsNotLabeled)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
-	got = vpaReconciler.checkNamespaceLabel(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
 	assert.Equal(t, false, got)
 
 	// Labels take precedence over CLI options
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.checkNamespaceLabel(nsLabeledFalse)
+	got = vpaReconciler.namespaceIsManaged(nsLabeledFalse)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{nsLabeledFalse.ObjectMeta.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.checkNamespaceLabel(nsLabeledFalse)
+	got = vpaReconciler.namespaceIsManaged(nsLabeledFalse)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{nsLabeledTrue.ObjectMeta.Name}
-	got = vpaReconciler.checkNamespaceLabel(nsLabeledTrue)
+	got = vpaReconciler.namespaceIsManaged(nsLabeledTrue)
 	assert.Equal(t, true, got)
 }
 
