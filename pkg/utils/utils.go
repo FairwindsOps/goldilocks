@@ -72,14 +72,14 @@ func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
 		resource.Giga,
 		resource.Tera,
 	}
-	if mem, exists := rl["memory"]; exists {
+	if mem, exists := rl[v1.ResourceMemory]; exists {
 		i := 0
 		maxAllowableStringLen := 5
 		for len(mem.String()) > maxAllowableStringLen && i < len(memoryScales)-1 {
 			mem.RoundUp(memoryScales[i])
 			i++
 		}
-		rl["memory"] = mem
+		rl[v1.ResourceMemory] = mem
 	}
 	return rl
 }
