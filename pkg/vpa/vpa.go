@@ -37,7 +37,6 @@ type Reconciler struct {
 	DryRun            bool
 	IncludeNamespaces []string
 	ExcludeNamespaces []string
-	VPAUpdateMode     v1beta2.UpdateMode
 }
 
 var singleton *Reconciler
@@ -80,7 +79,8 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return err
 	}
 
-	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames)
+	vpaUpdateMode := vpaUpdateModeForNamespace(namespace)
+	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames, vpaUpdateMode)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpaNames []string) error {
@@ -161,7 +161,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string) error {
+func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string, vpaUpdateMode v1beta2.UpdateMode) error {
 	// Create any VPAs that need to be
 	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
 	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
@@ -170,7 +170,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploym
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := r.createVPA(nsName, vpaName)
+			err := r.createVPA(nsName, vpaName, vpaUpdateMode)
 			if err != nil {
 				return err
 			}
@@ -227,7 +227,7 @@ func (r Reconciler) deleteVPA(namespace string, vpaName string) error {
 	return nil
 }
 
-func (r Reconciler) createVPA(namespace string, vpaName string) error {
+func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.UpdateMode) error {
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   vpaName,
@@ -240,7 +240,7 @@ func (r Reconciler) createVPA(namespace string, vpaName string) error {
 				Name:       vpaName,
 			},
 			UpdatePolicy: &v1beta2.PodUpdatePolicy{
-				UpdateMode: &r.VPAUpdateMode,
+				UpdateMode: &updateMode,
 			},
 		},
 	}
@@ -257,4 +257,21 @@ func (r Reconciler) createVPA(namespace string, vpaName string) error {
 		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 	}
 	return nil
+}
+
+func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
+	for k, v := range ns.GetLabels() {
+		if strings.ToLower(k) != "goldilocks.fairwinds.com/vpaUpdateMode" {
+			continue
+		}
+		switch v {
+		case "off":
+			return v1beta2.UpdateModeOff
+		case "auto":
+			return v1beta2.UpdateModeAuto
+		default:
+			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s", v)
+		}
+	}
+	return v1beta2.UpdateModeOff
 }
