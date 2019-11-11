@@ -29,6 +29,12 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
+var (
+	labelBase          = "goldilocks.fairwinds.com"
+	vpaEnabledLabel    = labelBase + "/" + "enabled"
+	vpaUpdateModeLabel = labelBase + "/" + "vpaUpdatMode"
+)
+
 // Reconciler checks if VPA objects should be created or deleted
 type Reconciler struct {
 	KubeClient        *kube.ClientInstance
@@ -119,7 +125,7 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" {
+			if strings.ToLower(k) == vpaEnabledLabel {
 				if strings.ToLower(v) == "true" {
 					return true, nil
 				}
@@ -135,7 +141,7 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
 		klog.V(7).Infof("Namespace label - %s: %s", k, v)
-		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
+		if strings.ToLower(k) != vpaEnabledLabel {
 			continue
 		}
 		v = strings.ToLower(v)
@@ -261,7 +267,7 @@ func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.Upda
 
 func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
 	for k, v := range ns.GetLabels() {
-		if strings.ToLower(k) != "goldilocks.fairwinds.com/vpaUpdateMode" {
+		if strings.ToLower(k) != vpaUpdateModeLabel {
 			continue
 		}
 		switch v {
