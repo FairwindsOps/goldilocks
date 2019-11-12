@@ -32,7 +32,7 @@ import (
 var (
 	labelBase          = "goldilocks.fairwinds.com"
 	vpaEnabledLabel    = labelBase + "/" + "enabled"
-	vpaUpdateModeLabel = labelBase + "/" + "vpaUpdatMode"
+	vpaUpdateModeLabel = labelBase + "/" + "vpa-update-mode"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
