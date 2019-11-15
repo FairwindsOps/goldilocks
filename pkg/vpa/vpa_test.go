@@ -346,7 +346,7 @@ func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
 	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsEnabledUpdateModeAuto)
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
@@ -356,11 +356,11 @@ func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
-	// There should be zero vpa objects
+	// There should be one vpa object with UpdateModeOff
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+	assert.Equal(t, 1, len(vpaList.Items))
+	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeOff)
 }
 
 func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {

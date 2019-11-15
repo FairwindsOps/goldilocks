@@ -34,7 +34,7 @@ var (
 	labelBase                    = "goldilocks.fairwinds.com"
 	vpaEnabledLabel              = labelBase + "/" + "enabled"
 	vpaUpdateModeLabel           = labelBase + "/" + "vpa-update-mode"
-	deploymentExcludedAnnotation = labelBase + "/" + "no-vpa"
+	deploymentExcludedAnnotation = labelBase + "/" + "vpa-opt-out"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -194,48 +194,33 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 }
 
 func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
-	deployShouldHaveVPA := true
+	// if the Deployment is opted out of vpa scaling then use vpa-update-mode="off"
 	if val, ok := deployment.GetAnnotations()[deploymentExcludedAnnotation]; ok {
 		if val == "true" {
-			deployShouldHaveVPA = false
+			klog.V(5).Infof("Deployment/%s has opted out of VPA scaling and will use vpa-update-mode=off", deployment.Name)
+			vpaUpdateMode = v1beta2.UpdateModeOff
 		}
 	}
 
-	if deployShouldHaveVPA {
-		klog.V(5).Infof("Deployment/%s should have a VPA", deployment.Name)
-		if vpa == nil {
-			klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
-			// no vpa exists, create one (use the same name as the deployment)
-			err := r.createVPA(nsName, deployment.Name, vpaUpdateMode)
-			if err != nil {
-				return err
-			}
-		} else {
-			klog.V(5).Infof("Deployment/%s does have a VPA/%s", deployment.Name, vpa.Name)
-			// vpa exists
-			if *vpa.Spec.UpdatePolicy.UpdateMode != vpaUpdateMode {
-				klog.V(5).Infof("VPA/%s updatemode is different, updating from %s to %s", vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, vpaUpdateMode)
-				// vpa update mode does not matched what the namespace is configured for, update the VPA
-				vpa.Spec.UpdatePolicy.UpdateMode = &vpaUpdateMode
-				err := r.updateVPA(nsName, vpa)
-				if err != nil {
-					return err
-				}
-			}
+	if vpa == nil {
+		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
+		// no vpa exists, create one (use the same name as the deployment)
+		err := r.createVPA(nsName, deployment.Name, vpaUpdateMode)
+		if err != nil {
+			return err
 		}
 	} else {
-		klog.V(5).Infof("Deployment/%s should not have a VPA", deployment.Name)
-		// deployment should not have a VPA
-		if vpa != nil {
-			klog.V(5).Infof("Deployment/%s does have a vpa currently, deleting VPA/%s", deployment.Name, vpa.Name)
-			// deployment has a VPA, delete it
-			err := r.deleteVPA(nsName, vpa.Name)
+		// vpa exists
+		if *vpa.Spec.UpdatePolicy.UpdateMode == vpaUpdateMode {
+			klog.V(5).Infof("Deployment/%s does have a VPA/%s and matches vpa-update-mode=%s", deployment.Name, vpa.Name, vpaUpdateMode)
+		} else {
+			klog.V(5).Infof("Deployment/%s does have a VPA/%s but vpa-update-mode is different, updating from %s to %s", deployment.Name, vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, vpaUpdateMode)
+			// vpa update mode does not matched what the namespace is configured for, update the VPA
+			vpa.Spec.UpdatePolicy.UpdateMode = &vpaUpdateMode
+			err := r.updateVPA(nsName, vpa)
 			if err != nil {
 				return err
 			}
-		} else {
-			// deployment should not have a VPA and does not have a VPA, do nothing
-			klog.V(5).Infof("Deployment/%s does not have a VPA currently, doing nothing", deployment.Name)
 		}
 	}
 
