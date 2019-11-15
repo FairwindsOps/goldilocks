@@ -31,9 +31,10 @@ import (
 )
 
 var (
-	labelBase          = "goldilocks.fairwinds.com"
-	vpaEnabledLabel    = labelBase + "/" + "enabled"
-	vpaUpdateModeLabel = labelBase + "/" + "vpa-update-mode"
+	labelBase                    = "goldilocks.fairwinds.com"
+	vpaEnabledLabel              = labelBase + "/" + "enabled"
+	vpaUpdateModeLabel           = labelBase + "/" + "vpa-update-mode"
+	deploymentExcludedAnnotation = labelBase + "/" + "no-vpa"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -72,52 +73,41 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconci
 // Check if deployment has label for false before applying vpa.
 func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	nsName := namespace.ObjectMeta.Name
-	vpaNames := r.listVPAs(nsName)
+	vpas, err := r.listVPAs(nsName)
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
 
 	if !r.namespaceIsManaged(namespace) {
 		// Namespaced used to be managed, but isn't anymore. Delete all of the
 		// VPAs that we control.
-		return r.cleanUpManagedVPAsInNamespace(nsName, vpaNames)
+		return r.cleanUpManagedVPAsInNamespace(nsName, vpas)
 	}
 
-	deploymentNames, err := r.listDeployments(nsName)
+	deployments, err := r.listDeployments(nsName)
 	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
 
 	vpaUpdateMode := vpaUpdateModeForNamespace(namespace)
-	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames, vpaUpdateMode)
+	return r.reconcileDeploymentsAndVPAs(nsName, vpas, deployments, vpaUpdateMode)
 }
 
-func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpaNames []string) error {
-	if len(vpaNames) < 1 {
+func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []v1beta2.VerticalPodAutoscaler) error {
+	if len(vpas) < 1 {
 		klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
 		return nil
 	}
 	klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
-	for _, vpaName := range vpaNames {
-		err := r.deleteVPA(namespace, vpaName)
+	for _, vpa := range vpas {
+		err := r.deleteVPA(namespace, vpa.Name)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func (r Reconciler) listDeployments(namespace string) ([]string, error) {
-	deployments, err := r.KubeClient.Client.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
-	if err != nil {
-		klog.Error(err.Error())
-		return nil, err
-	}
-	var deploymentNames []string
-	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
-	for _, deployment := range deployments.Items {
-		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
-		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
-	}
-	return deploymentNames, nil
 }
 
 // NOTE: This is not used right now.  Deployments have been scrapped.
@@ -162,69 +152,143 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string, vpaUpdateMode v1beta2.UpdateMode) error {
-	// Create any VPAs that need to be
-	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
-	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
+func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.VerticalPodAutoscaler, deployments []appsv1.Deployment, vpaUpdateMode v1beta2.UpdateMode) error {
+	// these keys will eventually contain the leftover vpas that do not have a matching deployment associated
+	vpaHasAssociatedDeployment := map[string]bool{}
+	for _, deployment := range deployments {
+		var dvpa *v1beta2.VerticalPodAutoscaler
+		// search for the matching vpa (will have the same name)
+		for _, vpa := range vpas {
+			if deployment.Name == vpa.Name {
+				// found the vpa associated with this deployment
+				dvpa = &vpa
+				vpaHasAssociatedDeployment[dvpa.Name] = true
+				break
+			}
+		}
 
-	if len(vpaNeeded) == 0 {
-		klog.Info("All VPAs are in sync.")
-	} else if len(vpaNeeded) > 0 {
-		for _, vpaName := range vpaNeeded {
-			err := r.createVPA(nsName, vpaName, vpaUpdateMode)
+		// for logging
+		vpaName := "none"
+		if dvpa != nil {
+			vpaName = dvpa.Name
+		}
+		klog.V(2).Infof("Reconciling Namespace/%s for Deployment/%s with VPA/%s in vpa-update-mode=%s", nsName, deployment.Name, vpaName, vpaUpdateMode)
+		err := r.reconcileDeploymentAndVPA(nsName, deployment, dvpa, vpaUpdateMode)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, vpa := range vpas {
+		if _, ok := vpaHasAssociatedDeployment[vpa.Name]; !ok {
+			// these vpas do not have a matching deployment, delete them
+			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, nsName)
+			err := r.deleteVPA(nsName, vpa.Name)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	// Now that this is one, we can delete any VPAs that don't have matching deployments.
-	vpaDelete := utils.Difference(vpaNames, deploymentNames)
-	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
-
-	if len(vpaDelete) == 0 {
-		klog.Info("No VPAs to delete.")
-	} else if len(vpaDelete) > 0 {
-		for _, vpaName := range vpaDelete {
-			err := r.deleteVPA(nsName, vpaName)
-			if err != nil {
-				return err
-			}
-		}
-	}
 	return nil
 }
 
-func (r Reconciler) listVPAs(namespace string) []string {
+func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
+	deployShouldHaveVPA := true
+	if val, ok := deployment.GetAnnotations()[deploymentExcludedAnnotation]; ok {
+		if val == "true" {
+			deployShouldHaveVPA = false
+		}
+	}
+
+	if deployShouldHaveVPA {
+		klog.V(5).Infof("Deployment/%s should have a VPA", deployment.Name)
+		if vpa == nil {
+			klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
+			// no vpa exists, create one (use the same name as the deployment)
+			err := r.createVPA(nsName, deployment.Name, vpaUpdateMode)
+			if err != nil {
+				return err
+			}
+		} else {
+			klog.V(5).Infof("Deployment/%s does have a VPA/%s", deployment.Name, vpa.Name)
+			// vpa exists
+			if *vpa.Spec.UpdatePolicy.UpdateMode != vpaUpdateMode {
+				klog.V(5).Infof("VPA/%s updatemode is different, updating from %s to %s", vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, vpaUpdateMode)
+				// vpa update mode does not matched what the namespace is configured for, update the VPA
+				vpa.Spec.UpdatePolicy.UpdateMode = &vpaUpdateMode
+				err := r.updateVPA(nsName, vpa)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		klog.V(5).Infof("Deployment/%s should not have a VPA", deployment.Name)
+		// deployment should not have a VPA
+		if vpa != nil {
+			klog.V(5).Infof("Deployment/%s does have a vpa currently, deleting VPA/%s", deployment.Name, vpa.Name)
+			// deployment has a VPA, delete it
+			err := r.deleteVPA(nsName, vpa.Name)
+			if err != nil {
+				return err
+			}
+		} else {
+			// deployment should not have a VPA and does not have a VPA, do nothing
+			klog.V(5).Infof("Deployment/%s does not have a VPA currently, doing nothing", deployment.Name)
+		}
+	}
+
+	return nil
+}
+
+func (r Reconciler) listDeployments(namespace string) ([]appsv1.Deployment, error) {
+	deployments, err := r.KubeClient.Client.AppsV1().Deployments(namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	klog.V(2).Infof("There are %d deployments in Namespace/%s", len(deployments.Items), namespace)
+	if klog.V(9) {
+		for _, d := range deployments.Items {
+			klog.V(9).Infof("Found Deployment/%s in Namespace/%s", d.Name, namespace)
+		}
+	}
+
+	return deployments.Items, nil
+}
+
+func (r Reconciler) listVPAs(namespace string) ([]v1beta2.VerticalPodAutoscaler, error) {
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(utils.VpaLabels).String(),
 	}
 	existingVPAs, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
 	if err != nil {
-		klog.Error(err.Error())
-		return nil
+		return nil, err
 	}
 
-	var vpaNames []string
-	for _, vpa := range existingVPAs.Items {
-		vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
-		klog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
+	klog.V(2).Infof("There are %d vpas in Namespace/%s", len(existingVPAs.Items), namespace)
+	if klog.V(9) {
+		for _, vpa := range existingVPAs.Items {
+			klog.V(9).Infof("Found VPA/%s in Namespace/%s", vpa.Name, namespace)
+		}
 	}
-	return vpaNames
+
+	return existingVPAs.Items, nil
 }
 
 func (r Reconciler) deleteVPA(namespace string, vpaName string) error {
 	if r.DryRun {
-		klog.Infof("Not deleting %s due to dryrun.", vpaName)
+		klog.Infof("Not deleting VPA/%s due to dryrun.", vpaName)
 		return nil
 	}
 	deleteOptions := metav1.NewDeleteOptions(0)
 	errDelete := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Delete(vpaName, deleteOptions)
 	if errDelete != nil {
-		klog.Errorf("Error deleting vpa: %v", errDelete)
+		klog.Errorf("Error deleting VPA/%s in Namespace/%s: %v", vpaName, namespace, errDelete)
 		return errDelete
 	}
-	klog.Infof("Deleted vpa: %s", vpaName)
+	klog.Infof("Deleted VPA/%s in Namespace/%s", vpaName, namespace)
 	return nil
 }
 
@@ -247,15 +311,30 @@ func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.Upda
 	}
 
 	if !r.DryRun {
-		klog.Infof("Creating vpa: %s", vpaName)
-		klog.V(9).Infof("%v", vpa)
+		klog.V(9).Infof("Creating VPA/%s: %v", vpa.Name, vpa)
 		_, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Create(vpa)
 		if err != nil {
-			klog.Errorf("Error creating vpa: %v", err)
+			klog.Errorf("Error creating VPA/%s with vpa-update-mode=%s in Namespace/%s: %v", vpaName, updateMode, namespace, err)
 			return err
 		}
+		klog.Infof("Created VPA/%s with vpa-update-mode=%s in Namespace/%s", vpaName, updateMode, namespace)
 	} else {
-		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
+		klog.Infof("Not creating VPA/%s with vpa-update-mode=%s in Namespace/%s due to dryrun.", vpaName, updateMode, namespace)
+	}
+	return nil
+}
+
+func (r Reconciler) updateVPA(namespace string, vpa *v1beta2.VerticalPodAutoscaler) error {
+	if !r.DryRun {
+		klog.V(9).Infof("Updating VPA/%s: %v", vpa.Name, vpa)
+		_, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Update(vpa)
+		if err != nil {
+			klog.Errorf("Error updating VPA/%s with vpa-update-mode=%s in Namespace/%s: %v", vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, namespace, err)
+			return err
+		}
+		klog.Infof("Updated VPA/%s with vpa-update-mode=%s in Namespace/%s", vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, namespace)
+	} else {
+		klog.Infof("Not updating VPA/%s with vpa-update-mode=%s due to dryrun.", vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode)
 	}
 	return nil
 }

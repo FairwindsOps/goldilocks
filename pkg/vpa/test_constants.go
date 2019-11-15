@@ -74,3 +74,12 @@ var testDeployment = &appsv1.Deployment{
 		Name: "test-deploy",
 	},
 }
+
+var testDeploymentExcluded = &appsv1.Deployment{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "test-deploy",
+		Annotations: map[string]string{
+			"goldilocks.fairwinds.com/no-vpa": "true",
+		},
+	},
+}

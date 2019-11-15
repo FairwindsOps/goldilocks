@@ -87,15 +87,22 @@ func Test_listVPA(t *testing.T) {
 	_ = rec.createVPA("ns", "test2", updateMode)
 	_ = rec.createVPA("ns2", "test3", updateMode)
 
-	vpaList1 := rec.listVPAs("ns")
-	assert.EqualValues(t, vpaList1, []string{"test1", "test2"})
+	vpaList1, err := rec.listVPAs("ns")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, vpaList1)
+	assert.EqualValues(t, vpaList1[0].Name, "test1")
+	assert.EqualValues(t, vpaList1[1].Name, "test2")
 
-	vpaList2 := rec.listVPAs("")
-	assert.EqualValues(t, vpaList2, []string{"test1", "test2", "test3"})
+	vpaList2, err := rec.listVPAs("")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, vpaList2)
+	assert.EqualValues(t, vpaList2[0].Name, "test1")
+	assert.EqualValues(t, vpaList2[1].Name, "test2")
+	assert.EqualValues(t, vpaList2[2].Name, "test3")
 
-	var expected []string
-	vpaList3 := rec.listVPAs("nonexistent")
-	assert.EqualValues(t, vpaList3, expected)
+	vpaList3, err := rec.listVPAs("nonexistent")
+	assert.NoError(t, err)
+	assert.Empty(t, vpaList3)
 }
 
 func Test_namespaceIsManaged(t *testing.T) {
@@ -331,4 +338,71 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
 	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+}
+
+func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
+
+	// Create a properly labeled namespace
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	assert.NoError(t, err)
+	nsName := nsLabeledTrue.ObjectMeta.Name
+
+	// Create an excluded deployment in the namespace and reconcile
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeploymentExcluded)
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	assert.NoError(t, err)
+
+	// There should be zero vpa objects
+	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(vpaList.Items))
+	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+}
+
+func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
+
+	// Create a properly labeled namespace
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	assert.NoError(t, err)
+	nsName := nsLabeledTrue.ObjectMeta.Name
+
+	// Create a deployment in the namespace and reconcile
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	assert.NoError(t, err)
+
+	// There should be one vpa object with updatemode "off"
+	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList.Items))
+	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeOff)
+
+	// Update the namespace labels to be be vpa-update-mode=auto and reconcile
+	updatedNS := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: nsName,
+			Labels: map[string]string{
+				"goldilocks.fairwinds.com/enabled":         "true",
+				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
+			},
+		},
+	}
+	_, err = KubeClient.Client.CoreV1().Namespaces().Update(updatedNS)
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(updatedNS)
+	assert.NoError(t, err)
+
+	// There should be one vpa object with updatemode "auto"
+	vpaList1, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList1.Items))
+	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeAuto)
 }
