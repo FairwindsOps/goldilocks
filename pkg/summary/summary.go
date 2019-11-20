@@ -189,7 +189,7 @@ func (s *Summarizer) UpdateVPAs() error {
 
 // Run creates a summary of the vpa info for all namespaces.
 func (s Summarizer) listVPAs() ([]v1beta2.VerticalPodAutoscaler, error) {
-	vpaListOptions := getVpaListOptionsForLabels(s.vpaLabels)
+	vpaListOptions := getVPAListOptionsForLabels(s.vpaLabels)
 	vpas, err := s.vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(s.namespace).List(vpaListOptions)
 	if err != nil {
 		return nil, err
@@ -198,7 +198,7 @@ func (s Summarizer) listVPAs() ([]v1beta2.VerticalPodAutoscaler, error) {
 	return vpas.Items, nil
 }
 
-func getVpaListOptionsForLabels(vpaLabels map[string]string) metav1.ListOptions {
+func getVPAListOptionsForLabels(vpaLabels map[string]string) metav1.ListOptions {
 	return metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}

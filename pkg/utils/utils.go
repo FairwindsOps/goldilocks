@@ -15,13 +15,13 @@
 package utils
 
 import (
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// VpaLabels is a set of default labels that get placed on every VPA.
+// VPALabels is a set of default labels that get placed on every VPA.
 // TODO: Replace this with the OwnerRef pattern
-var VpaLabels = map[string]string{
+var VPALabels = map[string]string{
 	"creator": "Fairwinds",
 	"source":  "goldilocks",
 }

@@ -246,7 +246,7 @@ func (r Reconciler) listDeployments(namespace string) ([]appsv1.Deployment, erro
 
 func (r Reconciler) listVPAs(namespace string) ([]v1beta2.VerticalPodAutoscaler, error) {
 	vpaListOptions := metav1.ListOptions{
-		LabelSelector: labels.Set(utils.VpaLabels).String(),
+		LabelSelector: labels.Set(utils.VPALabels).String(),
 	}
 	existingVPAs, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).List(vpaListOptions)
 	if err != nil {
@@ -282,7 +282,7 @@ func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.Upda
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   vpaName,
-			Labels: utils.VpaLabels,
+			Labels: utils.VPALabels,
 		},
 		Spec: v1beta2.VerticalPodAutoscalerSpec{
 			TargetRef: &autoscaling.CrossVersionObjectReference{
@@ -328,12 +328,12 @@ func (r Reconciler) updateVPA(namespace string, vpa *v1beta2.VerticalPodAutoscal
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
 // key/value and uses that key/value to return the proper UpdateMode type
 func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
-	var requestedVpaMode string
+	var requestedVPAMode string
 
 	// check for vpa-update-mode in annotations first
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[vpaUpdateModeKey]; ok {
-		requestedVpaMode = val
+		requestedVPAMode = val
 	} else {
 		// check for vpa-update-mode in labels
 		for k, v := range accessor.GetLabels() {
@@ -341,13 +341,13 @@ func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
 				continue
 			}
 
-			requestedVpaMode = v
+			requestedVPAMode = v
 		}
 	}
 
 	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L101
 	var updateMode v1beta2.UpdateMode
-	switch strings.ToLower(requestedVpaMode) {
+	switch strings.ToLower(requestedVPAMode) {
 	case "off":
 		updateMode = v1beta2.UpdateModeOff
 	case "auto":
@@ -357,7 +357,7 @@ func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
 	case "recreate":
 		updateMode = v1beta2.UpdateModeRecreate
 	default:
-		klog.Warningf("Found unsupported value for vpa-update-mode: %s, using default vpa-update-mode=off", requestedVpaMode)
+		klog.Warningf("Found unsupported value for vpa-update-mode: %s, using default vpa-update-mode=off", requestedVPAMode)
 		updateMode = v1beta2.UpdateModeOff
 	}
 

@@ -165,7 +165,7 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 		}
 
 		summarizer := summary.NewSummarizer(
-			summary.ForVpasWithLabels(vpaLabels),
+			summary.ForVPAsWithLabels(vpaLabels),
 			summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 		)
 

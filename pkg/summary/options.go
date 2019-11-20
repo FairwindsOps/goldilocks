@@ -24,7 +24,7 @@ func defaultOptions() *Options {
 		kubeClient:         kube.GetInstance(),
 		vpaClient:          kube.GetVPAInstance(),
 		namespace:          namespaceAllNamespaces,
-		vpaLabels:          utils.VpaLabels,
+		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),
 	}
 }
@@ -44,7 +44,7 @@ func ExcludeContainers(excludedContainers sets.String) Option {
 }
 
 // Option for limiting the summary to certain VPAs matching the labels
-func ForVpasWithLabels(vpaLabels map[string]string) Option {
+func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *Options) {
 		opts.vpaLabels = vpaLabels
 	}
