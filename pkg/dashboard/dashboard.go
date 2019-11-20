@@ -19,12 +19,13 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"strings"
 
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
@@ -163,9 +164,12 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 			return
 		}
 
-		kubeClientVPA := kube.GetVPAInstance()
+		summarizer := summary.NewSummarizer(
+			summary.ForVpasWithLabels(vpaLabels),
+			summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
+		)
 
-		data, err := summary.Run(kubeClientVPA, vpaLabels, excludeContainers)
+		data, err := summarizer.GetSummary()
 		if err != nil {
 			klog.Errorf("Error getting data: %v", err)
 			http.Error(w, "Error running summary.", 500)

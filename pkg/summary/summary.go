@@ -20,11 +20,20 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/sets"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
+)
+
+var (
+	labelBase                             = "goldilocks.fairwinds.com"
+	deploymentExcludeContainersAnnotation = labelBase + "/" + "exclude-containers"
+)
+
+const (
+	namespaceAllNamespaces = ""
 )
 
 type containerSummary struct {
@@ -49,91 +58,148 @@ type Summary struct {
 	Namespaces  []string            `json:"namespaces"`
 }
 
-// Run creates a summary of the vpa info for all namespaces.
-func Run(kubeClientVPA *kube.VPAClientInstance, vpaLabels map[string]string, excludeContainers string) (Summary, error) {
-	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
+// Summarizer represents a source of generating a summary of VPAs
+type Summarizer struct {
+	Options
 
-	vpaListOptions := metav1.ListOptions{
-		LabelSelector: labels.Set(vpaLabels).String(),
-	}
+	// cached list of vpas
+	vpas []v1beta2.VerticalPodAutoscaler
 
-	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
-	if err != nil {
-		klog.Error(err.Error())
-	}
-	klog.V(10).Infof("Found vpas: %v", vpas)
-
-	summary, _ := constructSummary(vpas, excludeContainers)
-	return summary, nil
+	// cached summary
+	summary *Summary
 }
 
-func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers string) (Summary, error) {
+// Returns a Summarizer for all goldilocks managed VPAs in all Namespaces
+func NewSummarizer(setters ...Option) *Summarizer {
+	opts := defaultOptions()
+	for _, setter := range setters {
+		setter(opts)
+	}
+
+	return &Summarizer{
+		Options: *opts,
+	}
+}
+
+// Returns a Summarizer for a known list of VPAs
+func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Option) *Summarizer {
+	summarizer := NewSummarizer(setters...)
+
+	// set the cached vpas list directly
+	summarizer.vpas = vpas
+
+	return summarizer
+}
+
+func (s Summarizer) GetSummary() (Summary, error) {
 	var summary Summary
-	if len(vpas.Items) <= 0 {
+	// cached vpas
+	if s.vpas == nil {
+		err := s.UpdateVPAs()
+		if err != nil {
+			// err is klogged in UpdateVPAs
+			return summary, err
+		}
+	}
+
+	if len(s.vpas) <= 0 {
 		return summary, nil
 	}
 
-	kubeClient := kube.GetInstance()
+	summaryNamespaces := sets.NewString()
+	for _, vpa := range s.vpas {
+		klog.V(8).Infof("Analyzing vpa: %v", vpa.Name)
 
-	containerExclusions := strings.Split(excludeContainers, ",")
+		var dSummary deploymentSummary
+		dSummary.DeploymentName = vpa.Name
+		dSummary.Namespace = vpa.Namespace
+		summaryNamespaces.Insert(dSummary.Namespace)
 
-	for _, vpa := range vpas.Items {
-		klog.V(8).Infof("Analyzing vpa: %v", vpa.ObjectMeta.Name)
-
-		var deploy deploymentSummary
-		deploy.DeploymentName = vpa.ObjectMeta.Name
-		deploy.Namespace = vpa.ObjectMeta.Namespace
-
-		summary.Namespaces = append(summary.Namespaces, deploy.Namespace)
-
-		deployment, err := kubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
+		deployment, err := s.kubeClient.Client.AppsV1().Deployments(dSummary.Namespace).Get(dSummary.DeploymentName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("Error retrieving deployment from API: %v", err)
 		}
 
 		if vpa.Status.Recommendation == nil {
-			klog.V(2).Infof("Empty status on %v", deploy.DeploymentName)
+			klog.V(2).Infof("Empty status on %v", dSummary.DeploymentName)
 			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No recommendations found in the %v vpa.", deploy.DeploymentName)
+			klog.V(2).Infof("No recommendations found in the %v vpa.", dSummary.DeploymentName)
 			continue
 		}
 
-		if labelValue, labelFound := deployment.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {
-			containerExclusions = append(containerExclusions, strings.Split(labelValue, ",")...)
+		// get the full set of excluded containers for this Deployment
+		excludedContainers := sets.NewString().Union(s.excludedContainers)
+		if val, exists := deployment.GetAnnotations()[deploymentExcludeContainersAnnotation]; exists {
+			excludedContainers.Insert(strings.Split(val, ",")...)
 		}
 
 	CONTAINER_REC_LOOP:
 		for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
-			for _, exclusion := range containerExclusions {
-				if exclusion == containerRecommendation.ContainerName {
-					klog.V(2).Infof("Excluding container %v", containerRecommendation.ContainerName)
-					continue CONTAINER_REC_LOOP
-				}
+			if excludedContainers.Has(containerRecommendation.ContainerName) {
+				klog.V(2).Infof("Excluding container Deployment/%s/%s", dSummary.DeploymentName, containerRecommendation.ContainerName)
+				continue CONTAINER_REC_LOOP
 			}
 
-			var container = containerSummary{
-				ContainerName:  containerRecommendation.ContainerName,
-				UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound),
-				LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
-				Target:         utils.FormatResourceList(containerRecommendation.Target),
-				UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget),
-			}
+			var cSummary containerSummary
 			for _, c := range deployment.Spec.Template.Spec.Containers {
 				if c.Name == containerRecommendation.ContainerName {
-					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
-					container.Limits = utils.FormatResourceList(c.Resources.Limits)
-					container.Requests = utils.FormatResourceList(c.Resources.Requests)
-					break
+					cSummary = containerSummary{
+						ContainerName:  containerRecommendation.ContainerName,
+						UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound),
+						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
+						Target:         utils.FormatResourceList(containerRecommendation.Target),
+						UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget),
+					}
+					cSummary.Limits = utils.FormatResourceList(c.Resources.Limits)
+					cSummary.Requests = utils.FormatResourceList(c.Resources.Requests)
+					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
 				}
 			}
 
-			deploy.Containers = append(deploy.Containers, container)
+			dSummary.Containers = append(dSummary.Containers, cSummary)
 		}
-		summary.Deployments = append(summary.Deployments, deploy)
+		summary.Deployments = append(summary.Deployments, dSummary)
 	}
 
-	summary.Namespaces = utils.UniqueString(summary.Namespaces)
+	// get the unique list of namespaces we've seen for this summary
+	summary.Namespaces = summaryNamespaces.List()
+
 	return summary, nil
+}
+
+// Update the list of VPAs that the summarizer uses
+func (s *Summarizer) UpdateVPAs() error {
+	nsLog := s.namespace
+	if s.namespace == namespaceAllNamespaces {
+		nsLog = "all namespaces"
+	}
+	klog.V(3).Infof("Looking for VPAs in %s with labels: %v", nsLog, s.vpaLabels)
+	vpas, err := s.listVPAs()
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
+	klog.V(10).Infof("Found vpas: %v", vpas)
+
+	s.vpas = vpas
+	return nil
+}
+
+// Run creates a summary of the vpa info for all namespaces.
+func (s Summarizer) listVPAs() ([]v1beta2.VerticalPodAutoscaler, error) {
+	vpaListOptions := getVpaListOptionsForLabels(s.vpaLabels)
+	vpas, err := s.vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(s.namespace).List(vpaListOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return vpas.Items, nil
+}
+
+func getVpaListOptionsForLabels(vpaLabels map[string]string) metav1.ListOptions {
+	return metav1.ListOptions{
+		LabelSelector: labels.Set(vpaLabels).String(),
+	}
 }
