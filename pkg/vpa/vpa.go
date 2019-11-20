@@ -80,7 +80,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	}
 
 	if !r.namespaceIsManaged(namespace) {
-		klog.V(2).Infof("Namespace/%s is not managed, cleaning up VPAs...", namespace)
+		klog.V(2).Infof("Namespace/%s is not managed, cleaning up VPAs...", namespace.Name)
 		// Namespaced used to be managed, but isn't anymore. Delete all of the
 		// VPAs that we control.
 		return r.cleanUpManagedVPAsInNamespace(nsName, vpas)
@@ -127,9 +127,9 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
-		klog.V(4).Infof("Namespace/%s found label: %s=%s", namespace, k, v)
+		klog.V(4).Infof("Namespace/%s found label: %s=%s", namespace.Name, k, v)
 		if strings.ToLower(k) != vpaEnabledLabel {
-			klog.V(9).Infof("Namespace/%s with label key %s does not match enabled label %s", namespace, k, vpaEnabledLabel)
+			klog.V(9).Infof("Namespace/%s with label key %s does not match enabled label %s", namespace.Name, k, vpaEnabledLabel)
 			continue
 		}
 		enabled, err := strconv.ParseBool(v)
