@@ -80,6 +80,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	}
 
 	if !r.namespaceIsManaged(namespace) {
+		klog.V(2).Infof("Namespace/%s is not managed, cleaning up VPAs...", namespace)
 		// Namespaced used to be managed, but isn't anymore. Delete all of the
 		// VPAs that we control.
 		return r.cleanUpManagedVPAsInNamespace(nsName, vpas)
@@ -97,10 +98,10 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []v1beta2.VerticalPodAutoscaler) error {
 	if len(vpas) < 1 {
-		klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
+		klog.V(4).Infof("No goldilocks managed VPAs found in Namespace/%s, skipping cleanup", namespace)
 		return nil
 	}
-	klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
+	klog.Infof("Deleting all goldilocks managed VPAs in Namespace/%s", namespace)
 	for _, vpa := range vpas {
 		err := r.deleteVPA(namespace, vpa.Name)
 		if err != nil {
@@ -126,8 +127,9 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
-		klog.V(7).Infof("Namespace label - %s: %s", k, v)
+		klog.V(4).Infof("Namespace/%s found label: %s=%s", namespace, k, v)
 		if strings.ToLower(k) != vpaEnabledLabel {
+			klog.V(9).Infof("Namespace/%s with label key %s does not match enabled label %s", namespace, k, vpaEnabledLabel)
 			continue
 		}
 		enabled, err := strconv.ParseBool(v)
