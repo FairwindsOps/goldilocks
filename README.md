@@ -16,6 +16,8 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 <img src="img/screenshot.png" alt="Goldilocks Screenshot" />
 </div>
 
+**Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also re    ach out via email at `opensource@fairwinds.com`
+
 ## Requirements
 
 * kubectl
