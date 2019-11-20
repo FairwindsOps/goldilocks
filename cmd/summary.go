@@ -37,14 +37,25 @@ func init() {
 }
 
 var summaryCmd = &cobra.Command{
-	Use:   "summary",
-	Short: "Genarate a summary of the vpa recommendations in a namespace.",
-	Long:  `Gather all the vpa data in a namespace and generaate a summary of the recommendations.`,
+	Use:   "summary [namespace]",
+	Short: "Genarate a summary of the vpa recommendations in a namespace (default: all namespaces).",
+	Long: `Gather all the vpa data in a namespace and generate a summary of the recommendations.
+By default the summary will be about all VPAs in all namespaces.`,
+	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		summarizer := summary.NewSummarizer(
-			summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
-		)
+		opts := []summary.Option{}
 
+		// limit to a single namespace
+		if len(args) == 1 {
+			opts = append(opts, summary.ForNamespace(args[0]))
+		}
+
+		// exclude containers from the summary
+		if excludeContainers != "" {
+			opts = append(opts, summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)))
+		}
+
+		summarizer := summary.NewSummarizer(opts...)
 		data, err := summarizer.GetSummary()
 		if err != nil {
 			klog.Fatalf("Error getting summary: %v", err)
