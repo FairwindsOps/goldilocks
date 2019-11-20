@@ -40,6 +40,10 @@ const (
 	PreambleTemplateName = "preamble.gohtml"
 	// DashboardTemplateName contains the content of the dashboard
 	DashboardTemplateName = "dashboard.gohtml"
+	// NamespaceTemplateName contains the content for a namespace
+	NamespaceTemplateName = "namespace.gohtml"
+	// ContainerTemplateName contains the content for a container
+	ContainerTemplateName = "container.gohtml"
 	// FooterTemplateName contains the footer
 	FooterTemplateName = "footer.gohtml"
 	// CheckDetailsTemplateName is a page for rendering details about a given check
@@ -95,6 +99,8 @@ func GetBaseTemplate(name string) (*template.Template, error) {
 
 	templateFileNames := []string{
 		DashboardTemplateName,
+		NamespaceTemplateName,
+		ContainerTemplateName,
 		HeadTemplateName,
 		NavbarTemplateName,
 		PreambleTemplateName,

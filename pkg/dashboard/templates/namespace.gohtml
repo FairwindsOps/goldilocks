@@ -1,0 +1,21 @@
+{{define "namespace"}}{{/*template "namespace" $namespace*/}}
+{{ $namespace := . }}
+<div class="card namespace">
+  <h3>Namespace: <strong>{{ $namespace }}</strong></h3>
+  <div class="expandable-table">
+    {{ range $deployment := $.VPAData.Deployments }}
+      {{ if eq $deployment.Namespace $namespace }}
+      <div class="resource-info">
+        <div class="name"><span class="caret-expander"></span>
+          <span class="controller-type">Deployment:</span>
+          <strong>{{ $deployment.DeploymentName }}</strong>
+        </div>
+        {{ range $container := $deployment.Containers }}
+          {{ template "container" $container }}
+        {{ end }}
+        </div>
+      {{end}}
+    {{end}}
+  </div>
+</div>
+{{end}}
