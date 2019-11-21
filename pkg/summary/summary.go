@@ -64,9 +64,6 @@ type Summarizer struct {
 
 	// cached list of vpas
 	vpas []v1beta2.VerticalPodAutoscaler
-
-	// cached summary
-	summary *Summary
 }
 
 // Returns a Summarizer for all goldilocks managed VPAs in all Namespaces
