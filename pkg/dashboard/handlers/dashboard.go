@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
-	"strings"
 
 	"code.squarespace.net/sre/goldilocks/pkg/dashboard/helpers"
 	"code.squarespace.net/sre/goldilocks/pkg/summary"
 	"github.com/gobuffalo/packr/v2"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 )
 
@@ -58,13 +56,15 @@ func getTemplateBox() *packr.Box {
 	return templateBox
 }
 
-// DashboardAllNamespaces replies with the rendered dashboard for all namespaces
-func DashboardAllNamespaces(basePath string, vpaLabels map[string]string, excludeContainers string) http.Handler {
+// DashboardAllNamespaces replies with the rendered dashboard (on the basePath) for the summarizer
+func Dashboard(basePath string, summarizer *summary.Summarizer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		summarizer := summary.NewSummarizer(
-			summary.ForVPAsWithLabels(vpaLabels),
-			summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
-		)
+		// TODO [hkatz] add caching or refresh button support
+		err := summarizer.UpdateVPAs()
+		if err != nil {
+			klog.Errorf("Error updating vpas: %v", err)
+			// don't give up, just use the cached vpas on the summarizer
+		}
 
 		vpaData, err := summarizer.GetSummary()
 		if err != nil {

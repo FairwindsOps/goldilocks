@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard/handlers"
+	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
 var (
@@ -37,7 +38,12 @@ func GetMarkdownBox() *packr.Box {
 }
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
-func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeContainers string) *mux.Router {
+func GetRouter(setters ...Option) *mux.Router {
+	opts := defaultOptions()
+	for _, setter := range setters {
+		setter(opts)
+	}
+
 	router := mux.NewRouter()
 
 	// health
@@ -49,7 +55,11 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 	router.PathPrefix("/static/").Handler(handlers.StaticAssets("/static/"))
 
 	// dashboard
-	router.Handle("/dashboard", handlers.DashboardAllNamespaces(basePath, vpaLabels, excludeContainers))
+	summarizerAllNamespaces := summary.NewSummarizer(
+		summary.ForVPAsWithLabels(opts.vpaLabels),
+		summary.ExcludeContainers(opts.excludedContainers),
+	)
+	router.Handle("/dashboard", handlers.Dashboard(opts.basePath, summarizerAllNamespaces))
 
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +70,7 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 		}
 
 		// default redirect on root path
-		http.Redirect(w, r, fmt.Sprintf("%s://%s/dashboard", r.URL.Scheme, r.URL.Host), http.StatusMovedPermanently)
+		http.Redirect(w, r, fmt.Sprintf("%s://%s:%d/dashboard", r.URL.Scheme, r.URL.Host, opts.port), http.StatusMovedPermanently)
 	})
 
 	return router
