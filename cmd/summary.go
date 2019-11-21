@@ -38,7 +38,7 @@ func init() {
 
 var summaryCmd = &cobra.Command{
 	Use:   "summary [namespace]",
-	Short: "Genarate a summary of the vpa recommendations in a namespace (default: all namespaces).",
+	Short: "Generate a summary of the vpa recommendations in a namespace (default: all namespaces).",
 	Long: `Gather all the vpa data in a namespace and generate a summary of the recommendations.
 By default the summary will be about all VPAs in all namespaces.`,
 	Args: cobra.ArbitraryArgs,
