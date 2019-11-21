@@ -94,7 +94,6 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	if s.vpas == nil {
 		err := s.UpdateVPAs()
 		if err != nil {
-			// err is klogged in UpdateVPAs
 			return summary, err
 		}
 	}
