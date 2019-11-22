@@ -69,14 +69,14 @@
     </table>
     <div class="code-container">
       <h6 class="code-title">Suggested Changes</h6>
-        <pre class="fix-yaml">
-<code class="language-yaml">        resources:
-limits:
-cpu: {{ printResource $cpuTarget}}
-memory: {{ printResource $memTarget }}
-requests:
-cpu: {{ printResource $cpuTarget }}
-memory: {{ printResource $memTarget }}</code></pre>
+<pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuTarget }}
+    memory: {{ printResource $memTarget }}
+  limits:
+    cpu: {{ printResource $cpuTarget}}
+    memory: {{ printResource $memTarget }}
+</code></pre>
     </div>
 
   </div> {{/* End Guaranteed Tab */}}
@@ -135,14 +135,14 @@ memory: {{ printResource $memTarget }}</code></pre>
     </table>
     <div class="code-container">
       <h6 class="code-title">Suggested Changes</h6>
-        <pre class="fix-yaml">
-<code class="language-yaml">        resources:
-limits:
-cpu: {{ printResource $cpuUpperBound}}
-memory: {{ printResource $memUpperBound }}
-requests:
-cpu: {{ printResource $cpuLowerBound }}
-memory: {{ printResource $memLowerBound }}</code></pre>
+<pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuLowerBound }}
+    memory: {{ printResource $memLowerBound }}
+  limits:
+    cpu: {{ printResource $cpuUpperBound}}
+    memory: {{ printResource $memUpperBound }}
+</code></pre>
     </div>
   </div> {{/* End Burstable Tab */}}
 </div>{{/* End expandable content */}}
