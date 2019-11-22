@@ -75,8 +75,9 @@ func TestSummarizer(t *testing.T) {
 	assert.NoError(t, errOk2)
 
 	var summary = Summary{
-		Namespaces: []string{
-			"testing",
+		"testing": namespaceSummary{
+			Namespace:   "testing",
+			Deployments: nil,
 		},
 	}
 
