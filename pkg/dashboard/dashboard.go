@@ -57,8 +57,8 @@ type templateData struct {
 	// BasePath is the base URL that goldilocks is being served on, used in templates for html base
 	BasePath string
 
-	// VPAData is the summary information to display on the rendered dashboard
-	VPAData summary.Summary
+	// Summary is the summary information to display on the rendered dashboard
+	Summary summary.Summary
 
 	// JSON is the json version of the summary data provided to the html window object for debugging and user interaction
 	JSON template.JS
@@ -103,7 +103,7 @@ func Dashboard(opts Options) http.Handler {
 
 		data := templateData{
 			BasePath: opts.basePath,
-			VPAData:  vpaData,
+			Summary:  vpaData,
 			JSON:     template.JS(jsonData),
 		}
 		tmpl, err := getTemplate("main")

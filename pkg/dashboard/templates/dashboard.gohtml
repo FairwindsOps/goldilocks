@@ -1,5 +1,5 @@
 {{define "dashboard"}}
-{{ range $namespace := .VPAData.Namespaces }}
-  {{ template "namespace" $namespace }}
+{{ range $nsName, $nsSummary := .Summary }}
+  {{ template "namespace" $nsSummary }}
 {{end}}
 {{end}}

@@ -1,20 +1,20 @@
-{{define "container"}}{{/*template "container" $container*/}}
-{{ $cpuRequest := (index .Requests (resourceName "cpu")) }}
-{{ $cpuLimit := (index .Limits (resourceName "cpu")) }}
-{{ $memRequest := (index .Limits (resourceName "memory")) }}
-{{ $memLimit := (index .Limits (resourceName "memory")) }}
-{{ $cpuLowerBound := (index .LowerBound (resourceName "cpu")) }}
-{{ $cpuUpperBound := (index .UpperBound (resourceName "cpu")) }}
-{{ $memLowerBound := (index .LowerBound (resourceName "memory")) }}
-{{ $memUpperBound := (index .UpperBound (resourceName "memory")) }}
-{{ $cpuTarget := (index .Target (resourceName "cpu")) }}
-{{ $memTarget := (index .Target (resourceName "memory")) }}
+{{define "container"}}{{/*template "container" $containerSummary*/}}
+{{ $cpuRequest := (index $.Requests (resourceName "cpu")) }}
+{{ $cpuLimit := (index $.Limits (resourceName "cpu")) }}
+{{ $memRequest := (index $.Limits (resourceName "memory")) }}
+{{ $memLimit := (index $.Limits (resourceName "memory")) }}
+{{ $cpuLowerBound := (index $.LowerBound (resourceName "cpu")) }}
+{{ $cpuUpperBound := (index $.UpperBound (resourceName "cpu")) }}
+{{ $memLowerBound := (index $.LowerBound (resourceName "memory")) }}
+{{ $memUpperBound := (index $.UpperBound (resourceName "memory")) }}
+{{ $cpuTarget := (index $.Target (resourceName "cpu")) }}
+{{ $memTarget := (index $.Target (resourceName "memory")) }}
 {{ $icon := "icon"}}
 {{ $text := "text" }}
 {{ $uuid := getUUID }}
 
 <div class="result-messages expandable-content">
-  <h4>Container: {{ .ContainerName }}</h4>
+  <h4>Container: {{ $.ContainerName }}</h4>
   <input type="radio" name="{{$uuid}}" id="tabone-{{$uuid}}" checked>
   <label for="tabone-{{$uuid}}">Guaranteed QoS</label>
   <div class="tab-content"> {{/*Begin Guaranteed QoS Tab */}}
