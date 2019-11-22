@@ -1,4 +1,4 @@
-package handlers
+package dashboard
 
 import (
 	"net/http"
