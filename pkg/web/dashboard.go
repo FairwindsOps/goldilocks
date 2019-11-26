@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dashboard
+package web
 
 import (
 	"bytes"
@@ -24,8 +24,8 @@ import (
 	"github.com/gorilla/mux"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"github.com/fairwindsops/goldilocks/pkg/summary"
+	"github.com/fairwindsops/goldilocks/pkg/web/helpers"
 )
 
 // templates

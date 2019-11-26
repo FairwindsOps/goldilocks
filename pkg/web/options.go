@@ -1,7 +1,7 @@
-package dashboard
+package web
 
 import (
-	"code.squarespace.net/sre/goldilocks/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
