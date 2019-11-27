@@ -54,6 +54,9 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.Handle("/dashboard", Dashboard(*opts))
 	router.Handle("/dashboard/{namespace:[a-zA-Z0-9-]+}", Dashboard(*opts))
 
+	// namespace list
+	router.Handle("/namespaces", NamespceList(*opts))
+
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// catch all other paths that weren't matched
@@ -63,7 +66,7 @@ func GetRouter(setters ...Option) *mux.Router {
 		}
 
 		// default redirect on root path
-		http.Redirect(w, r, "/dashboard", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/namespaces", http.StatusMovedPermanently)
 	})
 
 	return router

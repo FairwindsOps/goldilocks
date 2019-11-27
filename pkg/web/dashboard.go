@@ -48,7 +48,6 @@ func Dashboard(opts Options) http.Handler {
 		}
 
 		tmpl, err := getTemplate("dashboard",
-			"check-details",
 			"container",
 			"namespace",
 			"dashboard",

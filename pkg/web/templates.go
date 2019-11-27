@@ -31,7 +31,7 @@ var (
 	defaultIncludedTemplates = []string{
 		"head",
 		"navbar",
-		"preable",
+		"preamble",
 		"footer",
 	}
 )

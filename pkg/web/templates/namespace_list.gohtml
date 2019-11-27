@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+
+<head>
+  <script>
+    window.data = {{ .JSON }};
+  </script>
+  {{ template "head" . }}
+</head>
+
+<body>
+  {{ template "navbar" . }}
+  <div class="main-content">
+    {{ template "preamble" . }}
+    <div class="card namespace">
+      <h2><strong>All Namespaces</strong></h2>
+      <a class="button" href="/dashboard/">View All</a>
+    </div>
+    <hr>
+    {{ range .Data }}
+    <div class="card namespace">
+      <h2>Namespace: <strong>{{.Name}}</strong></h2>
+      <a class="button" href="/dashboard/{{.Name}}">View</a>
+    </div>
+    {{end}}
+  </div>
+  {{ template "footer" . }}
+</body>
+</html>

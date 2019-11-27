@@ -12,6 +12,18 @@
   white-space: nowrap;
   overflow: hidden;
   margin-left: -2px; /* Fix for kerning issue */
+  display: inline;
+}
+
+.card h2 {
+  margin: 0;
+  font-weight: 300;
+  font-size: 22px;
+  padding: 12px 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-left: -2px; /* Fix for kerning issue */
+  display: inline;
 }
 
 .card.cluster h3 {
@@ -21,6 +33,36 @@
 
 .card.namespace h3 strong {
   font-weight: bold;
+}
+
+.card.namespace h2 strong {
+  font-weight: bold;
+}
+
+.button {
+    display: block;
+    font-weight: 300;
+    padding: 6px 12px;
+    background-color: #c8c8c8;
+    color: black;
+    text-decoration: none;
+}
+
+.button:active {
+    background-color: #f78e1e; /* Fairwinds' Orange */
+}
+
+.card .button {
+    float: right;
+}
+
+.divider hr {
+    display: block;
+    height: 1px;
+    margin: 0px 25px;
+    background-color: #cccccc;
+    border-style: solid;
+    border-color: #cccccc;
 }
 
 .cluster-overview {
