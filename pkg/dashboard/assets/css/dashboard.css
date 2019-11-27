@@ -65,6 +65,17 @@
     border-color: #cccccc;
 }
 
+.search div {
+    text-align: center;
+}
+
+.search input {
+    width: -webkit-fill-available;
+    padding: 8px 12px;
+    margin: 8px 0px 0px 0px;
+    color: #6e6e6e;
+}
+
 .cluster-overview {
   top: -60px;
 }
