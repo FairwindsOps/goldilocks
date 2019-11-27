@@ -94,9 +94,19 @@ func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Optio
 
 // GetSummary returns a Summary of the Summarizer using its options
 func (s Summarizer) GetSummary() (Summary, error) {
+	// blank summary
 	summary := Summary{
 		Namespaces: map[string]namespaceSummary{},
 	}
+
+	// if the summarizer is filtering for a single namespace,
+	// then add that namespace by default to the blank summary
+	if s.namespace != namespaceAllNamespaces {
+		summary.Namespaces[s.namespace] = namespaceSummary{
+			Namespace: s.namespace,
+		}
+	}
+
 	// cached vpas and deployments
 	if s.vpas == nil || s.deploymentForVPANamed == nil {
 		err := s.Update()
