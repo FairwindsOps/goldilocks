@@ -17,6 +17,7 @@ package summary
 import (
 	"strings"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -64,6 +65,9 @@ type Summarizer struct {
 
 	// cached list of vpas
 	vpas []v1beta2.VerticalPodAutoscaler
+
+	// cached map of deploy/vpa name -> deployment
+	deploymentForVPANamed map[string]*appsv1.Deployment
 }
 
 // NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
@@ -93,14 +97,15 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	summary := Summary{
 		Namespaces: map[string]namespaceSummary{},
 	}
-	// cached vpas
-	if s.vpas == nil {
-		err := s.UpdateVPAs()
+	// cached vpas and deployments
+	if s.vpas == nil || s.deploymentForVPANamed == nil {
+		err := s.Update()
 		if err != nil {
 			return summary, err
 		}
 	}
 
+	// nothing to summarize
 	if len(s.vpas) <= 0 {
 		return summary, nil
 	}
@@ -127,10 +132,10 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			Containers:     map[string]containerSummary{},
 		}
 
-		// find all deployments in the namespace for this VPA
-		deployment, err := s.kubeClient.Client.AppsV1().Deployments(namespace).Get(dSummary.DeploymentName, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Error retrieving deployment from API: %v", err)
+		deployment, ok := s.deploymentForVPANamed[vpa.Name]
+		if !ok {
+			klog.Errorf("Error, no matching Deployment found for VPA/%s", vpa.Name)
+			continue
 		}
 
 		if vpa.Status.Recommendation == nil {
@@ -183,16 +188,31 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	return summary, nil
 }
 
-// UpdateVPAs updates the list of VPAs that the summarizer uses
-func (s *Summarizer) UpdateVPAs() error {
+// Update the set of VPAs and Deployments that the Summarizer uses for creating a summary
+func (s *Summarizer) Update() error {
+	err := s.updateVPAs()
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
+
+	err = s.updateDeployments()
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (s *Summarizer) updateVPAs() error {
 	nsLog := s.namespace
 	if s.namespace == namespaceAllNamespaces {
 		nsLog = "all namespaces"
 	}
 	klog.V(3).Infof("Looking for VPAs in %s with labels: %v", nsLog, s.vpaLabels)
-	vpas, err := s.listVPAs()
+	vpas, err := s.listVPAs(getVPAListOptionsForLabels(s.vpaLabels))
 	if err != nil {
-		klog.Error(err.Error())
 		return err
 	}
 	klog.V(10).Infof("Found vpas: %v", vpas)
@@ -201,10 +221,8 @@ func (s *Summarizer) UpdateVPAs() error {
 	return nil
 }
 
-// Run creates a summary of the vpa info for all namespaces.
-func (s Summarizer) listVPAs() ([]v1beta2.VerticalPodAutoscaler, error) {
-	vpaListOptions := getVPAListOptionsForLabels(s.vpaLabels)
-	vpas, err := s.vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(s.namespace).List(vpaListOptions)
+func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]v1beta2.VerticalPodAutoscaler, error) {
+	vpas, err := s.vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(s.namespace).List(listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -216,4 +234,35 @@ func getVPAListOptionsForLabels(vpaLabels map[string]string) metav1.ListOptions 
 	return metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}
+}
+
+func (s *Summarizer) updateDeployments() error {
+	nsLog := s.namespace
+	if s.namespace == namespaceAllNamespaces {
+		nsLog = "all namespaces"
+	}
+	klog.V(3).Infof("Looking for Deployments in %s", nsLog)
+	deployments, err := s.listDeployments(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+	klog.V(10).Infof("Found deployments: %v", deployments)
+
+	// map the deployment.name -> &deployment for easy vpa lookup (since vpa.Name == deployment.Name for matching vpas/deployments)
+	s.deploymentForVPANamed = map[string]*appsv1.Deployment{}
+	for _, d := range deployments {
+		d := d
+		s.deploymentForVPANamed[d.Name] = &d
+	}
+
+	return nil
+}
+
+func (s Summarizer) listDeployments(listOptions metav1.ListOptions) ([]appsv1.Deployment, error) {
+	deployments, err := s.kubeClient.Client.AppsV1().Deployments(s.namespace).List(listOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return deployments.Items, nil
 }
