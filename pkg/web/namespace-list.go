@@ -11,7 +11,7 @@ import (
 )
 
 // NamespaceList replies with the rendered namespace list of all goldilocks enabled namespaces
-func NamespceList(opts Options) http.Handler {
+func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(v1.ListOptions{
 			LabelSelector: labels.Set(map[string]string{
