@@ -37,7 +37,9 @@ const (
 )
 
 // Summary is for storing a summary of recommendation data by namespace/deployment/container
-type Summary map[string]namespaceSummary
+type Summary struct {
+	Namespaces map[string]namespaceSummary
+}
 
 type namespaceSummary struct {
 	Namespace   string                       `json:"namespace"`
@@ -93,7 +95,9 @@ func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Optio
 
 // GetSummary returns a Summary of the Summarizer using its options
 func (s Summarizer) GetSummary() (Summary, error) {
-	summary := Summary{}
+	summary := Summary{
+		Namespaces: map[string]namespaceSummary{},
+	}
 	// cached vpas
 	if s.vpas == nil {
 		err := s.UpdateVPAs()
@@ -112,14 +116,14 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		// get or create the namespaceSummary for this VPA's namespace
 		namespace := vpa.Namespace
 		var nsSummary namespaceSummary
-		if val, ok := summary[namespace]; ok {
+		if val, ok := summary.Namespaces[namespace]; ok {
 			nsSummary = val
 		} else {
 			nsSummary = namespaceSummary{
 				Namespace:   namespace,
 				Deployments: map[string]deploymentSummary{},
 			}
-			summary[namespace] = nsSummary
+			summary.Namespaces[namespace] = nsSummary
 		}
 
 		// VPA.Name := Deployment.Name, as that's how goldilocks works
@@ -178,7 +182,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 		// update summary maps
 		nsSummary.Deployments[dSummary.DeploymentName] = dSummary
-		summary[nsSummary.Namespace] = nsSummary
+		summary.Namespaces[nsSummary.Namespace] = nsSummary
 	}
 
 	return summary, nil

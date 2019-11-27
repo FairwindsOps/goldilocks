@@ -12,7 +12,7 @@
   {{ template "navbar" . }}
   <div class="main-content">
     {{ template "preamble" . }}
-    {{ range $nsName, $nsSummary := .Data }}
+    {{ range $nsName, $nsSummary := .Data.Namespaces }}
       {{ template "namespace" $nsSummary }}
     {{end}}
   </div>
