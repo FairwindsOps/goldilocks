@@ -32,6 +32,20 @@ func NamespceList(opts Options) http.Handler {
 			return
 		}
 
-		writeTemplate(tmpl, opts, &namespacesList.Items, w)
+		// only expose the needed data from Namespace
+		data := []struct {
+			Name string
+		}{}
+
+		for _, ns := range namespacesList.Items {
+			item := struct {
+				Name string
+			}{
+				Name: ns.Name,
+			}
+			data = append(data, item)
+		}
+
+		writeTemplate(tmpl, opts, &data, w)
 	})
 }
