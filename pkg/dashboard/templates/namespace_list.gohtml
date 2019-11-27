@@ -6,6 +6,7 @@
     window.data = {{ .JSON }};
   </script>
   {{ template "head" . }}
+  <script type="text/javascript" src="static/js/namespace_list.js"></script>
 </head>
 
 <body>
@@ -17,12 +18,22 @@
       <a class="button" href="/dashboard">View All</a>
     </div>
     <hr>
-    {{ range .Data }}
-    <div class="card namespace">
-      <h2>Namespace: <strong>{{.Name}}</strong></h2>
-      <a class="button" href="/dashboard/{{.Name}}">View</a>
+    <div class="search">
+      <input id="search"
+             name="namespace-search"
+             type="text"
+             class="search"
+             placeholder="Filter Namespaces..."
+      ></input>
     </div>
-    {{end}}
+    <div id="namespaceCards">
+      {{ range .Data }}
+      <div id="namespaceCard-{{.Name}}" class="card namespace">
+        <h2>Namespace: <strong>{{.Name}}</strong></h2>
+        <a data-name="view" class="button" href="/dashboard/{{.Name}}">View</a>
+      </div>
+      {{end}}
+    </div>
   </div>
   {{ template "footer" . }}
 </body>
