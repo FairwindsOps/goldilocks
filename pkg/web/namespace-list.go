@@ -33,6 +33,9 @@ func NamespaceList(opts Options) http.Handler {
 		}
 
 		// only expose the needed data from Namespace
+		// this helps to not leak additional information like
+		// annotations, labels, metadata about the Namespace to the
+		// client UI source code or javascript console
 		data := []struct {
 			Name string
 		}{}
