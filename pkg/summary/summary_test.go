@@ -77,7 +77,7 @@ func TestSummarizer(t *testing.T) {
 	var summary = Summary{
 		"testing": namespaceSummary{
 			Namespace:   "testing",
-			Deployments: nil,
+			Deployments: map[string]deploymentSummary{},
 		},
 	}
 
