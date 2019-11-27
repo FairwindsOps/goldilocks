@@ -52,7 +52,7 @@ type deploymentSummary struct {
 type containerSummary struct {
 	ContainerName string `json:"containerName"`
 
-	// reccomendations
+	// recommendations
 	LowerBound     corev1.ResourceList `json:"lowerBound"`
 	UpperBound     corev1.ResourceList `json:"upperBound"`
 	Target         corev1.ResourceList `json:"target"`
