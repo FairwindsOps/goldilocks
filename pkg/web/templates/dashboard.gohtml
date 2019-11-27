@@ -1,5 +1,21 @@
-{{define "dashboard"}}
-{{ range $nsName, $nsSummary := .Summary }}
-  {{ template "namespace" $nsSummary }}
-{{end}}
-{{end}}
+<!doctype html>
+<html>
+
+<head>
+  <script>
+    window.summaryData = {{ .JSON }};
+  </script>
+  {{ template "head" . }}
+</head>
+
+<body>
+  {{ template "navbar" . }}
+  <div class="main-content">
+    {{ template "preamble" . }}
+    {{ range $nsName, $nsSummary := .Data }}
+      {{ template "namespace" $nsSummary }}
+    {{end}}
+  </div>
+  {{ template "footer" . }}
+</body>
+</html>
