@@ -103,7 +103,8 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	// then add that namespace by default to the blank summary
 	if s.namespace != namespaceAllNamespaces {
 		summary.Namespaces[s.namespace] = namespaceSummary{
-			Namespace: s.namespace,
+			Namespace:   s.namespace,
+			Deployments: map[string]deploymentSummary{},
 		}
 	}
 
