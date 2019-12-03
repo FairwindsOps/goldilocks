@@ -185,10 +185,10 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
 					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
+					dSummary.Containers[cSummary.ContainerName] = cSummary
+					continue CONTAINER_REC_LOOP
 				}
 			}
-
-			dSummary.Containers[cSummary.ContainerName] = cSummary
 		}
 
 		// update summary maps
