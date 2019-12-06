@@ -17,6 +17,10 @@ Goldilocks can run in 3 modes.  There is a CLI that allows the manipulation of V
 
 We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/goldilocks/labels/good%20first%20issue) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
 
+## Pre-commit
+
+This repo contains a pre-commit file for use with [pre-commit](https://pre-commit.com/). Just run `pre-commit install` and you will have the hooks.
+
 ## Setting Up Your Development Environment
 
 ### Using Kind

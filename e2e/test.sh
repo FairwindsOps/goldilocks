@@ -151,4 +151,3 @@ if kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-excluded basic-
   echo "Found VPA on demo-excluded when it should have been excluded"
   exit 1
 fi
-

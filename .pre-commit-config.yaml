@@ -1,0 +1,37 @@
+---
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+     - id: check-yaml
+       args: ['--allow-multiple-documents']
+     - id: check-json
+     - id: detect-aws-credentials
+     - id: detect-private-key
+     - id: trailing-whitespace
+     - id: check-added-large-files
+       args: ['--maxkb=150']
+     - id: check-byte-order-marker
+     - id: check-merge-conflict
+     - id: check-symlinks
+     - id: end-of-file-fixer
+     - id: check-executables-have-shebangs
+     - id: flake8
+     - id: no-commit-to-branch
+       args: [--branch, master]
+     - id: pretty-format-json
+       args: ['--autofix']
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    sha: 1.11.0
+    hooks:
+      - id: forbid-binary
+      - id: shellcheck
+      - id: git-check
+  - repo: https://github.com/dnephin/pre-commit-golang.git
+    sha: v0.3.4
+    hooks:
+      - id: go-fmt
+      - id: go-vet
+      - id: go-lint
+      - id: go-unit-tests
+      - id: go-build
