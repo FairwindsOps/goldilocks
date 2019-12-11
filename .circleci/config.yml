@@ -78,7 +78,7 @@ workflows:
               ignore: /v.*/
       - rok8s-scripts/kubernetes_e2e_tests:
           kind_version: 0.6.1
-          name: "End-To-End Kubernetes 1.5.6"
+          name: "End-To-End Kubernetes 1.15.6"
           kind_node_image: "kindest/node:v1.15.6@sha256:18c4ab6b61c991c249d29df778e651f443ac4bcd4e6bdd37e0c83c0d33eaae78"
           pre_script: e2e/pre.sh
           script: e2e/test.sh
