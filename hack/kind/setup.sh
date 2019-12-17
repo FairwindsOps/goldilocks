@@ -2,8 +2,8 @@
 
 set -e
 
-kind_required_version=0.5.0
-kind_node_image="node:v1.13.10@sha256:2f5f882a6d0527a2284d29042f3a6a07402e1699d792d0d5a9b9a48ef155fa2a"
+kind_required_version=0.6.1
+kind_node_image="kindest/node:v1.15.6@sha256:18c4ab6b61c991c249d29df778e651f443ac4bcd4e6bdd37e0c83c0d33eaae78"
 vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.6.3
 install_vpa=${1:-true}
 install_goldilocks=${2:-true}
@@ -34,10 +34,9 @@ fi
 kind create cluster \
   --config kind.yaml \
   --name test-infra \
-  --image="kindest/$kind_node_image" || true
+  --image="$kind_node_image" || true
 
 # shellcheck disable=SC2034
-export KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"
 until kubectl cluster-info; do
     echo "Waiting for cluster to become available...."
     sleep 3
@@ -74,4 +73,4 @@ if $install_goldilocks; then
   kubectl -n goldilocks apply -f ../manifests/dashboard
 fi
 
-echo "Use 'export KUBECONFIG="$(kind get kubeconfig-path --name="test-infra")"' to set your kubeconfig to work with the kind cluster"
+echo "Your test environment should now be running."

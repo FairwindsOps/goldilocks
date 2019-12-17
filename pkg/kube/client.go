@@ -18,6 +18,8 @@ import (
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
+	// Empty import needed for GCP auth. See client-go documentation
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
