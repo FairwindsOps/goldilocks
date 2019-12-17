@@ -73,4 +73,4 @@ if $install_goldilocks; then
   kubectl -n goldilocks apply -f ../manifests/dashboard
 fi
 
-echo "Your cluster should be running with goldilocks installed."
+echo "Your test environment should now be running."
