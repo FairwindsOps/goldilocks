@@ -88,7 +88,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	}
 
 	vpaUpdateMode := vpaUpdateModeForResource(namespace)
-	return r.reconcileDeploymentsAndVPAs(nsName, vpas, deployments, vpaUpdateMode)
+	return r.reconcileDeploymentsAndVPAs(namespace, vpas, deployments, vpaUpdateMode)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []v1beta2.VerticalPodAutoscaler) error {
@@ -149,7 +149,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.VerticalPodAutoscaler, deployments []appsv1.Deployment, vpaUpdateMode v1beta2.UpdateMode) error {
+func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []v1beta2.VerticalPodAutoscaler, deployments []appsv1.Deployment, vpaUpdateMode v1beta2.UpdateMode) error {
 	// these keys will eventually contain the leftover vpas that do not have a matching deployment associated
 	vpaHasAssociatedDeployment := map[string]bool{}
 	for _, deployment := range deployments {
@@ -169,8 +169,8 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 		if dvpa != nil {
 			vpaName = dvpa.Name
 		}
-		klog.V(2).Infof("Reconciling Namespace/%s for Deployment/%s with VPA/%s in vpa-update-mode=%s", nsName, deployment.Name, vpaName, vpaUpdateMode)
-		err := r.reconcileDeploymentAndVPA(nsName, deployment, dvpa, vpaUpdateMode)
+		klog.V(2).Infof("Reconciling Namespace/%s for Deployment/%s with VPA/%s in vpa-update-mode=%s", ns.Name, deployment.Name, vpaName, vpaUpdateMode)
+		err := r.reconcileDeploymentAndVPA(ns, deployment, dvpa, vpaUpdateMode)
 		if err != nil {
 			return err
 		}
@@ -179,8 +179,8 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 	for _, vpa := range vpas {
 		if !vpaHasAssociatedDeployment[vpa.Name] {
 			// these vpas do not have a matching deployment, delete them
-			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, nsName)
-			err := r.deleteVPA(nsName, vpa.Name)
+			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, ns.Name)
+			err := r.deleteVPA(ns.Name, vpa.Name)
 			if err != nil {
 				return err
 			}
@@ -190,7 +190,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 	return nil
 }
 
-func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
+func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
 	// check if the Deployment has its own vpa-update-mode set
 	if _, ok := deployment.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
 		vpaUpdateMode = vpaUpdateModeForResource(&deployment)
@@ -200,7 +200,7 @@ func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.D
 	if vpa == nil {
 		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
 		// no vpa exists, create one (use the same name as the deployment)
-		err := r.createVPA(nsName, deployment.Name, vpaUpdateMode)
+		err := r.createVPA(ns.Name, deployment.Name, vpaUpdateMode)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.D
 			klog.V(5).Infof("Deployment/%s does have a VPA/%s but vpa-update-mode is different, updating from %s to %s", deployment.Name, vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, vpaUpdateMode)
 			// vpa update mode does not match what the namespace is configured for, update the VPA
 			vpa.Spec.UpdatePolicy.UpdateMode = &vpaUpdateMode
-			err := r.updateVPA(nsName, vpa)
+			err := r.updateVPA(ns.Name, vpa)
 			if err != nil {
 				return err
 			}
