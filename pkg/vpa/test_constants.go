@@ -15,9 +15,7 @@
 package vpa
 
 import (
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscaling "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -48,7 +46,26 @@ var nsNotLabeled = &corev1.Namespace{
 	},
 }
 
-var nsEnabledUpdateModeAuto = &corev1.Namespace{
+var nsTesting = &corev1.Namespace{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "testing",
+		Labels: map[string]string{
+			"goldilocks.fairwinds.com/enabled": "True",
+		},
+	},
+}
+
+var nsLabeledTrueUpdateModeOff = &corev1.Namespace{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "labeled-true",
+		Labels: map[string]string{
+			"goldilocks.fairwinds.com/enabled":         "True",
+			"goldilocks.fairwinds.com/vpa-update-mode": "off",
+		},
+	},
+}
+
+var nsLabeledTrueUpdateModeAuto = &corev1.Namespace{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "labeled-true",
 		Labels: map[string]string{
@@ -58,25 +75,8 @@ var nsEnabledUpdateModeAuto = &corev1.Namespace{
 	},
 }
 
-// A VPA Object that can be used to verify tests
-var updateMode = v1beta2.UpdateModeOff
-var testVPA = &v1beta2.VerticalPodAutoscaler{
-	ObjectMeta: metav1.ObjectMeta{
-		Name:      "test-vpa",
-		Labels:    utils.VPALabels,
-		Namespace: "testing",
-	},
-	Spec: v1beta2.VerticalPodAutoscalerSpec{
-		TargetRef: &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-			Name:       "test-vpa",
-		},
-		UpdatePolicy: &v1beta2.PodUpdatePolicy{
-			UpdateMode: &updateMode,
-		},
-	},
-}
+var updateModeOff = v1beta2.UpdateModeOff
+var updateModeAuto = v1beta2.UpdateModeAuto
 
 // A deployment object that can be used for testing
 var testDeployment = &appsv1.Deployment{

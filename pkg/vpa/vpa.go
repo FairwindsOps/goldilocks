@@ -197,7 +197,7 @@ func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment a
 	if _, ok := deployment.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
 		vpaUpdateMode := vpaUpdateModeForResource(&deployment)
 		desiredVPA.Spec.UpdatePolicy.UpdateMode = vpaUpdateMode
-		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, vpaUpdateMode)
+		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%v", deployment.Name, vpaUpdateMode)
 	}
 
 	if vpa == nil {
