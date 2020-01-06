@@ -20,9 +20,13 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/stretchr/testify/assert"
+
 	appsv1 "k8s.io/api/apps/v1"
+
 	corev1 "k8s.io/api/core/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 )
 
@@ -89,11 +93,13 @@ func Test_getVPAObject(t *testing.T) {
 		name       string
 		ns         *corev1.Namespace
 		updateMode v1beta2.UpdateMode
+		vpa        *v1beta2.VerticalPodAutoscaler
 	}{
 		{
 			name:       "example-vpa",
 			ns:         nsLabeledTrueUpdateModeAuto,
 			updateMode: v1beta2.UpdateModeAuto,
+			vpa:        nil,
 		},
 	}
 
@@ -102,7 +108,7 @@ func Test_getVPAObject(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			vpa := rec.getVPAObject(test.ns, "test-vpa")
+			vpa := rec.getVPAObject(test.vpa, test.ns, "test-vpa")
 
 			// expected ObjectMeta
 			assert.Equal(t, "test-vpa", vpa.Name)
@@ -126,7 +132,7 @@ func Test_createVPA(t *testing.T) {
 	rec := GetInstance()
 	rec.DryRun = true
 
-	testVPA := rec.getVPAObject(nsTesting, "test-vpa")
+	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa")
 
 	err := rec.createVPA(testVPA)
 	assert.NoError(t, err)
@@ -149,7 +155,7 @@ func Test_deleteVPA(t *testing.T) {
 	rec := GetInstance()
 	rec.DryRun = true
 
-	testVPA := rec.getVPAObject(nsTesting, "test-vpa")
+	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa")
 	_, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsTesting.Name).Create(&testVPA)
 	assert.NoError(t, err)
 
@@ -177,7 +183,7 @@ func Test_updateVPA(t *testing.T) {
 	testNS := nsTesting.DeepCopy()
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "off"
 
-	testVPA := rec.getVPAObject(testNS, "test-vpa")
+	testVPA := rec.getVPAObject(nil, testNS, "test-vpa")
 	_, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(testNS.Name).Create(&testVPA)
 	assert.NoError(t, err)
 
@@ -197,7 +203,7 @@ func Test_updateVPA(t *testing.T) {
 
 	// change the update mode
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "auto"
-	newVPA := rec.getVPAObject(testNS, "test-vpa")
+	newVPA := rec.getVPAObject(nil, testNS, "test-vpa")
 
 	errUpdate2 := rec.updateVPA(newVPA)
 	assert.NoError(t, errUpdate2)
@@ -221,9 +227,9 @@ func Test_listVPA(t *testing.T) {
 	testNS2.Namespace = "ns2"
 
 	// test vpas
-	vpa1 := rec.getVPAObject(testNS1, "test1")
-	vpa2 := rec.getVPAObject(testNS1, "test2")
-	vpa3 := rec.getVPAObject(testNS2, "test3")
+	vpa1 := rec.getVPAObject(nil, testNS1, "test1")
+	vpa2 := rec.getVPAObject(nil, testNS1, "test2")
+	vpa3 := rec.getVPAObject(nil, testNS2, "test3")
 
 	// create vpas
 	_ = rec.createVPA(vpa1)
@@ -536,7 +542,7 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: nsName,
 			Labels: map[string]string{
-				"goldilocks.fairwinds.com/enabled":         "true",
+				"goldilocks.fairwinds.com/enabled":         "True",
 				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
 			},
 		},

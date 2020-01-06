@@ -19,17 +19,20 @@ import (
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
+
 	autoscaling "k8s.io/api/autoscaling/v1"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+
+	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/klog"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -191,7 +194,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []v1b
 
 func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler) error {
 	// get the desiredVPA as configured by annotations on the Namespace
-	desiredVPA := r.getVPAObject(ns, deployment.Name)
+	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name)
 
 	// check if the Deployment has its own vpa-update-mode set
 	if _, ok := deployment.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
@@ -299,24 +302,35 @@ func (r Reconciler) updateVPA(vpa v1beta2.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(ns *corev1.Namespace, vpaName string) v1beta2.VerticalPodAutoscaler {
-	return v1beta2.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      vpaName,
-			Labels:    utils.VPALabels,
-			Namespace: ns.Name,
+func (r Reconciler) getVPAObject(existingVPA *v1beta2.VerticalPodAutoscaler, ns *corev1.Namespace, vpaName string) v1beta2.VerticalPodAutoscaler {
+	var desiredVPA v1beta2.VerticalPodAutoscaler
+
+	// create a brand new vpa with the correct information
+	if existingVPA == nil {
+		desiredVPA = v1beta2.VerticalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      vpaName,
+				Namespace: ns.Name,
+			},
+		}
+	}
+
+	// update the labels on the VPA
+	desiredVPA.Labels = utils.VPALabels
+
+	// update the spec on the VPA
+	desiredVPA.Spec = v1beta2.VerticalPodAutoscalerSpec{
+		TargetRef: &autoscaling.CrossVersionObjectReference{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+			Name:       vpaName,
 		},
-		Spec: v1beta2.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscaling.CrossVersionObjectReference{
-				APIVersion: "apps/v1",
-				Kind:       "Deployment",
-				Name:       vpaName,
-			},
-			UpdatePolicy: &v1beta2.PodUpdatePolicy{
-				UpdateMode: vpaUpdateModeForResource(ns),
-			},
+		UpdatePolicy: &v1beta2.PodUpdatePolicy{
+			UpdateMode: vpaUpdateModeForResource(ns),
 		},
 	}
+
+	return desiredVPA
 }
 
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
