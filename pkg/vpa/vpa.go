@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/client-go/util/retry"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -290,10 +291,18 @@ func (r Reconciler) createVPA(vpa v1beta2.VerticalPodAutoscaler) error {
 func (r Reconciler) updateVPA(vpa v1beta2.VerticalPodAutoscaler) error {
 	if !r.DryRun {
 		klog.V(9).Infof("Updating VPA/%s: %v", vpa.Name, vpa)
-		_, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(vpa.Namespace).Update(&vpa)
-		if err != nil {
-			klog.Errorf("Error updating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, err)
+		// attempt to update the vpa using retries and backoffs
+		// [See: https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go#L125]
+		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			// Note: Normally we're supposed to be getting the current VPA object, then updating that object between
+			//       each retry attempt, but since goldilocks should be the only controller that is manipulating
+			//       these VPA objects then it's safe to use the desired VPA that is originally passed to this function.
+			_, err := r.VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(vpa.Namespace).Update(&vpa)
 			return err
+		})
+		if retryErr != nil {
+			klog.Errorf("Error updating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, retryErr)
+			return retryErr
 		}
 		klog.Infof("Updated VPA/%s in Namespace/%s", vpa.Name, vpa.Namespace)
 	} else {
@@ -313,6 +322,9 @@ func (r Reconciler) getVPAObject(existingVPA *v1beta2.VerticalPodAutoscaler, ns 
 				Namespace: ns.Name,
 			},
 		}
+	} else {
+		// or use the existing VPA as a template to update from
+		desiredVPA = *existingVPA
 	}
 
 	// update the labels on the VPA
