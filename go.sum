@@ -516,6 +516,8 @@ k8s.io/apimachinery v0.0.0-20191111054156-6eb29fdf75dc h1:hC0UI7qlplCVlRexiPMHwc
 k8s.io/apimachinery v0.0.0-20191111054156-6eb29fdf75dc/go.mod h1:+6CX7hP4aLfX2sb91JYDMIp0VqDSog2kZu0BHe+lP+s=
 k8s.io/apimachinery v0.17.0 h1:xRBnuie9rXcPxUkDizUsGvPf1cnlZCFu210op7J7LJo=
 k8s.io/apimachinery v0.17.0/go.mod h1:b9qmWdKlLuU9EBh+06BtLcSf/Mu89rWL33naRxs1uZg=
+k8s.io/apimachinery v0.17.1 h1:zUjS3szTxoUjTDYNvdFkYt2uMEXLcthcbp+7uZvWhYM=
+k8s.io/apimachinery v0.17.1/go.mod h1:b9qmWdKlLuU9EBh+06BtLcSf/Mu89rWL33naRxs1uZg=
 k8s.io/apiserver v0.0.0-20190918160949-bfa5e2e684ad/go.mod h1:XPCXEwhjaFN29a8NldXA901ElnKeKLrLtREO9ZhFyhg=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191118172941-30256a62592d h1:Pxbmw5x3a4bN8643Xm/6l+Yl/07adpVpxqszfAi0LrM=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191118172941-30256a62592d/go.mod h1:bo2qh32Y1lvDnTWVSlYibXIVVtwZMb0fYAqeyEWNEuI=
