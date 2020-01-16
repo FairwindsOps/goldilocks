@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -30,30 +31,40 @@ func Test_getUUID(t *testing.T) {
 
 func Test_printResource(t *testing.T) {
 	tests := []struct {
-		name     string
-		quantity resource.Quantity
-		want     string
+		name         string
+		quantity     resource.Quantity
+		resourceType corev1.ResourceName
+		want         string
 	}{
 		{
-			name:     "Blank",
-			quantity: resource.Quantity{},
-			want:     "Not Set",
+			name:         "Blank",
+			quantity:     resource.Quantity{},
+			resourceType: "Empty",
+			want:         "Not Set",
 		},
 		{
-			name:     "cpu",
-			quantity: *resource.NewMilliQuantity(25, resource.DecimalSI),
-			want:     "25m",
+			name:         "cpu",
+			quantity:     *resource.NewMilliQuantity(25, resource.DecimalSI),
+			resourceType: corev1.ResourceCPU,
+			want:         "25m",
 		},
 		{
-			name:     "mem",
-			quantity: *resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
-			want:     "5Gi",
+			name:         "mem",
+			quantity:     *resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
+			resourceType: corev1.ResourceMemory,
+			want:         "5120Mi",
+		},
+		{
+			name:         "other type",
+			quantity:     *resource.NewQuantity(5*1024*1024*1024, resource.BinarySI),
+			resourceType: corev1.ResourceStorage,
+			want:         "5368709120",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := printResource(tt.quantity)
-			assert.Equal(t, got, tt.want)
+			got := printResource(tt.quantity, tt.resourceType)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
