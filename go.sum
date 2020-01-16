@@ -508,6 +508,8 @@ k8s.io/api v0.0.0-20191112020540-7f9008e52f64 h1:aAGj+7E+gRYpt4qjByqnh9miBg8VeV4
 k8s.io/api v0.0.0-20191112020540-7f9008e52f64/go.mod h1:8svLRMiLwQReMTycutfjsaQ0ackWIf8HCT4UcixYLjI=
 k8s.io/api v0.17.0 h1:H9d/lw+VkZKEVIUc8F3wgiQ+FUXTTr21M87jXLU7yqM=
 k8s.io/api v0.17.0/go.mod h1:npsyOePkeP0CPwyGfXDHxvypiYMJxBWAMpQxCaJ4ZxI=
+k8s.io/api v0.17.1 h1:i46MidoDOE9tvQ0TTEYggf3ka/pziP1+tHI/GFVeJao=
+k8s.io/api v0.17.1/go.mod h1:zxiAc5y8Ngn4fmhWUtSxuUlkfz1ixT7j9wESokELzOg=
 k8s.io/apiextensions-apiserver v0.0.0-20190918161926-8f644eb6e783/go.mod h1:xvae1SZB3E17UpV59AWc271W/Ph25N+bjPyR63X6tPY=
 k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655/go.mod h1:nL6pwRT8NgfF8TT68DBI8uEePRt89cSvoXUVqbkWHq4=
 k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8/go.mod h1:llRdnznGEAqC3DcNm6yEj472xaFVfLM7hnYofMb12tQ=
@@ -516,6 +518,7 @@ k8s.io/apimachinery v0.0.0-20191111054156-6eb29fdf75dc h1:hC0UI7qlplCVlRexiPMHwc
 k8s.io/apimachinery v0.0.0-20191111054156-6eb29fdf75dc/go.mod h1:+6CX7hP4aLfX2sb91JYDMIp0VqDSog2kZu0BHe+lP+s=
 k8s.io/apimachinery v0.17.0 h1:xRBnuie9rXcPxUkDizUsGvPf1cnlZCFu210op7J7LJo=
 k8s.io/apimachinery v0.17.0/go.mod h1:b9qmWdKlLuU9EBh+06BtLcSf/Mu89rWL33naRxs1uZg=
+k8s.io/apimachinery v0.17.1/go.mod h1:b9qmWdKlLuU9EBh+06BtLcSf/Mu89rWL33naRxs1uZg=
 k8s.io/apiserver v0.0.0-20190918160949-bfa5e2e684ad/go.mod h1:XPCXEwhjaFN29a8NldXA901ElnKeKLrLtREO9ZhFyhg=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191118172941-30256a62592d h1:Pxbmw5x3a4bN8643Xm/6l+Yl/07adpVpxqszfAi0LrM=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191118172941-30256a62592d/go.mod h1:bo2qh32Y1lvDnTWVSlYibXIVVtwZMb0fYAqeyEWNEuI=
