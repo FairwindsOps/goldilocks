@@ -23,7 +23,6 @@ import (
 )
 
 func printResource(quant resource.Quantity, resourceType corev1.ResourceName) string {
-	// weird thing you can't look at
 	if quant.IsZero() {
 		return "Not Set"
 	}

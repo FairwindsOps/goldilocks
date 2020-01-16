@@ -30,8 +30,6 @@ func Test_getUUID(t *testing.T) {
 }
 
 func Test_printResource(t *testing.T) {
-	// struct to contain test cases defined below
-	// define structure then define contents immed after
 	tests := []struct {
 		name         string
 		quantity     resource.Quantity
