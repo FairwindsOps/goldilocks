@@ -22,13 +22,22 @@ repos:
      - id: pretty-format-json
        args: ['--autofix']
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    sha: 1.11.0
+    rev: 1.11.0
     hooks:
       - id: forbid-binary
+        exclude: >
+          (?x)^(
+            .+\.png|
+            .+\.woff|
+            .+\.woff2|
+            .+\.tff|
+            .+\.ico
+          )$
+
       - id: shellcheck
       - id: git-check
   - repo: https://github.com/dnephin/pre-commit-golang.git
-    sha: v0.3.4
+    rev: v0.3.4
     hooks:
       - id: go-fmt
       - id: go-vet

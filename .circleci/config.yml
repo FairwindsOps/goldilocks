@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@10
+  rok8s-scripts: fairwinds/rok8s-scripts@11
 
 references:
   install_goreleaser: &install_goreleaser
@@ -11,6 +11,17 @@ references:
         curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.106.0/goreleaser_amd64.deb
         echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha256sum -c
         sudo dpkg -i goreleaser.deb
+  kind_configuration: &kind_configuration
+    pre_script: e2e/pre.sh
+    script: e2e/test.sh
+    requires:
+      - test
+      - rok8s-scripts/docker_build_and_push
+    filters:
+      branches:
+        only: /.*/
+      tags:
+        ignore: /v.*/
 
 jobs:
   test:
@@ -63,44 +74,21 @@ workflows:
             tags:
               only: /v.*/
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.14.9"
-          kind_node_image: "kindest/node:v1.14.9@sha256:bdd3731588fa3ce8f66c7c22f25351362428964b6bca13048659f68b9e665b72"
-          pre_script: e2e/pre.sh
-          script: e2e/test.sh
-          requires:
-            - test
-            - rok8s-scripts/docker_build_and_push
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              ignore: /v.*/
+          name: "End-To-End Kubernetes 1.14.10"
+          kind_node_image: "kindest/node:v1.14.10@sha256:81ae5a3237c779efc4dda43cc81c696f88a194abcc4f8fa34f86cf674aa14977"
+          <<: *kind_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.15.6"
-          kind_node_image: "kindest/node:v1.15.6@sha256:18c4ab6b61c991c249d29df778e651f443ac4bcd4e6bdd37e0c83c0d33eaae78"
-          pre_script: e2e/pre.sh
-          script: e2e/test.sh
-          requires:
-            - test
-            - rok8s-scripts/docker_build_and_push
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              ignore: /v.*/
-#      - rok8s-scripts/kubernetes_e2e_tests:
-#          name: "End-To-End Kubernetes 1.16.3"
-#          kind_node_image: "kindest/node:v1.16.3@sha256:70ce6ce09bee5c34ab14aec2b84d6edb260473a60638b1b095470a3a0f95ebec"
-#          pre_script: e2e/pre.sh
-#          script: e2e/test.sh
-#          requires:
-#            - test
-#            - rok8s-scripts/docker_build_and_push
-#          filters:
-#            branches:
-#              only: /.*/
-#            tags:
-#              ignore: /v.*/
+          name: "End-To-End Kubernetes 1.15.7"
+          kind_node_image: "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
+          <<: *kind_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.16.4"
+          kind_node_image: "kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55"
+          <<: *kind_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.17.0"
+          kind_node_image: "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
+          <<: *kind_configuration
       - release:
           requires:
             - test

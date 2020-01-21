@@ -58,7 +58,7 @@ var testVPA = &v1beta2.VerticalPodAutoscaler{
 	},
 	Spec: v1beta2.VerticalPodAutoscalerSpec{
 		TargetRef: &autoscaling.CrossVersionObjectReference{
-			APIVersion: "extensions/v1beta1",
+			APIVersion: "apps/v1",
 			Kind:       "Deployment",
 			Name:       "test-vpa",
 		},
