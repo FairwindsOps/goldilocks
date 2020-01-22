@@ -23,7 +23,7 @@ require (
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
-	k8s.io/api v0.17.1
+	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191211165407-195d3d988f4f
 	k8s.io/client-go v0.0.0-20191109102209-3c0d1af94be5
