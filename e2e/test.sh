@@ -1,6 +1,6 @@
 #!/bin/bash
 
-vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.5.1
+vertical_pod_autoscaler_ref=e16a0adef6c7d79a23d57f9bbbef26fc9da59378
 timeout=60s
 reinstall_wait=30s
 
@@ -28,7 +28,10 @@ echo "** Install Metrics-Server **"
 echo "****************************"
 printf "\n\n"
 
-helm install stable/metrics-server --version=2.8.2 --set args[0]=--kubelet-insecure-tls --set args[1]=--kubelet-preferred-address-types=InternalIP --namespace metrics-server --name metrics-server
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+helm repo update
+kubectl create namespace metrics-server
+helm install metrics-server stable/metrics-server --version=2.9.0 --set args[0]=--kubelet-insecure-tls --set args[1]=--kubelet-preferred-address-types=InternalIP --namespace metrics-server
 
 printf "\n\n"
 echo "****************************"
@@ -41,7 +44,7 @@ if [ ! -d "autoscaler" ] ; then
 fi
 
 cd autoscaler/vertical-pod-autoscaler
-git checkout "$vertical_pod_autoscaler_tag"
+git checkout "$vertical_pod_autoscaler_ref"
 ./hack/vpa-up.sh
 
 cd ../../
@@ -77,10 +80,14 @@ echo "**********************"
 printf "\n\n"
 
 helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-helm install fairwinds-incubator/basic-demo --namespace demo -n basic-demo --version=0.2.1
-helm install fairwinds-incubator/basic-demo --namespace demo-no-label -n basic-demo-no-label --version=0.2.1
-helm install fairwinds-incubator/basic-demo --namespace demo-included -n basic-demo-included --version=0.2.1
-helm install fairwinds-incubator/basic-demo --namespace demo-excluded -n basic-demo-excluded --version=0.2.1
+kubectl create ns demo
+kubectl create ns demo-no-label
+kubectl create ns demo-included
+kubectl create ns demo-excluded
+helm install basic-demo fairwinds-incubator/basic-demo --namespace demo --version=0.2.3
+helm install basic-demo-no-label fairwinds-incubator/basic-demo --namespace demo-no-label --version=0.2.3
+helm install basic-demo-included fairwinds-incubator/basic-demo --namespace demo-included --version=0.2.3
+helm install basic-demo-excluded fairwinds-incubator/basic-demo --namespace demo-excluded --version=0.2.3
 
 kubectl -n demo wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo
 kubectl -n demo-no-label wait deployment --timeout=$timeout --for condition=available -l app.kubernetes.io/name=basic-demo

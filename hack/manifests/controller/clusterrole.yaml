@@ -8,7 +8,6 @@ metadata:
 rules:
   - apiGroups:
       - 'apps'
-      - 'extensions'
     resources:
       - 'deployments'
     verbs:
