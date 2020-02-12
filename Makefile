@@ -10,9 +10,9 @@ VERSION := "dev"
 all: test build
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -s -w" -v
+lint:
+	golangci-lint run
 test:
-	printf "Linter:\n"
-	GO111MODULE=on $(GOCMD) list ./... | xargs -L1 golint | tee golint-report.out
 	printf "\n\nTests:\n\n"
 	GO111MODULE=on $(GOCMD) test -v --bench --benchmem -coverprofile coverage.txt -covermode=atomic ./...
 	GO111MODULE=on $(GOCMD) vet ./... 2> govet-report.out

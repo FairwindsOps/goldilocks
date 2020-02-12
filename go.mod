@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.51.0 // indirect
-	github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1 // indirect
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/logger v1.0.3 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1
@@ -24,9 +23,8 @@ require (
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.17.3
+	k8s.io/apimachinery v0.17.3
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191211165407-195d3d988f4f
 	k8s.io/client-go v0.0.0-20191109102209-3c0d1af94be5
 	k8s.io/klog v1.0.0
