@@ -26,7 +26,7 @@ references:
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12-stretch
+      - image: circleci/golang:1.13-stretch
         environment:
           GO111MODULE: "on"
     steps:
