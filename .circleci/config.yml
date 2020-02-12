@@ -25,12 +25,11 @@ references:
 
 jobs:
   test:
+    working_directory: /go/src/github.com/fairwindsops/goldilocks
     docker:
       - image: circleci/golang:1.13-stretch
         environment:
           GO111MODULE: "on"
-          GL_DEBUG: linters_output
-          GOPACKAGESPRINTGOLISTERRORS: "1"
     steps:
       - checkout
       - run:
