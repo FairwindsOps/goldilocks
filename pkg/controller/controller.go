@@ -138,6 +138,26 @@ func NewController(stop <-chan bool) {
 	defer close(dTerm)
 	go DeployWatcher.Watch(dTerm)
 
+	klog.Infof("Creating watcher for DaemonSets.")
+	DaemonSetInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return kubeClient.Client.AppsV1().DaemonSets("").List(metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return kubeClient.Client.AppsV1().DaemonSets("").Watch(metav1.ListOptions{})
+			},
+		},
+		&v1.DaemonSet{},
+		0,
+		cache.Indexers{},
+	)
+
+	DaemonSetWatcher := createController(kubeClient.Client, DaemonSetInformer, "daemonset")
+	dsTerm := make(chan struct{})
+	defer close(dsTerm)
+	go DaemonSetWatcher.Watch(dsTerm)
+
 	klog.Infof("Creating watcher for Namespaces.")
 	NSInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
@@ -180,7 +200,9 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			}
 			evt.EventType = "create"
 			evt.ResourceType = resource
-			evt.Namespace = objectMeta(obj).Namespace
+			if metaobj, ok := obj.(metav1.Object); ok {
+				evt.Namespace = metaobj.GetNamespace()
+			}
 			klog.Infof("%s/%s has been added.", resource, evt.Key)
 			wq.Add(evt)
 		},
@@ -194,7 +216,9 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			}
 			evt.EventType = "delete"
 			evt.ResourceType = resource
-			evt.Namespace = objectMeta(obj).Namespace
+			if metaobj, ok := obj.(metav1.Object); ok {
+				evt.Namespace = metaobj.GetNamespace()
+			}
 			klog.Infof("%s/%s has been deleted.", resource, evt.Key)
 			wq.Add(evt)
 		},
@@ -208,7 +232,9 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			}
 			evt.EventType = "update"
 			evt.ResourceType = resource
-			evt.Namespace = objectMeta(new).Namespace
+			if metaobj, ok := new.(metav1.Object); ok {
+				evt.Namespace = metaobj.GetNamespace()
+			}
 			klog.V(8).Infof("%s/%s has been updated.", resource, evt.Key)
 			wq.Add(evt)
 		},
@@ -219,16 +245,4 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 		informer:   informer,
 		wq:         wq,
 	}
-}
-
-func objectMeta(obj interface{}) metav1.ObjectMeta {
-	var meta metav1.ObjectMeta
-
-	switch object := obj.(type) {
-	case *corev1.Namespace:
-		meta = object.ObjectMeta
-	case *v1.Deployment:
-		meta = object.ObjectMeta
-	}
-	return meta
 }

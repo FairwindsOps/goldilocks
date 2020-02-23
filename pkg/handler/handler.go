@@ -38,6 +38,8 @@ func OnUpdate(obj interface{}, event utils.Event) {
 	switch t := obj.(type) {
 	case *appsv1.Deployment:
 		OnDeploymentChanged(obj.(*appsv1.Deployment), event)
+	case *appsv1.DaemonSet:
+		OnDaemonSetChanged(obj.(*appsv1.DaemonSet), event)
 	case *corev1.Namespace:
 		OnNamespaceChanged(obj.(*corev1.Namespace), event)
 	default:
@@ -50,6 +52,8 @@ func onDelete(event utils.Event) {
 	switch strings.ToLower(event.ResourceType) {
 	case "namespace":
 		OnNamespaceChanged(&corev1.Namespace{}, event)
+	case "daemonset":
+		OnDaemonSetChanged(&appsv1.DaemonSet{}, event)
 	case "deployment":
 		OnDeploymentChanged(&appsv1.Deployment{}, event)
 	default:

@@ -37,16 +37,17 @@ type containerSummary struct {
 	ContainerName  string              `json:"containerName"`
 }
 
-type deploymentSummary struct {
-	Containers     []containerSummary `json:"containers"`
-	DeploymentName string             `json:"deploymentName"`
-	Namespace      string             `json:"namespace"`
+type resourceSummary struct {
+	Containers   []containerSummary `json:"containers"`
+	ResourceName string             `json:"resourceName"`
+	Kind         string             `json:"kind"`
+	Namespace    string             `json:"namespace"`
 }
 
 // Summary struct is for storing a summary of recommendation data.
 type Summary struct {
-	Deployments []deploymentSummary `json:"deployments"`
-	Namespaces  []string            `json:"namespaces"`
+	Resources  []resourceSummary `json:"resources"`
+	Namespaces []string          `json:"namespaces"`
 }
 
 // Client checks if VPA objects should be created or deleted
@@ -106,62 +107,111 @@ func (client *Client) constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, 
 	containerExclusions := strings.Split(excludeContainers, ",")
 
 	for _, vpa := range vpas.Items {
-		klog.V(8).Infof("Analyzing vpa: %v", vpa.ObjectMeta.Name)
+		klog.V(8).Infof("Analyzing %v vpa: %v", vpa.Spec.TargetRef.Kind, vpa.ObjectMeta.Name)
 
-		var deploy deploymentSummary
-		deploy.DeploymentName = vpa.ObjectMeta.Name
-		deploy.Namespace = vpa.ObjectMeta.Namespace
+		var resource resourceSummary
+		resource.ResourceName = vpa.ObjectMeta.Name
+		resource.Namespace = vpa.ObjectMeta.Namespace
+		resource.Kind = vpa.Spec.TargetRef.Kind
 
-		summary.Namespaces = append(summary.Namespaces, deploy.Namespace)
-
-		deployment, err := client.KubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
-		if err != nil {
-			klog.Errorf("Error retrieving deployment from API: %v", err)
-		}
+		summary.Namespaces = append(summary.Namespaces, resource.Namespace)
 
 		if vpa.Status.Recommendation == nil {
-			klog.V(2).Infof("Empty status on %v", deploy.DeploymentName)
+			klog.V(2).Infof("Empty status on %v", resource.ResourceName)
 			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No recommendations found in the %v vpa.", deploy.DeploymentName)
+			klog.V(2).Infof("No recommendations found in the %v vpa.", resource.ResourceName)
 			continue
 		}
 
-		if labelValue, labelFound := deployment.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {
-			containerExclusions = append(containerExclusions, strings.Split(labelValue, ",")...)
+		switch resource.Kind {
+		case "Deployment":
+			deploymentSummary(client, vpa, &resource, containerExclusions)
+		case "DaemonSet":
+			daemonsetSummary(client, vpa, &resource, containerExclusions)
 		}
-
-	CONTAINER_REC_LOOP:
-		for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
-			for _, exclusion := range containerExclusions {
-				if exclusion == containerRecommendation.ContainerName {
-					klog.V(2).Infof("Excluding container %v", containerRecommendation.ContainerName)
-					continue CONTAINER_REC_LOOP
-				}
-			}
-
-			var container containerSummary
-			for _, c := range deployment.Spec.Template.Spec.Containers {
-				container = containerSummary{
-					ContainerName:  containerRecommendation.ContainerName,
-					UpperBound:     containerRecommendation.UpperBound,
-					LowerBound:     containerRecommendation.LowerBound,
-					Target:         containerRecommendation.Target,
-					UncappedTarget: containerRecommendation.UncappedTarget,
-				}
-				if c.Name == containerRecommendation.ContainerName {
-					klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
-					container.Limits = c.Resources.Limits
-					container.Requests = c.Resources.Requests
-				}
-			}
-
-			deploy.Containers = append(deploy.Containers, container)
-		}
-		summary.Deployments = append(summary.Deployments, deploy)
+		summary.Resources = append(summary.Resources, resource)
 	}
 
 	summary.Namespaces = utils.UniqueString(summary.Namespaces)
 	return summary, nil
+}
+
+func deploymentSummary(client *Client, vpa v1beta2.VerticalPodAutoscaler, resource *resourceSummary, containerExclusions []string) {
+	deployment, err := client.KubeClient.Client.AppsV1().Deployments(resource.Namespace).Get(resource.ResourceName, metav1.GetOptions{})
+	if err != nil {
+		klog.Errorf("Error retrieving deployment from API: %v", err)
+	}
+
+	if labelValue, labelFound := deployment.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {
+		containerExclusions = append(containerExclusions, strings.Split(labelValue, ",")...)
+	}
+
+CONTAINER_REC_LOOP:
+	for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
+		for _, exclusion := range containerExclusions {
+			if exclusion == containerRecommendation.ContainerName {
+				klog.V(2).Infof("Excluding container %v", containerRecommendation.ContainerName)
+				continue CONTAINER_REC_LOOP
+			}
+		}
+
+		var container containerSummary
+		for _, c := range deployment.Spec.Template.Spec.Containers {
+			container = containerSummary{
+				ContainerName:  containerRecommendation.ContainerName,
+				UpperBound:     containerRecommendation.UpperBound,
+				LowerBound:     containerRecommendation.LowerBound,
+				Target:         containerRecommendation.Target,
+				UncappedTarget: containerRecommendation.UncappedTarget,
+			}
+			if c.Name == containerRecommendation.ContainerName {
+				klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
+				container.Limits = c.Resources.Limits
+				container.Requests = c.Resources.Requests
+			}
+		}
+
+		resource.Containers = append(resource.Containers, container)
+	}
+}
+
+func daemonsetSummary(client *Client, vpa v1beta2.VerticalPodAutoscaler, resource *resourceSummary, containerExclusions []string) {
+	daemonset, err := client.KubeClient.Client.AppsV1().DaemonSets(resource.Namespace).Get(resource.ResourceName, metav1.GetOptions{})
+	if err != nil {
+		klog.Errorf("Error retrieving daemonset from API: %v", err)
+	}
+
+	if labelValue, labelFound := daemonset.Labels["goldilocks.fairwinds.com/exclude-containers"]; labelFound {
+		containerExclusions = append(containerExclusions, strings.Split(labelValue, ",")...)
+	}
+
+CONTAINER_REC_LOOP:
+	for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
+		for _, exclusion := range containerExclusions {
+			if exclusion == containerRecommendation.ContainerName {
+				klog.V(2).Infof("Excluding container %v", containerRecommendation.ContainerName)
+				continue CONTAINER_REC_LOOP
+			}
+		}
+
+		var container containerSummary
+		for _, c := range daemonset.Spec.Template.Spec.Containers {
+			container = containerSummary{
+				ContainerName:  containerRecommendation.ContainerName,
+				UpperBound:     containerRecommendation.UpperBound,
+				LowerBound:     containerRecommendation.LowerBound,
+				Target:         containerRecommendation.Target,
+				UncappedTarget: containerRecommendation.UncappedTarget,
+			}
+			if c.Name == containerRecommendation.ContainerName {
+				klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
+				container.Limits = c.Resources.Limits
+				container.Requests = c.Resources.Requests
+			}
+		}
+
+		resource.Containers = append(resource.Containers, container)
+	}
 }

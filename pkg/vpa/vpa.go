@@ -112,17 +112,17 @@ func (vpa Reconciler) checkNamespaceLabel(namespace *corev1.Namespace) bool {
 // Check if deployment has label for false before applying vpa.
 func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun bool) error {
 	nsName := namespace.ObjectMeta.Name
-	vpaNames := listVPA(vpa.VPAClient, nsName)
+	vpaResources := listVPA(vpa.VPAClient, nsName)
 
 	if create := vpa.checkNamespaceLabel(namespace); !create {
 		// Get the list of VPAs that already exist
-		if len(vpaNames) < 1 {
+		if len(vpaResources) < 1 {
 			klog.V(4).Infof("No labels and no vpas in namespace. Nothing to do.")
 			return nil
 		}
 		klog.Infof("Deleting all owned VPAs in namespace: %s", namespace)
-		for _, vpaName := range vpaNames {
-			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+		for _, vpaResource := range vpaResources {
+			err := deleteVPA(vpa.VPAClient, nsName, vpaResource.ObjectMeta.Name, dryrun)
 			if err != nil {
 				return err
 			}
@@ -130,28 +130,43 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 		return nil
 	}
 
+	err := reconcileNamespaceDeployments(vpa, nsName, filterVPAs(vpaResources, "deployment"), dryrun)
+	if err != nil {
+		return err
+	}
+
+	err = reconcileNamespaceDaemonSets(vpa, nsName, filterVPAs(vpaResources, "daemonset"), dryrun)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func reconcileNamespaceDeployments(vpa Reconciler, nsName string, vpaNames []string, dryrun bool) error {
 	//Get the list of deployments in the namespace
 	deployments, err := vpa.KubeClient.Client.AppsV1().Deployments(nsName).List(metav1.ListOptions{})
 	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
+
 	var deploymentNames []string
-	klog.V(2).Infof("There are %d deployments in the namespace", len(deployments.Items))
+	klog.V(2).Infof("There are %d deployments in the namespace %v", len(deployments.Items), nsName)
 	for _, deployment := range deployments.Items {
 		deploymentNames = append(deploymentNames, deployment.ObjectMeta.Name)
-		klog.V(5).Infof("Found Deployment: %v", deployment.ObjectMeta.Name)
+		klog.V(5).Infof("Found deployment: %v", deployment.ObjectMeta.Name)
 	}
 
-	// Create any VPAs that need to be
+	// Create any Deployment VPAs that need to be
 	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
 	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
 
 	if len(vpaNeeded) == 0 {
-		klog.Info("All VPAs are in sync.")
+		klog.Infof("All deployment VPAs are in sync in %v.", nsName)
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := createVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			err := createDeploymentVPA(vpa.VPAClient, nsName, vpaName, dryrun)
 			if err != nil {
 				return err
 			}
@@ -163,7 +178,7 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 	klog.V(5).Infof("Diff vpas, deployments: %v", vpaDelete)
 
 	if len(vpaDelete) == 0 {
-		klog.Info("No VPAs to delete.")
+		klog.Info("No deployment VPAs to delete.")
 	} else if len(vpaDelete) > 0 {
 		for _, vpaName := range vpaDelete {
 			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
@@ -175,7 +190,77 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 	return nil
 }
 
-func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
+func reconcileNamespaceDaemonSets(vpa Reconciler, nsName string, vpaNames []string, dryrun bool) error {
+	//Get the list of daemonsets in the namespace
+	daemonsets, err := vpa.KubeClient.Client.AppsV1().DaemonSets(nsName).List(metav1.ListOptions{})
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
+
+	var daemonsetNames []string
+	klog.V(2).Infof("There are %d daemonsets in the namespace %v", len(daemonsets.Items), nsName)
+	for _, daemonset := range daemonsets.Items {
+		daemonsetNames = append(daemonsetNames, daemonset.ObjectMeta.Name)
+		klog.V(5).Infof("Found daemonset: %v", daemonset.ObjectMeta.Name)
+	}
+
+	// Create any Daemonset VPAs that need to be
+	vpaNeeded := utils.Difference(daemonsetNames, vpaNames)
+	klog.V(3).Infof("Diff daemonsets, vpas: %v", vpaNeeded)
+
+	if len(vpaNeeded) == 0 {
+		klog.Infof("All daemonset VPAs are in sync in %v.", nsName)
+	} else if len(vpaNeeded) > 0 {
+		for _, vpaName := range vpaNeeded {
+			err := createDaemonSetVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Now that this is one, we can delete any VPAs that don't have matching daemonsets.
+	vpaDelete := utils.Difference(vpaNames, daemonsetNames)
+	klog.V(5).Infof("Diff vpas, daemonsets: %v", vpaDelete)
+
+	if len(vpaDelete) == 0 {
+		klog.Info("No daemonset VPAs to delete.")
+	} else if len(vpaDelete) > 0 {
+		for _, vpaName := range vpaDelete {
+			err := deleteVPA(vpa.VPAClient, nsName, vpaName, dryrun)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func filterVPAs(vpaList []v1beta2.VerticalPodAutoscaler, resourceTypeFilter string) []string {
+	var vpas []string
+
+	switch resourceTypeFilter {
+	case "deployment":
+		for _, vpa := range vpaList {
+			if vpa.Spec.TargetRef.Kind == "Deployment" {
+				vpas = append(vpas, vpa.ObjectMeta.Name)
+				klog.V(5).Infof("Found existing %v vpa: %v", vpa.Spec.TargetRef.Kind, vpa.ObjectMeta.Name)
+			}
+		}
+	case "daemonset":
+		for _, vpa := range vpaList {
+			if vpa.Spec.TargetRef.Kind == "DaemonSet" {
+				vpas = append(vpas, vpa.ObjectMeta.Name)
+				klog.V(5).Infof("Found existing %v vpa: %v", vpa.Spec.TargetRef.Kind, vpa.ObjectMeta.Name)
+			}
+		}
+	}
+
+	return vpas
+}
+
+func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []v1beta2.VerticalPodAutoscaler {
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(utils.VpaLabels).String(),
@@ -186,13 +271,14 @@ func listVPA(vpaClient *kube.VPAClientInstance, namespace string) []string {
 		klog.Error(err.Error())
 		return nil
 	}
-	var vpaNames []string
+	var vpas []v1beta2.VerticalPodAutoscaler
 
 	for _, vpa := range existingVPAs.Items {
-		vpaNames = append(vpaNames, vpa.ObjectMeta.Name)
-		klog.V(5).Infof("Found existing vpa: %v", vpa.ObjectMeta.Name)
+		vpas = append(vpas, vpa)
+		klog.V(5).Infof("Found existing %v vpa: %v", vpa.Spec.TargetRef.Kind, vpa.ObjectMeta.Name)
 	}
-	return vpaNames
+
+	return vpas
 }
 
 func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
@@ -211,7 +297,7 @@ func deleteVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName stri
 	return nil
 }
 
-func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
+func createDeploymentVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
 	updateMode := v1beta2.UpdateModeOff
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -231,15 +317,48 @@ func createVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName stri
 	}
 
 	if !dryrun {
-		klog.Infof("Creating vpa: %s", vpaName)
+		klog.Infof("Creating deployment vpa: %s in ns: %v", vpaName, namespace)
 		klog.V(9).Infof("%v", vpa)
 		_, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Create(vpa)
 		if err != nil {
-			klog.Errorf("Error creating vpa: %v", err)
+			klog.Errorf("Error creating deployment vpa: %v", err)
 			return err
 		}
 	} else {
-		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
+		klog.Infof("Dry run was set. Not creating deployment vpa: %v", vpaName)
+	}
+	return nil
+}
+
+func createDaemonSetVPA(vpaClient *kube.VPAClientInstance, namespace string, vpaName string, dryrun bool) error {
+	updateMode := v1beta2.UpdateModeOff
+	vpa := &v1beta2.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   vpaName,
+			Labels: utils.VpaLabels,
+		},
+		Spec: v1beta2.VerticalPodAutoscalerSpec{
+			TargetRef: &autoscaling.CrossVersionObjectReference{
+				APIVersion: "extensions/v1beta1",
+				Kind:       "DaemonSet",
+				Name:       vpaName,
+			},
+			UpdatePolicy: &v1beta2.PodUpdatePolicy{
+				UpdateMode: &updateMode,
+			},
+		},
+	}
+
+	if !dryrun {
+		klog.Infof("Creating daemonset vpa: %s in ns: %v", vpaName, namespace)
+		klog.V(9).Infof("%v", vpa)
+		_, err := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(namespace).Create(vpa)
+		if err != nil {
+			klog.Errorf("Error creating daemonset vpa: %v", err)
+			return err
+		}
+	} else {
+		klog.Infof("Dry run was set. Not creating daemonset vpa: %v", vpaName)
 	}
 	return nil
 }

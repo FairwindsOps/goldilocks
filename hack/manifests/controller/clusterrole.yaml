@@ -15,6 +15,15 @@ rules:
       - 'list'
       - 'watch'
   - apiGroups:
+      - 'apps'
+      - 'extensions'
+    resources:
+      - 'daemonsets'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
       - ''
     resources:
       - 'namespaces'

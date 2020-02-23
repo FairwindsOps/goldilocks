@@ -74,3 +74,10 @@ var testDeployment = &appsv1.Deployment{
 		Name: "test-deploy",
 	},
 }
+
+// A deployment object that can be used for testing
+var testDaemonSet = &appsv1.DaemonSet{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "test-daemonset",
+	},
+}

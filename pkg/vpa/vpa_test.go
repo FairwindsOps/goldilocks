@@ -39,13 +39,13 @@ func Test_createVPADryRun(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
-	err := createVPA(VPAClient, "testing", "test-vpa", true)
+	err := createDeploymentVPA(VPAClient, "testing", "test-vpa", true)
 	assert.NoError(t, err)
 	_, err = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, err, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
 
 	// Now actually create and compare
-	errCreate := createVPA(VPAClient, "testing", "test-vpa", false)
+	errCreate := createDeploymentVPA(VPAClient, "testing", "test-vpa", false)
 	newVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, testVPA, newVPA)
@@ -75,19 +75,33 @@ func Test_listVPA(t *testing.T) {
 	setupVPAForTests()
 	VPAClient := GetInstance().VPAClient
 
-	_ = createVPA(VPAClient, "ns", "test1", false)
-	_ = createVPA(VPAClient, "ns", "test2", false)
-	_ = createVPA(VPAClient, "ns2", "test3", false)
+	_ = createDeploymentVPA(VPAClient, "ns", "deploytest1", false)
+	_ = createDeploymentVPA(VPAClient, "ns", "deploytest2", false)
+	_ = createDeploymentVPA(VPAClient, "ns2", "deploytest3", false)
 
-	vpaList1 := listVPA(VPAClient, "ns")
-	assert.EqualValues(t, vpaList1, []string{"test1", "test2"})
-
-	vpaList2 := listVPA(VPAClient, "")
-	assert.EqualValues(t, vpaList2, []string{"test1", "test2", "test3"})
+	_ = createDaemonSetVPA(VPAClient, "ns", "dstest1", false)
+	_ = createDaemonSetVPA(VPAClient, "ns", "dstest2", false)
+	_ = createDaemonSetVPA(VPAClient, "ns2", "dstest3", false)
 
 	var expected []string
-	vpaList3 := listVPA(VPAClient, "nonexistent")
-	assert.EqualValues(t, vpaList3, expected)
+
+	deployVpaList1 := filterVPAs(listVPA(VPAClient, "ns"), "deployment")
+	assert.EqualValues(t, deployVpaList1, []string{"deploytest1", "deploytest2"})
+
+	deployVpaList2 := filterVPAs(listVPA(VPAClient, ""), "deployment")
+	assert.EqualValues(t, deployVpaList2, []string{"deploytest1", "deploytest2", "deploytest3"})
+
+	deployVpaList3 := filterVPAs(listVPA(VPAClient, "nonexistent"), "daemonset")
+	assert.EqualValues(t, deployVpaList3, expected)
+
+	dsVpaList1 := filterVPAs(listVPA(VPAClient, "ns"), "daemonset")
+	assert.EqualValues(t, dsVpaList1, []string{"dstest1", "dstest2"})
+
+	dsVpaList2 := filterVPAs(listVPA(VPAClient, ""), "daemonset")
+	assert.EqualValues(t, dsVpaList2, []string{"dstest1", "dstest2", "dstest3"})
+
+	dsVpaList3 := filterVPAs(listVPA(VPAClient, "nonexistent"), "daemonset")
+	assert.EqualValues(t, dsVpaList3, expected)
 }
 
 func Test_checkNamespaceLabel(t *testing.T) {
@@ -229,6 +243,9 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
 	assert.NoError(t, err)
 
+	_, err = KubeClient.Client.AppsV1().DaemonSets(nsName).Create(testDaemonSet)
+	assert.NoError(t, err)
+
 	// False labels should generate 0 vpa objects
 	err = GetInstance().ReconcileNamespace(nsLabeledFalse, false)
 	assert.NoError(t, err)
@@ -276,6 +293,33 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(testDeployment.ObjectMeta.Name, &metav1.DeleteOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	assert.NoError(t, err)
+
+	// No VPA objects left after deleted deployment
+	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(vpaList.Items))
+	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+
+}
+
+func Test_ReconcileNamespaceDeleteDaemonSet(t *testing.T) {
+	setupVPAForTests()
+	VPAClient := GetInstance().VPAClient
+	KubeClient := GetInstance().KubeClient
+
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	assert.NoError(t, err)
+	nsName := nsLabeledTrue.ObjectMeta.Name
+
+	// Create ds, reconcile, delete deploy, reconcile
+	_, err = KubeClient.Client.AppsV1().DaemonSets(nsName).Create(testDaemonSet)
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
+	assert.NoError(t, err)
+	err = KubeClient.Client.AppsV1().DaemonSets(nsName).Delete(testDaemonSet.ObjectMeta.Name, &metav1.DeleteOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
