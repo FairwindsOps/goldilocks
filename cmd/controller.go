@@ -29,12 +29,14 @@ import (
 var onByDefault bool
 var includeNamespaces []string
 var excludeNamespaces []string
+var enableDaemonSetController bool
 
 func init() {
 	rootCmd.AddCommand(controllerCmd)
 	controllerCmd.PersistentFlags().BoolVarP(&onByDefault, "on-by-default", "", false, "Add goldilocks to every namespace that isn't explicitly excluded.")
 	controllerCmd.PersistentFlags().StringArrayVarP(&includeNamespaces, "include-namespaces", "", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringArrayVarP(&excludeNamespaces, "exclude-namespaces", "", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
+	controllerCmd.PersistentFlags().BoolVarP(&enableDaemonSetController, "enable-daemonset-controller", "", false, "Creates a VPA for every DaemonSet that isn't explicitly excluded.")
 }
 
 var controllerCmd = &cobra.Command{
@@ -46,6 +48,7 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.OnByDefault = onByDefault
 		vpaReconciler.IncludeNamespaces = includeNamespaces
 		vpaReconciler.ExcludeNamespaces = excludeNamespaces
+		vpaReconciler.EnableDaemonSetController = enableDaemonSetController
 
 		// create a channel for sending a stop to kube watcher threads
 		stop := make(chan bool, 1)
