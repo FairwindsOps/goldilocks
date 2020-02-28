@@ -31,11 +31,12 @@ import (
 
 // Reconciler checks if VPA objects should be created or deleted
 type Reconciler struct {
-	KubeClient        *kube.ClientInstance
-	VPAClient         *kube.VPAClientInstance
-	OnByDefault       bool
-	IncludeNamespaces []string
-	ExcludeNamespaces []string
+	KubeClient                *kube.ClientInstance
+	VPAClient                 *kube.VPAClientInstance
+	OnByDefault               bool
+	IncludeNamespaces         []string
+	ExcludeNamespaces         []string
+	EnableDaemonSetController bool
 }
 
 var singleton *Reconciler
@@ -135,9 +136,11 @@ func (vpa Reconciler) ReconcileNamespace(namespace *corev1.Namespace, dryrun boo
 		return err
 	}
 
-	err = reconcileNamespaceDaemonSets(vpa, nsName, filterVPAs(vpaResources, "daemonset"), dryrun)
-	if err != nil {
-		return err
+	if vpa.EnableDaemonSetController {
+		err = reconcileNamespaceDaemonSets(vpa, nsName, filterVPAs(vpaResources, "daemonset"), dryrun)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
