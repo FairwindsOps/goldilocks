@@ -15,25 +15,16 @@
 package dashboard
 
 import (
-	"fmt"
-
 	uuid "github.com/satori/go.uuid"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func printResource(quant resource.Quantity, resourceType corev1.ResourceName) string {
+func printResource(quant resource.Quantity) string {
 	if quant.IsZero() {
 		return "Not Set"
 	}
-	switch resourceType {
-	case corev1.ResourceCPU:
-		return fmt.Sprintf("%vm", quant.MilliValue())
-	case corev1.ResourceMemory:
-		return fmt.Sprintf("%vMi", quant.Value()/(1024*1024))
-	default:
-		return fmt.Sprintf("%v", quant.Value())
-	}
+	return quant.String()
 }
 
 func getStatus(existing resource.Quantity, recommendation resource.Quantity, style string) string {
