@@ -1,28 +1,21 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@11
+  rok8s-scripts: fairwinds/rok8s-scripts@dev:sudermanjr/store-e2e-test-result
 
 references:
-  install_goreleaser: &install_goreleaser
-    run:
-      name: Install GoReleaser
-      command: |
-        curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.106.0/goreleaser_amd64.deb
-        echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha256sum -c
-        sudo dpkg -i goreleaser.deb
   kind_configuration: &kind_configuration
     pre_script: e2e/pre.sh
-    script: e2e/test.sh
+    script: e2e/run.sh
+    command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
+    store-test-results: /tmp/test-results
     requires:
       - test
-      - rok8s-scripts/docker_build_and_push
     filters:
       branches:
         only: /.*/
       tags:
         ignore: /v.*/
-
 jobs:
   test:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
@@ -45,38 +38,11 @@ jobs:
       - run:
           name: codecov
           command: bash <(curl -s https://codecov.io/bash)
-
-  release:
-    working_directory: /go/src/github.com/fairwindsops/goldilocks
-    docker:
-      - image: circleci/golang:1.13
-        environment:
-          GO111MODULE: "on"
-    steps:
-      - checkout
-      - run: go mod download && go mod verify
-      - *install_goreleaser
-      - run: goreleaser
-
 workflows:
   version: 2
   build:
     jobs:
       - test:
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              only: /v.*/
-      - rok8s-scripts/docker_build_and_push:
-          config_file: deploy/build.config
-          context: org-global
-          docker-login: true
-          password-variable: fairwinds_quay_token
-          registry: quay.io
-          username: fairwinds+circleci
-          requires:
-            - test
           filters:
             branches:
               only: /.*/
@@ -98,10 +64,26 @@ workflows:
           name: "End-To-End Kubernetes 1.17.0"
           kind_node_image: "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
           <<: *kind_configuration
-      - release:
+      - rok8s-scripts/docker_build_and_push:
+          name: build-and-push-container
+          docker-push: true
+          config_file: deploy/build.config
+          context: org-global
+          docker-login: true
+          password-variable: "fairwinds_quay_token"
+          registry: quay.io
+          username: fairwinds+circleci
           requires:
             - test
-            - rok8s-scripts/docker_build_and_push
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - rok8s-scripts/github_release:
+          requires:
+            - test
+            - build-and-push-container
           filters:
             branches:
               ignore: /.*/

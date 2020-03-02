@@ -51,6 +51,18 @@ Prerequisites:
 * Use `make tidy` or `make build` to ensure all dependencies are downloaded.
 * See the dashboard with `go run main.go dashboard`, then open http://localhost:8080/.  This assumes that you have a working KUBECONFIG in place with access to a cluster.
 
+### End-To-End Tests
+
+The e2e tests run using [Venom](https://github.com/ovh/venom). You can run them yourself by:
+
+- installing venom
+- setting up a kind cluster `kind create cluster`
+- running `make e2e-test`.
+
+The tests are also run automatically by CI
+
+You can add tests in the [e2e/tests](e2e/tests) directory. See the Venom README for more info.
+
 ## Creating a New Issue
 
 If you've encountered an issue that is not already reported, please create an issue that contains the following:
