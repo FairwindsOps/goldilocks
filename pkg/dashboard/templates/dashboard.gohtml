@@ -14,7 +14,7 @@
               {{ range $container := $deployment.Containers }}
                 {{ $cpuRequest := (index $container.Requests (resourceName "cpu")) }}
                 {{ $cpuLimit := (index $container.Limits (resourceName "cpu")) }}
-                {{ $memRequest := (index $container.Limits (resourceName "memory")) }}
+                {{ $memRequest := (index $container.Requests (resourceName "memory")) }}
                 {{ $memLimit := (index $container.Limits (resourceName "memory")) }}
                 {{ $cpuLowerBound := (index $container.LowerBound (resourceName "cpu")) }}
                 {{ $cpuUpperBound := (index $container.UpperBound (resourceName "cpu")) }}
