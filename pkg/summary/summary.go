@@ -158,18 +158,19 @@ CONTAINER_REC_LOOP:
 		}
 
 		var container containerSummary
+		container = containerSummary{
+			ContainerName:  containerRecommendation.ContainerName,
+			UpperBound:     containerRecommendation.UpperBound,
+			LowerBound:     containerRecommendation.LowerBound,
+			Target:         containerRecommendation.Target,
+			UncappedTarget: containerRecommendation.UncappedTarget,
+		}
 		for _, c := range deployment.Spec.Template.Spec.Containers {
-			container = containerSummary{
-				ContainerName:  containerRecommendation.ContainerName,
-				UpperBound:     containerRecommendation.UpperBound,
-				LowerBound:     containerRecommendation.LowerBound,
-				Target:         containerRecommendation.Target,
-				UncappedTarget: containerRecommendation.UncappedTarget,
-			}
 			if c.Name == containerRecommendation.ContainerName {
 				klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
 				container.Limits = c.Resources.Limits
 				container.Requests = c.Resources.Requests
+				break
 			}
 		}
 
@@ -197,18 +198,19 @@ CONTAINER_REC_LOOP:
 		}
 
 		var container containerSummary
+		container = containerSummary{
+			ContainerName:  containerRecommendation.ContainerName,
+			UpperBound:     containerRecommendation.UpperBound,
+			LowerBound:     containerRecommendation.LowerBound,
+			Target:         containerRecommendation.Target,
+			UncappedTarget: containerRecommendation.UncappedTarget,
+		}
 		for _, c := range daemonset.Spec.Template.Spec.Containers {
-			container = containerSummary{
-				ContainerName:  containerRecommendation.ContainerName,
-				UpperBound:     containerRecommendation.UpperBound,
-				LowerBound:     containerRecommendation.LowerBound,
-				Target:         containerRecommendation.Target,
-				UncappedTarget: containerRecommendation.UncappedTarget,
-			}
 			if c.Name == containerRecommendation.ContainerName {
 				klog.V(6).Infof("Resources for %s: %v", c.Name, c.Resources)
 				container.Limits = c.Resources.Limits
 				container.Requests = c.Resources.Requests
+				break
 			}
 		}
 

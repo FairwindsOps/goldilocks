@@ -91,7 +91,7 @@ func Test_listVPA(t *testing.T) {
 	deployVpaList2 := filterVPAs(listVPA(VPAClient, ""), "deployment")
 	assert.EqualValues(t, deployVpaList2, []string{"deploytest1", "deploytest2", "deploytest3"})
 
-	deployVpaList3 := filterVPAs(listVPA(VPAClient, "nonexistent"), "daemonset")
+	deployVpaList3 := filterVPAs(listVPA(VPAClient, "nonexistent"), "deployment")
 	assert.EqualValues(t, deployVpaList3, expected)
 
 	dsVpaList1 := filterVPAs(listVPA(VPAClient, "ns"), "daemonset")
@@ -324,7 +324,7 @@ func Test_ReconcileNamespaceDeleteDaemonSet(t *testing.T) {
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue, false)
 	assert.NoError(t, err)
 
-	// No VPA objects left after deleted deployment
+	// No VPA objects left after deleted daemonset
 	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
