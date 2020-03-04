@@ -20,7 +20,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9 // indirect
 	k8s.io/api v0.17.3
