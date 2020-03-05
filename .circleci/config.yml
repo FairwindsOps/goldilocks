@@ -4,7 +4,7 @@ orbs:
   rok8s-scripts: fairwinds/rok8s-scripts@11
 
 references:
-  kind_configuration: &kind_configuration
+  e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
@@ -66,19 +66,19 @@ workflows:
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.14.10"
           kind_node_image: "kindest/node:v1.14.10@sha256:81ae5a3237c779efc4dda43cc81c696f88a194abcc4f8fa34f86cf674aa14977"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.15.7"
           kind_node_image: "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.16.4"
           kind_node_image: "kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.17.0"
           kind_node_image: "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/docker_build_and_push:
           name: build-and-push-container
           docker-push: true
