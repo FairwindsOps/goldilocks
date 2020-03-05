@@ -56,8 +56,6 @@ workflows:
           context: org-global
           docker-login: false
           password-variable: "foo"
-          registry: foo
-          username: foo
           requires:
             - test
           filters:
