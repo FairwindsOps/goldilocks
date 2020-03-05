@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@dev:sudermanjr/store-e2e-test-result
+  rok8s-scripts: fairwinds/rok8s-scripts@11
 
 references:
   kind_configuration: &kind_configuration
@@ -10,7 +10,7 @@ references:
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     store-test-results: /tmp/test-results
     requires:
-      - test
+      - build-container
     filters:
       branches:
         only: /.*/
@@ -48,6 +48,23 @@ workflows:
               only: /.*/
             tags:
               only: /v.*/
+      - rok8s-scripts/docker_build_and_push:
+          name: build-container
+          docker-push: false
+          enable_docker_layer_caching: true
+          config_file: deploy/build.config
+          context: org-global
+          docker-login: false
+          password-variable: "foo"
+          registry: foo
+          username: foo
+          requires:
+            - test
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /v.*/
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.14.10"
           kind_node_image: "kindest/node:v1.14.10@sha256:81ae5a3237c779efc4dda43cc81c696f88a194abcc4f8fa34f86cf674aa14977"
@@ -67,6 +84,7 @@ workflows:
       - rok8s-scripts/docker_build_and_push:
           name: build-and-push-container
           docker-push: true
+          enable_docker_layer_caching: true
           config_file: deploy/build.config
           context: org-global
           docker-login: true
