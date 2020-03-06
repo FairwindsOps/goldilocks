@@ -8,6 +8,7 @@ references:
     pre_script: e2e/pre.sh
     script: e2e/run.sh
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
+    enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     requires:
       - build-container
