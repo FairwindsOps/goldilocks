@@ -4,25 +4,19 @@ orbs:
   rok8s-scripts: fairwinds/rok8s-scripts@11
 
 references:
-  install_goreleaser: &install_goreleaser
-    run:
-      name: Install GoReleaser
-      command: |
-        curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.106.0/goreleaser_amd64.deb
-        echo "c63e8dad590700f2f51e5508ec75c9f18d09ce570cbc05ebea4fb60cfad2bcc3  goreleaser.deb" | sha256sum -c
-        sudo dpkg -i goreleaser.deb
-  kind_configuration: &kind_configuration
+  e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
-    script: e2e/test.sh
+    script: e2e/run.sh
+    command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
+    enable_docker_layer_caching: true
+    store-test-results: /tmp/test-results
     requires:
-      - test
-      - rok8s-scripts/docker_build_and_push
+      - build-container
     filters:
       branches:
         only: /.*/
       tags:
         ignore: /v.*/
-
 jobs:
   test:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
@@ -45,19 +39,6 @@ jobs:
       - run:
           name: codecov
           command: bash <(curl -s https://codecov.io/bash)
-
-  release:
-    working_directory: /go/src/github.com/fairwindsops/goldilocks
-    docker:
-      - image: circleci/golang:1.13
-        environment:
-          GO111MODULE: "on"
-    steps:
-      - checkout
-      - run: go mod download && go mod verify
-      - *install_goreleaser
-      - run: goreleaser
-
 workflows:
   version: 2
   build:
@@ -69,39 +50,56 @@ workflows:
             tags:
               only: /v.*/
       - rok8s-scripts/docker_build_and_push:
+          name: build-container
+          docker-push: false
+          enable_docker_layer_caching: true
           config_file: deploy/build.config
-          context: org-global
-          docker-login: true
-          password-variable: fairwinds_quay_token
-          registry: quay.io
-          username: fairwinds+circleci
+          docker-login: false
+          password-variable: "foo"
           requires:
             - test
           filters:
             branches:
               only: /.*/
             tags:
-              only: /v.*/
+              ignore: /.*/
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.14.10"
           kind_node_image: "kindest/node:v1.14.10@sha256:81ae5a3237c779efc4dda43cc81c696f88a194abcc4f8fa34f86cf674aa14977"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.15.7"
           kind_node_image: "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.16.4"
           kind_node_image: "kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55"
-          <<: *kind_configuration
+          <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.17.0"
           kind_node_image: "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
-          <<: *kind_configuration
-      - release:
+          <<: *e2e_configuration
+      - rok8s-scripts/docker_build_and_push:
+          name: build-and-push-container
+          docker-push: true
+          enable_docker_layer_caching: true
+          config_file: deploy/build.config
+          context: org-global
+          docker-login: true
+          password-variable: "fairwinds_quay_token"
+          registry: quay.io
+          username: fairwinds+circleci
           requires:
             - test
-            - rok8s-scripts/docker_build_and_push
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - rok8s-scripts/github_release:
+          requires:
+            - test
+            - build-and-push-container
           filters:
             branches:
               ignore: /.*/

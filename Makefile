@@ -25,8 +25,13 @@ clean:
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
 	packr2 clean
+	rm -rf e2e/resutls/*
+	rm *-report*
+	rm coverage.txt
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION)" -v
 build-docker:
 	docker build -t goldilocks:dev .
+e2e-test:
+	venom run e2e/tests/* --output-dir e2e/results --log info --strict

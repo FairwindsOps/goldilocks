@@ -1,0 +1,50 @@
+version: "2"
+name: "Flags - include-namespaces/exclude-namespaces/on-by-default"
+vars:
+  timeout: 60s
+  vpa-wait: 30
+testcases:
+- name: Setup namespaces demo-no-label/demo-included/demo-excluded
+  steps:
+  - script: |
+      kubectl create ns demo-no-label
+      kubectl create ns demo-included
+      kubectl create ns demo-excluded
+
+      helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
+      helm install basic-demo-no-label fairwinds-incubator/basic-demo --namespace demo-no-label --version=0.2.3
+      helm install basic-demo-included fairwinds-incubator/basic-demo --namespace demo-included --version=0.2.3
+      helm install basic-demo-excluded fairwinds-incubator/basic-demo --namespace demo-excluded --version=0.2.3
+
+      kubectl -n demo-no-label wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
+      kubectl -n demo-included wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
+      kubectl -n demo-excluded wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
+- name: On By Default
+  steps:
+  - script: yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--on-by-default' | kubectl -n goldilocks apply -f -
+  - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo-no-label -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo-no-label"
+- name: Include Namespaces
+  steps:
+  - script: yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--include-namespaces=demo-included' | kubectl -n goldilocks apply -f -
+  - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-included basic-demo-included -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo-included"
+- name: Exclude Namespaces
+  steps:
+  - script: |
+      yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--on-by-default' | \
+      yq w - -- spec.template.spec.containers[0].command[3] '--exclude-namespaces=demo-excluded' | kubectl -n goldilocks apply -f -
+  - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-excluded -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual ""

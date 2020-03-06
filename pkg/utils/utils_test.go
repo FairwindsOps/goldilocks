@@ -18,6 +18,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func TestUniqueString(t *testing.T) {
@@ -76,5 +78,46 @@ var testDifferenceCases = []struct {
 		testData1:   []string{"a", "b", "c"},
 		testData2:   []string{"a", "b"},
 		expected:    []string{"c"},
+	},
+}
+
+func TestFormatResourceList(t *testing.T) {
+	for _, tc := range testFormatResourceCases {
+		res := FormatResourceList(tc.testData)
+		resource := res[tc.resourceType]
+		got := resource.String()
+		assert.Equal(t, tc.expected, got)
+	}
+}
+
+var testFormatResourceCases = []struct {
+	description  string
+	testData     v1.ResourceList
+	resourceType v1.ResourceName
+	expected     string
+}{
+	{
+		description: "Unmodified cpu",
+		testData: v1.ResourceList{
+			"cpu": resource.MustParse("1"),
+		},
+		resourceType: "cpu",
+		expected:     "1",
+	},
+	{
+		description: "Unmodified memory",
+		testData: v1.ResourceList{
+			"memory": resource.MustParse("1Mi"),
+		},
+		resourceType: "memory",
+		expected:     "1Mi",
+	},
+	{
+		description: "Memory in too large of units",
+		testData: v1.ResourceList{
+			"memory": resource.MustParse("123456k"),
+		},
+		resourceType: "memory",
+		expected:     "124M",
 	},
 }

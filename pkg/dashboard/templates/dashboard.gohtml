@@ -43,40 +43,40 @@
                       <tbody>
                         <tr>
                           <td>CPU Request</td>
-                          <td><span class="message">{{ printResource $cpuRequest "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuRequest}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatus $cpuRequest $cpuTarget $icon }}"></i>
                             <span class="sr-only">{{ getStatus $cpuRequest $cpuTarget $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $cpuTarget "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuTarget }}</span></td>
                         </tr>
                         <tr>
                           <td>CPU Limit</td>
-                          <td><span class="message">{{ printResource $cpuLimit "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuLimit}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatus $cpuLimit $cpuTarget $icon }}"></i>
                             <span class="sr-only">{{ getStatus $cpuLimit $cpuTarget $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $cpuTarget "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuTarget }}</span></td>
                         </tr>
                         <tr>
                           <td>Mem Request</td>
-                          <td><span class="message">{{ printResource $memRequest "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memRequest}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatus $memRequest $memTarget $icon }}"></i>
                             <span class="sr-only">{{ getStatus $memRequest $memTarget $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $memTarget "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memTarget }}</span></td>
                         </tr>
                         <tr>
                         <tr>
                           <td>Mem Limit</td>
-                          <td><span class="message">{{ printResource $memLimit "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memLimit}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatus $memLimit $memTarget $icon }}"></i>
                             <span class="sr-only">{{ getStatus $memLimit $memTarget $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $memTarget "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memTarget }}</span></td>
                         </tr>
                       </tbody>
                     </table>
@@ -85,11 +85,11 @@
                         <pre class="fix-yaml">
   <code class="language-yaml">        resources:
             limits:
-              cpu: {{ printResource $cpuTarget "cpu" }}
-              memory: {{ printResource $memTarget "memory" }}
+              cpu: {{ printResource $cpuTarget}}
+              memory: {{ printResource $memTarget }}
             requests:
-              cpu: {{ printResource $cpuTarget "cpu" }}
-              memory: {{ printResource $memTarget "memory" }}</code></pre>
+              cpu: {{ printResource $cpuTarget }}
+              memory: {{ printResource $memTarget }}</code></pre>
                     </div>
 
                   </div> {{/* End Guaranteed Tab */}}
@@ -109,40 +109,40 @@
                       <tbody>
                         <tr>
                           <td>CPU Request</td>
-                          <td><span class="message">{{ printResource $cpuRequest "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuRequest}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $icon }}"></i>
                             <span class="sr-only">{{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $cpuLowerBound "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuLowerBound }}</span></td>
                         </tr>
                         <tr>
                           <td>CPU Limit</td>
-                          <td><span class="message">{{ printResource $cpuLimit "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuLimit}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $icon }}"></i>
                             <span class="sr-only">{{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $cpuUpperBound "cpu" }}</span></td>
+                          <td><span class="message">{{ printResource $cpuUpperBound }}</span></td>
                         </tr>
                         <tr>
                           <td>Mem Request</td>
-                          <td><span class="message">{{ printResource $memRequest "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memRequest}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatusRange $memRequest $memLowerBound $memUpperBound $icon }}"></i>
                             <span class="sr-only">{{ getStatusRange $memRequest $memLowerBound $memUpperBound $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $memLowerBound "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memLowerBound }}</span></td>
                         </tr>
                         <tr>
                         <tr>
                           <td>Mem Limit</td>
-                          <td><span class="message">{{ printResource $memLimit "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memLimit}}</span></td>
                           <td>
                             <i aria-hidden="true" class="message-icon fas {{ getStatusRange $memLimit $memLowerBound $memUpperBound $icon }}"></i>
                             <span class="sr-only">{{ getStatusRange $memLimit $memLowerBound $memUpperBound $text }}</span>
                           </td>
-                          <td><span class="message">{{ printResource $memUpperBound "memory" }}</span></td>
+                          <td><span class="message">{{ printResource $memUpperBound }}</span></td>
                         </tr>
                       </tbody>
                     </table>
@@ -151,11 +151,11 @@
                         <pre class="fix-yaml">
   <code class="language-yaml">        resources:
             limits:
-              cpu: {{ printResource $cpuUpperBound "cpu" }}
-              memory: {{ printResource $memUpperBound "memory" }}
+              cpu: {{ printResource $cpuUpperBound}}
+              memory: {{ printResource $memUpperBound }}
             requests:
-              cpu: {{ printResource $cpuLowerBound "cpu" }}
-              memory: {{ printResource $memLowerBound "memory" }}</code></pre>
+              cpu: {{ printResource $cpuLowerBound }}
+              memory: {{ printResource $memLowerBound }}</code></pre>
                     </div>
                   </div> {{/* End Burstable Tab */}}
                 </div>

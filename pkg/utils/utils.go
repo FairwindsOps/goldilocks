@@ -14,6 +14,11 @@
 
 package utils
 
+import (
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+)
+
 // VpaLabels is a set of default labels that get placed on every VPA.
 // TODO: Replace this with the OwnerRef pattern
 var VpaLabels = map[string]string{
@@ -56,4 +61,25 @@ func Difference(a, b []string) (diff []string) {
 		}
 	}
 	return
+}
+
+// FormatResourceList scales the units of a ResourceList so that they are
+// human readable
+func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
+	memoryScales := []resource.Scale{
+		resource.Kilo,
+		resource.Mega,
+		resource.Giga,
+		resource.Tera,
+	}
+	if mem, exists := rl[v1.ResourceMemory]; exists {
+		i := 0
+		maxAllowableStringLen := 5
+		for len(mem.String()) > maxAllowableStringLen && i < len(memoryScales)-1 {
+			mem.RoundUp(memoryScales[i])
+			i++
+		}
+		rl[v1.ResourceMemory] = mem
+	}
+	return rl
 }
