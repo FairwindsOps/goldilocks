@@ -58,8 +58,8 @@ First, make sure you satisfy the requirements above.
 ### Method 1 - Helm (preferred)
 
 ```
-helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-helm install --name goldilocks --namespace goldilocks fairwinds-incubator/goldilocks
+helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 ```
 
 ### Method 2 - Manifests
