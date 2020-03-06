@@ -1,0 +1,35 @@
+version: "2"
+name: Setup
+vars:
+  timeout: 60s
+  vpa-wait: 20
+  vpa-ref: e16a0adef6c7d79a23d57f9bbbef26fc9da59378
+testcases:
+- name: Install metrics-server
+  steps:
+  - script: |
+      helm repo add stable https://kubernetes-charts.storage.googleapis.com
+      helm repo update
+      kubectl create namespace metrics-server
+      helm install metrics-server stable/metrics-server --version=2.9.0 --set args[0]=--kubelet-insecure-tls --set args[1]=--kubelet-preferred-address-types=InternalIP --namespace metrics-server
+- name: Install VPA Recommender
+  steps:
+  - script: |
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/recommender-deployment.yaml
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-beta2-crd.yaml
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+  - script: kubectl get crd verticalpodautoscalers.autoscaling.k8s.io -oname
+    retry: 6
+    delay: 5
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "customresourcedefinition.apiextensions.k8s.io/verticalpodautoscalers.autoscaling.k8s.io"
+- name: Install Goldilocks
+  steps:
+  - script: kubectl create ns goldilocks
+  - script: |
+      kubectl -n goldilocks apply -f ../../hack/manifests/dashboard/
+      kubectl -n goldilocks apply -f ../../hack/manifests/controller/
+  - script: |
+      kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=dashboard
+      kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
