@@ -54,7 +54,6 @@ workflows:
           docker-push: false
           enable_docker_layer_caching: true
           config_file: deploy/build.config
-          context: org-global
           docker-login: false
           password-variable: "foo"
           requires:
