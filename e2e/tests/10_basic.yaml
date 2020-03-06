@@ -1,0 +1,28 @@
+version: "2"
+name: "Basic Operation"
+vars:
+  timeout: 60s
+  vpa-wait: 30
+testcases:
+- name: Setup demo namespace
+  steps:
+  - script: |
+      kubectl create ns demo
+      helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
+      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo --version=0.2.3
+      kubectl -n demo wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
+- name: No VPA Anywhere Before Labels
+  steps:
+  - script: kubectl get vpa --all-namespaces
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual ""
+    - result.systemerr ShouldEqual "No resources found."
+- name: VPA in demo namespace
+  steps:
+  - script: kubectl label ns demo goldilocks.fairwinds.com/enabled=true --overwrite
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo basic-demo -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo"

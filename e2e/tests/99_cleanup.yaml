@@ -1,0 +1,18 @@
+version: "2"
+name: Cleanup
+vars:
+  timeout: 60s
+  vpa-wait: 20
+  vpa-ref: e16a0adef6c7d79a23d57f9bbbef26fc9da59378
+testcases:
+- name: Cleanup
+  steps:
+  - script: |
+      kubectl delete ns demo demo-no-label demo-included demo-excluded goldilocks
+  - script: |
+      kubectl delete -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/recommender-deployment.yaml
+      kubectl delete -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-beta2-crd.yaml
+      kubectl delete -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+  - script: |
+      helm -n metrics-server delete metrics-server
+      kubectl delete ns metrics-server
