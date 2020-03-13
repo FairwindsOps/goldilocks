@@ -1,0 +1,22 @@
+version: 1
+update_configs:
+  - package_manager: "go:modules"
+    directory: "/"
+    update_schedule: "weekly"
+    target_branch: "master"
+    default_labels:
+      - "dependabot"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:patch"
+  - package_manager: "docker"
+    directory: "/"
+    update_schedule: "weekly"
+    target_branch: "master"
+    default_labels:
+      - "dependabot"
+    automerged_updates:
+      - match:
+          dependency_type: "all"
+          update_type: "semver:patch"
