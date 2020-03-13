@@ -7,7 +7,7 @@ COPY . .
 ENV GO111MODULE=on
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 packr2 build -a -o goldilocks *.go
 
-FROM alpine:3.9 as alpine
+FROM alpine:3.11.3 as alpine
 RUN apk --no-cache --update add ca-certificates tzdata && update-ca-certificates
 
 FROM scratch
