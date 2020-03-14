@@ -22,11 +22,11 @@ require (
 	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9 // indirect
-	k8s.io/api v0.17.3
+	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.3
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191211165407-195d3d988f4f
-	k8s.io/client-go v0.17.3
+	k8s.io/client-go v0.17.4
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20200117235808-5f6fbceb4c31 // indirect
-	sigs.k8s.io/controller-runtime v0.5.0
+	sigs.k8s.io/controller-runtime v0.5.1
 )
