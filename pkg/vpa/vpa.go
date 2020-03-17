@@ -140,13 +140,12 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 		if strings.ToLower(k) != vpaEnabledLabel {
 			continue
 		}
-		v = strings.ToLower(v)
-		if v == "true" {
-			return true
-		} else if v == "false" {
+		enabled, err := strconv.ParseBool(v)
+		if err != nil {
+			klog.Errorf("Found unsupported value for Namespace/%s label %s=%s, defaulting to false", namespace.Name, k, v)
 			return false
 		}
-		klog.V(2).Infof("Unknown label value on namespace %s: %s=%s", namespace.ObjectMeta.Name, k, v)
+		return enabled
 	}
 
 	for _, included := range r.IncludeNamespaces {
