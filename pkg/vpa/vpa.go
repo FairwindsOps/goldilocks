@@ -15,6 +15,7 @@
 package vpa
 
 import (
+	"strconv"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -126,12 +127,7 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
 			if strings.ToLower(k) == vpaEnabledLabel {
-				if strings.ToLower(v) == "true" {
-					return true, nil
-				}
-				if strings.ToLower(v) == "false" {
-					return false, nil
-				}
+				return strconv.ParseBool(v)
 			}
 		}
 	}
