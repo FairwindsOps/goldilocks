@@ -266,18 +266,26 @@ func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.Upda
 }
 
 func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
+	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L101
+	updateMode := v1beta2.UpdateModeOff
 	for k, v := range ns.GetLabels() {
 		if strings.ToLower(k) != vpaUpdateModeLabel {
 			continue
 		}
 		switch v {
-		case "off":
-			return v1beta2.UpdateModeOff
-		case "auto":
-			return v1beta2.UpdateModeAuto
+		case "off", "Off":
+			updateMode = v1beta2.UpdateModeOff
+		case "auto", "Auto":
+			updateMode = v1beta2.UpdateModeAuto
+		case "initial", "Initial":
+			updateMode = v1beta2.UpdateModeInitial
+		case "recreate", "Recreate":
+			updateMode = v1beta2.UpdateModeRecreate
 		default:
-			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s", v)
+			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s, using default vpa-update-mode=off", v)
+			updateMode = v1beta2.UpdateModeOff
 		}
 	}
-	return v1beta2.UpdateModeOff
+
+	return updateMode
 }
