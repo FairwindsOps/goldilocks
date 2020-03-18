@@ -15,6 +15,7 @@
 package vpa
 
 import (
+	"strconv"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -27,6 +28,12 @@ import (
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
+)
+
+var (
+	labelBase          = "goldilocks.fairwinds.com"
+	vpaEnabledLabel    = labelBase + "/" + "enabled"
+	vpaUpdateModeLabel = labelBase + "/" + "vpa-update-mode"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -79,7 +86,8 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return err
 	}
 
-	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames)
+	vpaUpdateMode := vpaUpdateModeForNamespace(namespace)
+	return r.reconcileDeploymentsAndVPAs(nsName, vpaNames, deploymentNames, vpaUpdateMode)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpaNames []string) error {
@@ -118,13 +126,8 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == "goldilocks.fairwinds.com/enabled" {
-				if strings.ToLower(v) == "true" {
-					return true, nil
-				}
-				if strings.ToLower(v) == "false" {
-					return false, nil
-				}
+			if strings.ToLower(k) == vpaEnabledLabel {
+				return strconv.ParseBool(v)
 			}
 		}
 	}
@@ -134,16 +137,15 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
 		klog.V(7).Infof("Namespace label - %s: %s", k, v)
-		if strings.ToLower(k) != "goldilocks.fairwinds.com/enabled" {
+		if strings.ToLower(k) != vpaEnabledLabel {
 			continue
 		}
-		v = strings.ToLower(v)
-		if v == "true" {
-			return true
-		} else if v == "false" {
+		enabled, err := strconv.ParseBool(v)
+		if err != nil {
+			klog.Errorf("Found unsupported value for Namespace/%s label %s=%s, defaulting to false", namespace.Name, k, v)
 			return false
 		}
-		klog.V(2).Infof("Unknown label value on namespace %s: %s=%s", namespace.ObjectMeta.Name, k, v)
+		return enabled
 	}
 
 	for _, included := range r.IncludeNamespaces {
@@ -160,7 +162,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string) error {
+func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploymentNames []string, vpaUpdateMode v1beta2.UpdateMode) error {
 	// Create any VPAs that need to be
 	vpaNeeded := utils.Difference(deploymentNames, vpaNames)
 	klog.V(3).Infof("Diff deployments, vpas: %v", vpaNeeded)
@@ -169,7 +171,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpaNames, deploym
 		klog.Info("All VPAs are in sync.")
 	} else if len(vpaNeeded) > 0 {
 		for _, vpaName := range vpaNeeded {
-			err := r.createVPA(nsName, vpaName)
+			err := r.createVPA(nsName, vpaName, vpaUpdateMode)
 			if err != nil {
 				return err
 			}
@@ -226,8 +228,7 @@ func (r Reconciler) deleteVPA(namespace string, vpaName string) error {
 	return nil
 }
 
-func (r Reconciler) createVPA(namespace string, vpaName string) error {
-	updateMode := v1beta2.UpdateModeOff
+func (r Reconciler) createVPA(namespace, vpaName string, updateMode v1beta2.UpdateMode) error {
 	vpa := &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   vpaName,
@@ -257,4 +258,29 @@ func (r Reconciler) createVPA(namespace string, vpaName string) error {
 		klog.Infof("Dry run was set. Not creating vpa: %v", vpaName)
 	}
 	return nil
+}
+
+func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
+	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L101
+	updateMode := v1beta2.UpdateModeOff
+	for k, v := range ns.GetLabels() {
+		if strings.ToLower(k) != vpaUpdateModeLabel {
+			continue
+		}
+		switch strings.ToLower(v) {
+		case "off":
+			updateMode = v1beta2.UpdateModeOff
+		case "auto":
+			updateMode = v1beta2.UpdateModeAuto
+		case "initial":
+			updateMode = v1beta2.UpdateModeInitial
+		case "recreate":
+			updateMode = v1beta2.UpdateModeRecreate
+		default:
+			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s, using default vpa-update-mode=off", v)
+			updateMode = v1beta2.UpdateModeOff
+		}
+	}
+
+	return updateMode
 }

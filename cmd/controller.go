@@ -29,10 +29,12 @@ import (
 var onByDefault bool
 var includeNamespaces []string
 var excludeNamespaces []string
+var dryRun bool
 
 func init() {
 	rootCmd.AddCommand(controllerCmd)
 	controllerCmd.PersistentFlags().BoolVarP(&onByDefault, "on-by-default", "", false, "Add goldilocks to every namespace that isn't explicitly excluded.")
+	controllerCmd.PersistentFlags().BoolVarP(&dryRun, "dry-run", "", false, "If true, don't mutate resources, just list what would have been created.")
 	controllerCmd.PersistentFlags().StringArrayVarP(&includeNamespaces, "include-namespaces", "", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringArrayVarP(&excludeNamespaces, "exclude-namespaces", "", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
 }

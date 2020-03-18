@@ -41,14 +41,15 @@ func Test_createVPADryRun(t *testing.T) {
 	// First test the dryrun
 	rec := GetInstance()
 	rec.DryRun = true
-	err := rec.createVPA("testing", "test-vpa")
+	updateMode = v1beta2.UpdateModeOff
+	err := rec.createVPA("testing", "test-vpa", updateMode)
 	assert.NoError(t, err)
 	_, err = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, err, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
 
 	// Now actually create and compare
 	rec.DryRun = false
-	errCreate := rec.createVPA("testing", "test-vpa")
+	errCreate := rec.createVPA("testing", "test-vpa", updateMode)
 	newVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, testVPA, newVPA)
@@ -80,10 +81,11 @@ func Test_deleteVPA(t *testing.T) {
 func Test_listVPA(t *testing.T) {
 	setupVPAForTests()
 	rec := GetInstance()
+	updateMode := v1beta2.UpdateModeOff
 
-	_ = rec.createVPA("ns", "test1")
-	_ = rec.createVPA("ns", "test2")
-	_ = rec.createVPA("ns2", "test3")
+	_ = rec.createVPA("ns", "test1", updateMode)
+	_ = rec.createVPA("ns", "test2", updateMode)
+	_ = rec.createVPA("ns2", "test3", updateMode)
 
 	vpaList1 := rec.listVPAs("ns")
 	assert.EqualValues(t, vpaList1, []string{"test1", "test2"})
