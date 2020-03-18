@@ -267,14 +267,14 @@ func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
 		if strings.ToLower(k) != vpaUpdateModeLabel {
 			continue
 		}
-		switch v {
-		case "off", "Off":
+		switch strings.ToLower(v) {
+		case "off":
 			updateMode = v1beta2.UpdateModeOff
-		case "auto", "Auto":
+		case "auto":
 			updateMode = v1beta2.UpdateModeAuto
-		case "initial", "Initial":
+		case "initial":
 			updateMode = v1beta2.UpdateModeInitial
-		case "recreate", "Recreate":
+		case "recreate":
 			updateMode = v1beta2.UpdateModeRecreate
 		default:
 			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s, using default vpa-update-mode=off", v)
