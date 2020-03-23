@@ -1,4 +1,4 @@
-FROM golang:1.14.0 AS build-env
+FROM golang:1.14.1 AS build-env
 
 RUN go get -u github.com/gobuffalo/packr/v2/packr2
 
