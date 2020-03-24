@@ -141,6 +141,35 @@ You can set the default behavior for VPA creation using some flags. When specifi
 * `--include-namespaces` - create VPAs in these namespaces, in addition to any that are labeled
 * `--exclude-namespaces` - when `--on-by-default` is set, exclude this comma-separated list of namespaces
 
+#### Enable Namespaces
+
+Namespaces are considered enabled or managed by goldilocks when the Namespace
+has the enabled label set to "true", for example:
+
+```
+kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
+```
+
+#### VPA Update Mode
+
+> Note: This feature is for advanced usage only and is not recommended nor the default!
+
+VPAs created for Deployments in a Namespace have an update mode of "off" by
+default, meaning the VPAs only report recommendations and do not actually
+auto-scale the Pods.
+
+The update mode can be changed for a namespace by labels as well, for example:
+
+```
+kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="aut"
+```
+
+#### Deployment Exclusions
+
+If you do not want a specific Deployment to have a VPA you can annotate the
+Deployment with `goldilocks.fairwinds.com/vpa-opt-out=true` to exclude a
+specific Deployment in a Namespace (regardless of labeling on the Namespace).
+
 ### create-vpas
 
 `goldilocks create-vpas -n some-namespace`
