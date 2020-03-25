@@ -217,7 +217,7 @@ func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.D
 			klog.V(5).Infof("Deployment/%s does have a VPA/%s and matches vpa-update-mode=%s", deployment.Name, vpa.Name, vpaUpdateMode)
 		} else {
 			klog.V(5).Infof("Deployment/%s does have a VPA/%s but vpa-update-mode is different, updating from %s to %s", deployment.Name, vpa.Name, *vpa.Spec.UpdatePolicy.UpdateMode, vpaUpdateMode)
-			// vpa update mode does not matched what the namespace is configured for, update the VPA
+			// vpa update mode does not match what the namespace is configured for, update the VPA
 			vpa.Spec.UpdatePolicy.UpdateMode = &vpaUpdateMode
 			err := r.updateVPA(nsName, vpa)
 			if err != nil {
