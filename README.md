@@ -161,7 +161,7 @@ auto-scale the Pods.
 The update mode can be changed for a namespace by labels as well, for example:
 
 ```
-kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="aut"
+kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="auto"
 ```
 
 #### Deployment Exclusions
