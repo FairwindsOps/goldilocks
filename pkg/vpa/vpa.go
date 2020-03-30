@@ -346,7 +346,7 @@ func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
 	}
 
 	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L101
-	updateMode := v1beta2.UpdateModeOff
+	var updateMode v1beta2.UpdateMode
 	switch strings.ToLower(requestedVpaMode) {
 	case "off":
 		updateMode = v1beta2.UpdateModeOff
