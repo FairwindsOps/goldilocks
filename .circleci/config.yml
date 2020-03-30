@@ -64,10 +64,6 @@ workflows:
             tags:
               ignore: /.*/
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.14.10"
-          kind_node_image: "kindest/node:v1.14.10@sha256:81ae5a3237c779efc4dda43cc81c696f88a194abcc4f8fa34f86cf674aa14977"
-          <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.15.7"
           kind_node_image: "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
           <<: *e2e_configuration
