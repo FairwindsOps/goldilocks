@@ -164,11 +164,11 @@ The update mode can be changed for a namespace by labels as well, for example:
 kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="auto"
 ```
 
-#### Deployment Exclusions
+#### Deployment Specifications
 
-If you do not want a specific Deployment to have a VPA you can annotate the
-Deployment with `goldilocks.fairwinds.com/vpa-opt-out=true` to exclude a
-specific Deployment in a Namespace (regardless of labeling on the Namespace).
+If you want a specific Deployment to have a VPA in a specific update mode,
+then you can annotate the Deployment with `goldilocks.fairwinds.com/vpa-update-mode=<mode>`
+to control the update mode for a specific Deployment in a Namespace (regardless of labeling on the Namespace).
 
 ### create-vpas
 

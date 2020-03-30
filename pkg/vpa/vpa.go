@@ -21,8 +21,10 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/klog"
 
@@ -31,10 +33,9 @@ import (
 )
 
 var (
-	labelBase                    = "goldilocks.fairwinds.com"
-	vpaEnabledLabel              = labelBase + "/" + "enabled"
-	vpaUpdateModeLabel           = labelBase + "/" + "vpa-update-mode"
-	deploymentExcludedAnnotation = labelBase + "/" + "vpa-opt-out"
+	labelBase        = "goldilocks.fairwinds.com"
+	vpaEnabledLabel  = labelBase + "/" + "enabled"
+	vpaUpdateModeKey = labelBase + "/" + "vpa-update-mode"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -92,7 +93,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return err
 	}
 
-	vpaUpdateMode := vpaUpdateModeForNamespace(namespace)
+	vpaUpdateMode := vpaUpdateModeForResource(namespace)
 	return r.reconcileDeploymentsAndVPAs(nsName, vpas, deployments, vpaUpdateMode)
 }
 
@@ -196,12 +197,10 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 }
 
 func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
-	// if the Deployment is opted out of vpa scaling then use vpa-update-mode="off"
-	if val, ok := deployment.GetAnnotations()[deploymentExcludedAnnotation]; ok {
-		if val == "true" {
-			klog.V(5).Infof("Deployment/%s has opted out of VPA scaling and will use vpa-update-mode=off", deployment.Name)
-			vpaUpdateMode = v1beta2.UpdateModeOff
-		}
+	// check if the Deployment has its own vpa-update-mode set
+	if _, ok := deployment.GetAnnotations()[vpaUpdateModeKey]; ok {
+		vpaUpdateMode = vpaUpdateModeForResource(&deployment)
+		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, vpaUpdateMode)
 	}
 
 	if vpa == nil {
@@ -326,26 +325,40 @@ func (r Reconciler) updateVPA(namespace string, vpa *v1beta2.VerticalPodAutoscal
 	return nil
 }
 
-func vpaUpdateModeForNamespace(ns *corev1.Namespace) v1beta2.UpdateMode {
+// vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
+// key/value and uses that key/value to return the proper UpdateMode type
+func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
+	var requestedVpaMode string
+
+	// check for vpa-update-mode in annotations first
+	accessor, _ := meta.Accessor(obj)
+	if val, ok := accessor.GetAnnotations()[vpaUpdateModeKey]; ok {
+		requestedVpaMode = val
+	} else {
+		// check for vpa-update-mode in labels
+		for k, v := range accessor.GetLabels() {
+			if strings.ToLower(k) != vpaUpdateModeKey {
+				continue
+			}
+
+			requestedVpaMode = v
+		}
+	}
+
 	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L101
 	updateMode := v1beta2.UpdateModeOff
-	for k, v := range ns.GetLabels() {
-		if strings.ToLower(k) != vpaUpdateModeLabel {
-			continue
-		}
-		switch strings.ToLower(v) {
-		case "off":
-			updateMode = v1beta2.UpdateModeOff
-		case "auto":
-			updateMode = v1beta2.UpdateModeAuto
-		case "initial":
-			updateMode = v1beta2.UpdateModeInitial
-		case "recreate":
-			updateMode = v1beta2.UpdateModeRecreate
-		default:
-			klog.Warningf("Found unsupported value for vpaUpdateMode label: %s, using default vpa-update-mode=off", v)
-			updateMode = v1beta2.UpdateModeOff
-		}
+	switch strings.ToLower(requestedVpaMode) {
+	case "off":
+		updateMode = v1beta2.UpdateModeOff
+	case "auto":
+		updateMode = v1beta2.UpdateModeAuto
+	case "initial":
+		updateMode = v1beta2.UpdateModeInitial
+	case "recreate":
+		updateMode = v1beta2.UpdateModeRecreate
+	default:
+		klog.Warningf("Found unsupported value for vpa-update-mode: %s, using default vpa-update-mode=off", requestedVpaMode)
+		updateMode = v1beta2.UpdateModeOff
 	}
 
 	return updateMode
