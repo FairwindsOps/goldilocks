@@ -161,10 +161,10 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 	for _, deployment := range deployments {
 		var dvpa *v1beta2.VerticalPodAutoscaler
 		// search for the matching vpa (will have the same name)
-		for _, vpa := range vpas {
+		for idx, vpa := range vpas {
 			if deployment.Name == vpa.Name {
 				// found the vpa associated with this deployment
-				dvpa = &vpa
+				dvpa = &vpas[idx]
 				vpaHasAssociatedDeployment[dvpa.Name] = true
 				break
 			}
