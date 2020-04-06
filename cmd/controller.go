@@ -49,6 +49,8 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.IncludeNamespaces = includeNamespaces
 		vpaReconciler.ExcludeNamespaces = excludeNamespaces
 
+		klog.V(4).Infof("Starting controller with Reconciler: %+v", vpaReconciler)
+
 		// create a channel for sending a stop to kube watcher threads
 		stop := make(chan bool, 1)
 		defer close(stop)
