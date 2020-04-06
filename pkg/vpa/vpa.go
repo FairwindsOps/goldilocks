@@ -183,7 +183,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 	}
 
 	for _, vpa := range vpas {
-		if _, ok := vpaHasAssociatedDeployment[vpa.Name]; !ok {
+		if !vpaHasAssociatedDeployment[vpa.Name] {
 			// these vpas do not have a matching deployment, delete them
 			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, nsName)
 			err := r.deleteVPA(nsName, vpa.Name)
