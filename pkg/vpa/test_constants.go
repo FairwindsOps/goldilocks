@@ -48,6 +48,16 @@ var nsNotLabeled = &corev1.Namespace{
 	},
 }
 
+var nsEnabledUpdateModeAuto = &corev1.Namespace{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "labeled-true",
+		Labels: map[string]string{
+			"goldilocks.fairwinds.com/enabled":         "True",
+			"goldilocks.fairwinds.com/vpa-update-mode": "auto",
+		},
+	},
+}
+
 // A VPA Object that can be used to verify tests
 var updateMode = v1beta2.UpdateModeOff
 var testVPA = &v1beta2.VerticalPodAutoscaler{
@@ -72,5 +82,14 @@ var testVPA = &v1beta2.VerticalPodAutoscaler{
 var testDeployment = &appsv1.Deployment{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "test-deploy",
+	},
+}
+
+var testDeploymentExcluded = &appsv1.Deployment{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "test-deploy",
+		Annotations: map[string]string{
+			"goldilocks.fairwinds.com/vpa-update-mode": "off",
+		},
 	},
 }
