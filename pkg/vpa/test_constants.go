@@ -89,7 +89,7 @@ var testDeploymentExcluded = &appsv1.Deployment{
 	ObjectMeta: metav1.ObjectMeta{
 		Name: "test-deploy",
 		Annotations: map[string]string{
-			"goldilocks.fairwinds.com/vpa-mode": "off",
+			"goldilocks.fairwinds.com/vpa-update-mode": "off",
 		},
 	},
 }
