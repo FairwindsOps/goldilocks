@@ -24,6 +24,7 @@ import (
 	"github.com/gorilla/mux"
 	"k8s.io/klog"
 
+	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
@@ -162,7 +163,9 @@ func GetRouter(port int, basePath string, vpaLabels map[string]string, excludeCo
 			return
 		}
 
-		data, err := summary.GetInstance().Run(vpaLabels, excludeContainers)
+		kubeClientVPA := kube.GetVPAInstance()
+
+		data, err := summary.Run(kubeClientVPA, vpaLabels, excludeContainers)
 		if err != nil {
 			klog.Errorf("Error getting data: %v", err)
 			http.Error(w, "Error running summary.", 500)

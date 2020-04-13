@@ -49,59 +49,31 @@ type Summary struct {
 	Namespaces  []string            `json:"namespaces"`
 }
 
-// Client checks if VPA objects should be created or deleted
-// what? how does it do that? it checks it??
-type Client struct {
-	//changing these two to match the naming in here...but should it be consistent?
-	KubeClient    *kube.ClientInstance
-	KubeClientVPA *kube.VPAClientInstance
-}
-
-var singleton *Client
-
-// GetInstance returns a Client singleton
-func GetInstance() *Client {
-	if singleton == nil {
-		singleton = &Client{
-			KubeClient:    kube.GetInstance(),
-			KubeClientVPA: kube.GetVPAInstance(),
-		}
-	}
-	return singleton
-}
-
-// SetInstance sets the singleton using preconstructed k8s and vpa clients. Used for testing.
-func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Client {
-	singleton = &Client{
-		KubeClient:    k8s,
-		KubeClientVPA: vpa,
-	}
-	return singleton
-}
-
 // Run creates a summary of the vpa info for all namespaces.
-func (client *Client) Run(vpaLabels map[string]string, excludeContainers string) (Summary, error) {
+func Run(kubeClientVPA *kube.VPAClientInstance, vpaLabels map[string]string, excludeContainers string) (Summary, error) {
 	klog.V(3).Infof("Looking for VPAs with labels: %v", vpaLabels)
 
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(vpaLabels).String(),
 	}
 
-	vpas, err := client.KubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
+	vpas, err := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("").List(vpaListOptions)
 	if err != nil {
 		klog.Error(err.Error())
 	}
 	klog.V(10).Infof("Found vpas: %v", vpas)
 
-	summary, _ := GetInstance().constructSummary(vpas, excludeContainers)
+	summary, _ := constructSummary(vpas, excludeContainers)
 	return summary, nil
 }
 
-func (client *Client) constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers string) (Summary, error) {
+func constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, excludeContainers string) (Summary, error) {
 	var summary Summary
 	if len(vpas.Items) <= 0 {
 		return summary, nil
 	}
+
+	kubeClient := kube.GetInstance()
 
 	containerExclusions := strings.Split(excludeContainers, ",")
 
@@ -114,7 +86,7 @@ func (client *Client) constructSummary(vpas *v1beta2.VerticalPodAutoscalerList, 
 
 		summary.Namespaces = append(summary.Namespaces, deploy.Namespace)
 
-		deployment, err := client.KubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
+		deployment, err := kubeClient.Client.AppsV1().Deployments(deploy.Namespace).Get(deploy.DeploymentName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("Error retrieving deployment from API: %v", err)
 		}
