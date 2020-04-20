@@ -43,7 +43,7 @@ var summaryCmd = &cobra.Command{
 By default the summary will be about all VPAs in all namespaces.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		opts := []summary.Option{}
+		var opts []summary.Option
 
 		// limit to a single namespace
 		if len(args) == 1 {
