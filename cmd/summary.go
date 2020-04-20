@@ -48,6 +48,9 @@ By default the summary will be about all VPAs in all namespaces.`,
 		// limit to a single namespace
 		if len(args) == 1 {
 			opts = append(opts, summary.ForNamespace(args[0]))
+		} else if len(args) > 1 {
+			// undefined argument behaviour
+			klog.Fatal("Too many namespace arguments provided!")
 		}
 
 		// exclude containers from the summary
