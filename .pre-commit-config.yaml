@@ -6,7 +6,6 @@ repos:
      - id: check-yaml
        args: ['--allow-multiple-documents']
      - id: check-json
-     - id: detect-aws-credentials
      - id: detect-private-key
      - id: trailing-whitespace
      - id: check-added-large-files
