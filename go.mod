@@ -27,5 +27,5 @@ require (
 	k8s.io/client-go v0.17.4
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20200117235808-5f6fbceb4c31 // indirect
-	sigs.k8s.io/controller-runtime v0.5.1
+	sigs.k8s.io/controller-runtime v0.5.2
 )
