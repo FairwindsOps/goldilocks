@@ -42,7 +42,7 @@ func TestSummarizer(t *testing.T) {
 		},
 		Spec: v1beta2.VerticalPodAutoscalerSpec{
 			TargetRef: &autoscalingv1.CrossVersionObjectReference{
-				APIVersion: "extensions/v1beta1",
+				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa",
 			},
@@ -58,7 +58,7 @@ func TestSummarizer(t *testing.T) {
 		},
 		Spec: v1beta2.VerticalPodAutoscalerSpec{
 			TargetRef: &autoscalingv1.CrossVersionObjectReference{
-				APIVersion: "extensions/v1beta1",
+				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa-no-labels",
 			},
