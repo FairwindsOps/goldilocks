@@ -60,26 +60,26 @@ type Summary struct {
 
 // Summarizer represents a source of generating a summary of VPAs
 type Summarizer struct {
-	Options
+	options
 
 	// cached list of vpas
 	vpas []v1beta2.VerticalPodAutoscaler
 }
 
-// Returns a Summarizer for all goldilocks managed VPAs in all Namespaces
-func NewSummarizer(setters ...Option) *Summarizer {
+// NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
+func NewSummarizer(setters ...option) *Summarizer {
 	opts := defaultOptions()
 	for _, setter := range setters {
 		setter(opts)
 	}
 
 	return &Summarizer{
-		Options: *opts,
+		options: *opts,
 	}
 }
 
-// Returns a Summarizer for a known list of VPAs
-func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Option) *Summarizer {
+// NewSummarizerForVPAs returns a Summarizer for a known list of VPAs
+func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...option) *Summarizer {
 	summarizer := NewSummarizer(setters...)
 
 	// set the cached vpas list directly
@@ -88,6 +88,7 @@ func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Optio
 	return summarizer
 }
 
+// GetSummary returns a Summary of the Summarizer using its options
 func (s Summarizer) GetSummary() (Summary, error) {
 	var summary Summary
 	// cached vpas
@@ -165,7 +166,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	return summary, nil
 }
 
-// Update the list of VPAs that the summarizer uses
+// UpdateVPAs updates the list of VPAs that the summarizer uses
 func (s *Summarizer) UpdateVPAs() error {
 	nsLog := s.namespace
 	if s.namespace == namespaceAllNamespaces {

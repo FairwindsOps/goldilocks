@@ -6,11 +6,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// Functional options
-type Option func(*Options)
+type option func(*options)
 
-// internal options for getting and caching the Summarizer's VPAs
-type Options struct {
+// options for getting and caching the Summarizer's VPAs
+type options struct {
 	kubeClient         *kube.ClientInstance
 	vpaClient          *kube.VPAClientInstance
 	namespace          string
@@ -18,9 +17,9 @@ type Options struct {
 	excludedContainers sets.String
 }
 
-// default options for a Summarizer
-func defaultOptions() *Options {
-	return &Options{
+// defaultOptions for a Summarizer
+func defaultOptions() *options {
+	return &options{
 		kubeClient:         kube.GetInstance(),
 		vpaClient:          kube.GetVPAInstance(),
 		namespace:          namespaceAllNamespaces,
@@ -29,23 +28,23 @@ func defaultOptions() *Options {
 	}
 }
 
-// Option for limiting the summary to a single namespace
-func ForNamespace(namespace string) Option {
-	return func(opts *Options) {
+// ForNamespace is an Option for limiting the summary to a single namespace
+func ForNamespace(namespace string) option {
+	return func(opts *options) {
 		opts.namespace = namespace
 	}
 }
 
-// Option for excluding containers in the summary
-func ExcludeContainers(excludedContainers sets.String) Option {
-	return func(opts *Options) {
+// ExcludeContainers is an Option for excluding containers in the summary
+func ExcludeContainers(excludedContainers sets.String) option {
+	return func(opts *options) {
 		opts.excludedContainers = excludedContainers
 	}
 }
 
-// Option for limiting the summary to certain VPAs matching the labels
-func ForVPAsWithLabels(vpaLabels map[string]string) Option {
-	return func(opts *Options) {
+// ForVPAsWithLabels is an Option for limiting the summary to certain VPAs matching the labels
+func ForVPAsWithLabels(vpaLabels map[string]string) option {
+	return func(opts *options) {
 		opts.vpaLabels = vpaLabels
 	}
 }
