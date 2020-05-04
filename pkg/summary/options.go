@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-type option func(*options)
+type Option func(*options)
 
 // options for getting and caching the Summarizer's VPAs
 type options struct {
@@ -29,21 +29,21 @@ func defaultOptions() *options {
 }
 
 // ForNamespace is an Option for limiting the summary to a single namespace
-func ForNamespace(namespace string) option {
+func ForNamespace(namespace string) Option {
 	return func(opts *options) {
 		opts.namespace = namespace
 	}
 }
 
 // ExcludeContainers is an Option for excluding containers in the summary
-func ExcludeContainers(excludedContainers sets.String) option {
+func ExcludeContainers(excludedContainers sets.String) Option {
 	return func(opts *options) {
 		opts.excludedContainers = excludedContainers
 	}
 }
 
 // ForVPAsWithLabels is an Option for limiting the summary to certain VPAs matching the labels
-func ForVPAsWithLabels(vpaLabels map[string]string) option {
+func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *options) {
 		opts.vpaLabels = vpaLabels
 	}
