@@ -29,28 +29,27 @@ import (
 
 var excludeContainers string
 var outputFile string
+var namespace string
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "f", "", "File to write output from audit.")
+	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "Limit the summary to only a single Namespace.")
 }
 
 var summaryCmd = &cobra.Command{
-	Use:   "summary [namespace]",
-	Short: "Generate a summary of the vpa recommendations in a namespace (default: all namespaces).",
-	Long: `Gather all the vpa data in a namespace and generate a summary of the recommendations.
+	Use:   "summary",
+	Short: "Generate a summary of vpa recommendations.",
+	Long: `Gather all the vpa data generate a summary of the recommendations.
 By default the summary will be about all VPAs in all namespaces.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var opts []summary.Option
 
 		// limit to a single namespace
-		if len(args) == 1 {
+		if namespace != "" {
 			opts = append(opts, summary.ForNamespace(args[0]))
-		} else if len(args) > 1 {
-			// undefined argument behaviour
-			klog.Fatal("Too many namespace arguments provided!")
 		}
 
 		// exclude containers from the summary
