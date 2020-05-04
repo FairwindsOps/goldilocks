@@ -17,7 +17,7 @@ testcases:
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual ""
-    - result.systemerr ShouldEqual "No resources found."
+    - result.systemerr ShouldContainSubstring "No resources found"
 - name: VPA in demo namespace
   steps:
   - script: kubectl label ns demo goldilocks.fairwinds.com/enabled=true --overwrite
