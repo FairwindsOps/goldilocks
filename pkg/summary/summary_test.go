@@ -20,45 +20,28 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/stretchr/testify/assert"
-	autoscaling "k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 )
 
-func TestRun(t *testing.T) {
-
-	var summary Summary
-
+func TestSummarizer(t *testing.T) {
+	kubeClientVPA := kube.GetMockVPAClient()
 	kubeClient := kube.GetMockClient()
-	vpaClient := kube.GetMockVPAClient()
 
-	got, err := SetInstance(kubeClient, vpaClient).Run(utils.VpaLabels, "true")
-	assert.NoError(t, err)
-
-	assert.EqualValues(t, got, summary)
-}
-
-func TestRunSummary(t *testing.T) {
-	// constructSummary should be refactored to pass a client in.
-	// This test is commented out for now and
-	// Will be refactored/renamed after
-	// Some work is done on refactoring functions for better scope
-	kubeClient := kube.GetMockClient()
-	vpaClient := kube.GetMockVPAClient()
+	summarizer := NewSummarizer()
+	summarizer.kubeClient = kubeClient
+	summarizer.vpaClient = kubeClientVPA
 
 	updateMode := v1beta2.UpdateModeOff
-	// TODO
-	// create test_constants some with/some without recommendations
-	// create another vap w/status of reccomendations in it
-	// 90% test coverage
 	var testVPA = &v1beta2.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-vpa",
-			Labels:    utils.VpaLabels,
+			Labels:    utils.VPALabels,
 			Namespace: "testing",
 		},
 		Spec: v1beta2.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscaling.CrossVersionObjectReference{
+			TargetRef: &autoscalingv1.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa",
@@ -74,7 +57,7 @@ func TestRunSummary(t *testing.T) {
 			Namespace: "testing",
 		},
 		Spec: v1beta2.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscaling.CrossVersionObjectReference{
+			TargetRef: &autoscalingv1.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa-no-labels",
@@ -85,10 +68,10 @@ func TestRunSummary(t *testing.T) {
 		},
 	}
 
-	_, errOk := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPA)
+	_, errOk := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPA)
 	assert.NoError(t, errOk)
 
-	_, errOk2 := vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPANoLabels)
+	_, errOk2 := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPANoLabels)
 	assert.NoError(t, errOk2)
 
 	var summary = Summary{
@@ -97,7 +80,7 @@ func TestRunSummary(t *testing.T) {
 		},
 	}
 
-	got, err := SetInstance(kubeClient, vpaClient).Run(utils.VpaLabels, "true")
+	got, err := summarizer.GetSummary()
 	assert.NoError(t, err)
 
 	assert.EqualValues(t, summary, got)
