@@ -63,7 +63,7 @@ var updateMode = v1beta2.UpdateModeOff
 var testVPA = &v1beta2.VerticalPodAutoscaler{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-vpa",
-		Labels:    utils.VpaLabels,
+		Labels:    utils.VPALabels,
 		Namespace: "testing",
 	},
 	Spec: v1beta2.VerticalPodAutoscalerSpec{

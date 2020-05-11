@@ -18,30 +18,51 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/summary"
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 var excludeContainers string
 var outputFile string
+var namespace string
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "f", "", "File to write output from audit.")
+	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "Limit the summary to only a single Namespace.")
 }
 
 var summaryCmd = &cobra.Command{
 	Use:   "summary",
-	Short: "Genarate a summary of the vpa recommendations in a namespace.",
-	Long:  `Gather all the vpa data in a namespace and generaate a summary of the recommendations.`,
+	Short: "Generate a summary of vpa recommendations.",
+	Long: `Gather all the vpa data generate a summary of the recommendations.
+By default the summary will be about all VPAs in all namespaces.`,
+	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+		var opts []summary.Option
 
-		data, _ := summary.GetInstance().Run(utils.VpaLabels, excludeContainers)
+		// limit to a single namespace
+		if namespace != "" {
+			opts = append(opts, summary.ForNamespace(args[0]))
+		}
+
+		// exclude containers from the summary
+		if excludeContainers != "" {
+			opts = append(opts, summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)))
+		}
+
+		summarizer := summary.NewSummarizer(opts...)
+		data, err := summarizer.GetSummary()
+		if err != nil {
+			klog.Fatalf("Error getting summary: %v", err)
+		}
+
 		summaryJSON, err := json.Marshal(data)
 		if err != nil {
 			klog.Fatalf("Error marshalling JSON: %v", err)
