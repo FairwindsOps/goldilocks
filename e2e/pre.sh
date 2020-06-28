@@ -25,12 +25,12 @@ docker tag "quay.io/fairwinds/goldilocks:latest" "quay.io/fairwinds/goldilocks:$
 docker images
 kind load docker-image "quay.io/fairwinds/goldilocks:$CI_SHA1" --name "e2e"
 
-yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
+yq w -i hack/manifests/web/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
 yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
-yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
+yq w -i hack/manifests/web/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
 yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
 
-cat hack/manifests/dashboard/deployment.yaml
+cat hack/manifests/web/deployment.yaml
 cat hack/manifests/controller/deployment.yaml
 
 docker cp . e2e-command-runner:/goldilocks
