@@ -70,7 +70,7 @@ if $install_goldilocks; then
   ## Install Goldilocks
   kubectl get ns goldilocks || kubectl create ns goldilocks
   kubectl -n goldilocks apply -f ../manifests/controller
-  kubectl -n goldilocks apply -f ../manifests/dashboard
+  kubectl -n goldilocks apply -f ../manifests/web
 fi
 
 echo "Your test environment should now be running."

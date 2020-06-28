@@ -2,30 +2,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: goldilocks-dashboard
+  name: goldilocks-web
   labels:
     app.kubernetes.io/name: goldilocks
-    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/component: web
 spec:
   replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: goldilocks
-      app.kubernetes.io/component: dashboard
+      app.kubernetes.io/component: web
   template:
     metadata:
       labels:
         app.kubernetes.io/name: goldilocks
-        app.kubernetes.io/component: dashboard
+        app.kubernetes.io/component: web
     spec:
-      serviceAccountName: goldilocks-dashboard
+      serviceAccountName: goldilocks-web
       containers:
         - name: goldilocks
           image: "quay.io/fairwinds/goldilocks:master"
           imagePullPolicy: Always
           command:
             - /goldilocks
-            - dashboard
+            - web
             - --exclude-containers=linkerd-proxy,istio-proxy
             - -v3
           securityContext:
