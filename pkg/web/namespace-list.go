@@ -3,8 +3,8 @@ package web
 import (
 	"net/http"
 
-	"code.squarespace.net/sre/goldilocks/pkg/kube"
-	"code.squarespace.net/sre/goldilocks/pkg/utils"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog"
@@ -15,7 +15,7 @@ func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(v1.ListOptions{
 			LabelSelector: labels.Set(map[string]string{
-				utils.GoldilocksNameFor(utils.NamespaceVPAEnabledLabel): "true",
+				utils.VpaEnabledLabel: "true",
 			}).String(),
 		})
 		if err != nil {
