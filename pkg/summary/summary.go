@@ -27,11 +27,6 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
-var (
-	labelBase                             = "goldilocks.fairwinds.com"
-	deploymentExcludeContainersAnnotation = labelBase + "/" + "exclude-containers"
-)
-
 const (
 	namespaceAllNamespaces = ""
 )
@@ -149,7 +144,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 		// get the full set of excluded containers for this Deployment
 		excludedContainers := sets.NewString().Union(s.excludedContainers)
-		if val, exists := deployment.GetAnnotations()[deploymentExcludeContainersAnnotation]; exists {
+		if val, exists := deployment.GetAnnotations()[utils.DeploymentExcludeContainersAnnotation]; exists {
 			excludedContainers.Insert(strings.Split(val, ",")...)
 		}
 
