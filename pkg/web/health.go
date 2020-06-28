@@ -18,7 +18,5 @@ func Health(healthyMessage string) http.Handler {
 
 // Healthz replies with a zero byte 200 response
 func Healthz() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		return
-	})
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 }
