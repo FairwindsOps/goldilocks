@@ -20,3 +20,10 @@ rules:
     verbs:
       - 'get'
       - 'list'
+  - apiGroups:
+      - '' # core
+    resources:
+      - 'namespaces'
+    verbs:
+      - 'get'
+      - 'list'
