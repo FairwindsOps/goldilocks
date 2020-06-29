@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.51.0 // indirect
 	github.com/gobuffalo/envy v1.8.1 // indirect
 	github.com/gobuffalo/packr/v2 v2.8.0
-	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
@@ -19,8 +18,8 @@ require (
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200121082415-34d275377bf9 // indirect
-	k8s.io/api v0.17.4
-	k8s.io/apimachinery v0.17.4
+	k8s.io/api v0.18.5
+	k8s.io/apimachinery v0.18.5
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20191211165407-195d3d988f4f
 	k8s.io/client-go v0.17.4
 	k8s.io/klog v1.0.0
