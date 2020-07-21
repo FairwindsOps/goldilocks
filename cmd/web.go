@@ -38,8 +38,8 @@ func init() {
 
 var webCmd = &cobra.Command{
 	Use:   "web",
-	Short: "Run the goldilocks web ui that will show recommendations.",
-	Long:  `Run the goldilocks web ui that will show recommendations.`,
+	Short: "Run the goldilocks web UI that will show recommendations.",
+	Long:  `Run the goldilocks web UI that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		router := web.GetRouter(
 			web.OnPort(serverPort),
