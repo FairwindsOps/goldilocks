@@ -89,7 +89,7 @@ workflows:
             - test
           filters:
             branches:
-              ignore: /.*/
+              only: /master/
             tags:
               only: /v.*/
       - rok8s-scripts/github_release:
