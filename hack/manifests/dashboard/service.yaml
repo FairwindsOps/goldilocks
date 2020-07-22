@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: goldilocks-web
+  name: goldilocks-dashboard
   labels:
     app.kubernetes.io/name: goldilocks
-    app.kubernetes.io/component: web
+    app.kubernetes.io/component: dashboard
 spec:
   type: ClusterIP
   ports:
@@ -15,4 +15,4 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: goldilocks
-    app.kubernetes.io/component: web
+    app.kubernetes.io/component: dashboard

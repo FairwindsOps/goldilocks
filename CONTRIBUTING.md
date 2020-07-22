@@ -49,7 +49,7 @@ Prerequisites:
 * Install the project with `go get github.com/fairwindsops/goldilocks`
 * Change into the goldilocks directory which is installed at `$GOPATH/src/github.com/fairwindsops/goldilocks`
 * Use `make tidy` or `make build` to ensure all dependencies are downloaded.
-* See the web ui with `go run main.go web`, then open http://localhost:8080/.  This assumes that you have a working KUBECONFIG in place with access to a cluster.
+* See the dashboard with `go run main.go dashboard`, then open http://localhost:8080/.  This assumes that you have a working KUBECONFIG in place with access to a cluster.
 
 ### End-To-End Tests
 

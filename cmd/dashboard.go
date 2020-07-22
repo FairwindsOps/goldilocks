@@ -23,31 +23,31 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 
-	"github.com/fairwindsops/goldilocks/pkg/web"
+	"github.com/fairwindsops/goldilocks/pkg/dashboard"
 )
 
 var serverPort int
 var basePath string
 
 func init() {
-	rootCmd.AddCommand(webCmd)
-	webCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the web ui on.")
-	webCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the web ui is served")
-	webCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
+	rootCmd.AddCommand(dashboardCmd)
+	dashboardCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the dashboard on.")
+	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served")
+	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 }
 
-var webCmd = &cobra.Command{
-	Use:   "web",
-	Short: "Run the goldilocks web UI that will show recommendations.",
-	Long:  `Run the goldilocks web UI that will show recommendations.`,
+var dashboardCmd = &cobra.Command{
+	Use:   "dashboard",
+	Short: "Run the goldilocks dashboard that will show recommendations.",
+	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		router := web.GetRouter(
-			web.OnPort(serverPort),
-			web.WithBasePath(basePath),
-			web.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
+		router := dashboard.GetRouter(
+			dashboard.OnPort(serverPort),
+			dashboard.WithBasePath(basePath),
+			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 		)
 		http.Handle("/", router)
-		klog.Infof("Starting goldilocks web ui server on port %d", serverPort)
+		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
 	},
 }

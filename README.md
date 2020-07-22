@@ -1,5 +1,5 @@
 <div align="center">
-<img src="/pkg/web/assets/images/goldilocks.svg" height="150" alt="Goldilocks" style="padding-bottom: 20px" />
+<img src="/pkg/dashboard/assets/images/goldilocks.svg" height="150" alt="Goldilocks" style="padding-bottom: 20px" />
 <br>
 
 <h3>Get your resource requests "Just Right"</h3>
@@ -64,12 +64,12 @@ helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilock
 
 ### Method 2 - Manifests
 
-The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and web components in cluster.
+The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster.
 
 ```
 kubectl create namespace goldilocks
 kubectl -n goldilocks apply -f hack/manifests/controller
-kubectl -n goldilocks apply -f hack/manifests/web
+kubectl -n goldilocks apply -f hack/manifests/dashboard
 ```
 
 ### Enable Namespace
@@ -82,12 +82,12 @@ kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
 
 After that you should start to see VPA objects in that namespace.
 
-### Viewing the Web UI
+### Viewing the Dashboard
 
 The default installation creates a ClusterIP service for the dashboard. You can access via port forward:
 
 ```
-kubectl -n goldilocks port-forward svc/goldilocks-web 8080:80
+kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8080:80
 ```
 
 Then open your browser to [http://localhost:8080](http://localhost:8080)
@@ -108,7 +108,7 @@ Usage:
 Available Commands:
   controller  Run goldilocks as a controller inside a kubernetes cluster.
   create-vpas Create VPAs
-  web         Run the goldilocks web that will show recommendations.
+  dashboard   Run the goldilocks dashboard that will show recommendations.
   delete-vpas Delete VPAs
   help        Help about any command
   summary     Genarate a summary of the vpa recommendations in a namespace.
@@ -182,11 +182,11 @@ This will search for any deployments in the given namespace and generate a VPA f
 
 This will delete all vpa objects in a namespace that are labelled for use by this tool.
 
-### web
+### dashboard
 
-`goldilocks web`
+`goldilocks dashboard`
 
-Runs the goldilocks web server that will display recommendations. Listens on port `8080` by default.
+Runs the goldilocks dashboard server that will display recommendations. Listens on port `8080` by default.
 
 ### summary
 
@@ -196,7 +196,7 @@ Queries all the VPA objects that are labelled for this tool across all namespace
 
 ### Container Exclusions
 
-The `web` and `summary` commands can exclude recommendations for a list of comma separated container names using the `--exclude-containers` argument. This option can be useful for hiding recommendations for sidecar containers for things like Linkerd and Istio.
+The `dashboard` and `summary` commands can exclude recommendations for a list of comma separated container names using the `--exclude-containers` argument. This option can be useful for hiding recommendations for sidecar containers for things like Linkerd and Istio.
 
 Containers can be excluded for individual deployments by applying a label to any deployment. The label value should be a list of comma separated container names. The label value will be combined with any values provided through the `--exclude-containers` argument.
 

@@ -1,4 +1,4 @@
-package web
+package dashboard
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/fairwindsops/goldilocks/pkg/web/helpers"
+	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"github.com/gobuffalo/packr/v2"
 	"k8s.io/klog"
 )
