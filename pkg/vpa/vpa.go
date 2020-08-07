@@ -32,12 +32,6 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
-var (
-	labelBase        = "goldilocks.fairwinds.com"
-	vpaEnabledLabel  = labelBase + "/" + "enabled"
-	vpaUpdateModeKey = labelBase + "/" + "vpa-update-mode"
-)
-
 // Reconciler checks if VPA objects should be created or deleted
 type Reconciler struct {
 	KubeClient        *kube.ClientInstance
@@ -118,7 +112,7 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 	if len(deployment.ObjectMeta.Labels) > 0 {
 		for k, v := range deployment.ObjectMeta.Labels {
 			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == vpaEnabledLabel {
+			if strings.ToLower(k) == utils.VpaEnabledLabel {
 				return strconv.ParseBool(v)
 			}
 		}
@@ -129,8 +123,8 @@ func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.ObjectMeta.Labels {
 		klog.V(4).Infof("Namespace/%s found label: %s=%s", namespace.Name, k, v)
-		if strings.ToLower(k) != vpaEnabledLabel {
-			klog.V(9).Infof("Namespace/%s with label key %s does not match enabled label %s", namespace.Name, k, vpaEnabledLabel)
+		if strings.ToLower(k) != utils.VpaEnabledLabel {
+			klog.V(9).Infof("Namespace/%s with label key %s does not match enabled label %s", namespace.Name, k, utils.VpaEnabledLabel)
 			continue
 		}
 		enabled, err := strconv.ParseBool(v)
@@ -198,7 +192,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(nsName string, vpas []v1beta2.Ve
 
 func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
 	// check if the Deployment has its own vpa-update-mode set
-	if _, ok := deployment.GetAnnotations()[vpaUpdateModeKey]; ok {
+	if _, ok := deployment.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
 		vpaUpdateMode = vpaUpdateModeForResource(&deployment)
 		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, vpaUpdateMode)
 	}
@@ -332,12 +326,12 @@ func vpaUpdateModeForResource(obj runtime.Object) v1beta2.UpdateMode {
 
 	// check for vpa-update-mode in annotations first
 	accessor, _ := meta.Accessor(obj)
-	if val, ok := accessor.GetAnnotations()[vpaUpdateModeKey]; ok {
+	if val, ok := accessor.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
 		requestedVPAMode = val
 	} else {
 		// check for vpa-update-mode in labels
 		for k, v := range accessor.GetLabels() {
-			if strings.ToLower(k) != vpaUpdateModeKey {
+			if strings.ToLower(k) != utils.VpaUpdateModeKey {
 				continue
 			}
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dashboard
+package helpers
 
 import (
 	uuid "github.com/satori/go.uuid"
@@ -20,14 +20,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func printResource(quant resource.Quantity) string {
+func PrintResource(quant resource.Quantity) string {
 	if quant.IsZero() {
 		return "Not Set"
 	}
 	return quant.String()
 }
 
-func getStatus(existing resource.Quantity, recommendation resource.Quantity, style string) string {
+func GetStatus(existing resource.Quantity, recommendation resource.Quantity, style string) string {
 	if existing.IsZero() {
 		switch style {
 		case "text":
@@ -73,7 +73,7 @@ func getStatus(existing resource.Quantity, recommendation resource.Quantity, sty
 	return ""
 }
 
-func getStatusRange(existing, lower, upper resource.Quantity, style string) string {
+func GetStatusRange(existing, lower, upper resource.Quantity, style string) string {
 	if existing.IsZero() {
 		switch style {
 		case "text":
@@ -119,10 +119,10 @@ func getStatusRange(existing, lower, upper resource.Quantity, style string) stri
 	return ""
 }
 
-func resourceName(name string) corev1.ResourceName {
+func ResourceName(name string) corev1.ResourceName {
 	return corev1.ResourceName(name)
 }
 
-func getUUID() string {
+func GetUUID() string {
 	return uuid.NewV4().String()
 }

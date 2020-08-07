@@ -186,7 +186,7 @@ This will delete all vpa objects in a namespace that are labelled for use by thi
 
 `goldilocks dashboard`
 
-Runs the goldilocks dashboard web server that will display recommendations. Listens on port `8080` by default.
+Runs the goldilocks dashboard server that will display recommendations. Listens on port `8080` by default.
 
 ### summary
 

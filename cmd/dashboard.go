@@ -17,12 +17,13 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard"
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 var serverPort int
@@ -40,8 +41,11 @@ var dashboardCmd = &cobra.Command{
 	Short: "Run the goldilocks dashboard that will show recommendations.",
 	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		router := dashboard.GetRouter(serverPort, basePath, utils.VPALabels, excludeContainers)
+		router := dashboard.GetRouter(
+			dashboard.OnPort(serverPort),
+			dashboard.WithBasePath(basePath),
+			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
+		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))

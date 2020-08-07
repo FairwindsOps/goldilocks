@@ -1,0 +1,18 @@
+{{define "namespace"}}{{/*template "namespace" $namespaceSummary*/}}
+<div class="card namespace">
+  <h3>Namespace: <strong>{{ $.Namespace }}</strong></h3>
+  <div class="expandable-table">
+    {{ range $deployment := $.Deployments }}
+      <div class="resource-info">
+        <div class="name"><span class="caret-expander"></span>
+          <span class="controller-type">Deployment:</span>
+          <strong>{{ $deployment.DeploymentName }}</strong>
+        </div>
+        {{ range $cName, $cSummary := $deployment.Containers }}
+          {{ template "container" $cSummary }}
+        {{ end }}
+        </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
