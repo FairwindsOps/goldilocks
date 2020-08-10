@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dashboard
+package helpers
 
 import (
 	"regexp"
@@ -22,13 +22,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func Test_getUUID(t *testing.T) {
+func Test_GetUUID(t *testing.T) {
 	var validUUID = regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
-	match := validUUID.MatchString(getUUID())
+	match := validUUID.MatchString(GetUUID())
 	assert.Equal(t, match, true)
 }
 
-func Test_printResource(t *testing.T) {
+func Test_PrintResource(t *testing.T) {
 	tests := []struct {
 		name     string
 		quantity resource.Quantity
@@ -52,13 +52,13 @@ func Test_printResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := printResource(tt.quantity)
+			got := PrintResource(tt.quantity)
 			assert.Equal(t, got, tt.want)
 		})
 	}
 }
 
-func Test_getStatus(t *testing.T) {
+func Test_GetStatus(t *testing.T) {
 	type args struct {
 		existing       resource.Quantity
 		recommendation resource.Quantity
@@ -144,13 +144,13 @@ func Test_getStatus(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getStatus(tt.args.existing, tt.args.recommendation, tt.args.style)
+			got := GetStatus(tt.args.existing, tt.args.recommendation, tt.args.style)
 			assert.Equal(t, got, tt.want)
 		})
 	}
 }
 
-func Test_getStatusRange(t *testing.T) {
+func Test_GetStatusRange(t *testing.T) {
 	type args struct {
 		existing resource.Quantity
 		lower    resource.Quantity
@@ -245,7 +245,7 @@ func Test_getStatusRange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getStatusRange(tt.args.existing, tt.args.lower, tt.args.upper, tt.args.style)
+			got := GetStatusRange(tt.args.existing, tt.args.lower, tt.args.upper, tt.args.style)
 			assert.Equal(t, got, tt.want)
 		})
 	}

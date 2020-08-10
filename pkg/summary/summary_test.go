@@ -75,8 +75,11 @@ func TestSummarizer(t *testing.T) {
 	assert.NoError(t, errOk2)
 
 	var summary = Summary{
-		Namespaces: []string{
-			"testing",
+		Namespaces: map[string]namespaceSummary{
+			"testing": namespaceSummary{
+				Namespace:   "testing",
+				Deployments: map[string]deploymentSummary{},
+			},
 		},
 	}
 

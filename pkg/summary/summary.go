@@ -27,35 +27,35 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
-var (
-	labelBase                             = "goldilocks.fairwinds.com"
-	deploymentExcludeContainersAnnotation = labelBase + "/" + "exclude-containers"
-)
-
 const (
 	namespaceAllNamespaces = ""
 )
 
+// Summary is for storing a summary of recommendation data by namespace/deployment/container
+type Summary struct {
+	Namespaces map[string]namespaceSummary
+}
+
+type namespaceSummary struct {
+	Namespace   string                       `json:"namespace"`
+	Deployments map[string]deploymentSummary `json:"deployments"`
+}
+
+type deploymentSummary struct {
+	DeploymentName string                      `json:"deploymentName"`
+	Containers     map[string]containerSummary `json:"containers"`
+}
+
 type containerSummary struct {
+	ContainerName string `json:"containerName"`
+
+	// recommendations
 	LowerBound     corev1.ResourceList `json:"lowerBound"`
 	UpperBound     corev1.ResourceList `json:"upperBound"`
 	Target         corev1.ResourceList `json:"target"`
 	UncappedTarget corev1.ResourceList `json:"uncappedTarget"`
 	Limits         corev1.ResourceList `json:"limits"`
 	Requests       corev1.ResourceList `json:"requests"`
-	ContainerName  string              `json:"containerName"`
-}
-
-type deploymentSummary struct {
-	Containers     []containerSummary `json:"containers"`
-	DeploymentName string             `json:"deploymentName"`
-	Namespace      string             `json:"namespace"`
-}
-
-// Summary struct is for storing a summary of recommendation data.
-type Summary struct {
-	Deployments []deploymentSummary `json:"deployments"`
-	Namespaces  []string            `json:"namespaces"`
 }
 
 // Summarizer represents a source of generating a summary of VPAs
@@ -90,7 +90,9 @@ func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Optio
 
 // GetSummary returns a Summary of the Summarizer using its options
 func (s Summarizer) GetSummary() (Summary, error) {
-	var summary Summary
+	summary := Summary{
+		Namespaces: map[string]namespaceSummary{},
+	}
 	// cached vpas
 	if s.vpas == nil {
 		err := s.UpdateVPAs()
@@ -103,16 +105,30 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		return summary, nil
 	}
 
-	summaryNamespaces := sets.NewString()
 	for _, vpa := range s.vpas {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.Name)
 
-		var dSummary deploymentSummary
-		dSummary.DeploymentName = vpa.Name
-		dSummary.Namespace = vpa.Namespace
-		summaryNamespaces.Insert(dSummary.Namespace)
+		// get or create the namespaceSummary for this VPA's namespace
+		namespace := vpa.Namespace
+		var nsSummary namespaceSummary
+		if val, ok := summary.Namespaces[namespace]; ok {
+			nsSummary = val
+		} else {
+			nsSummary = namespaceSummary{
+				Namespace:   namespace,
+				Deployments: map[string]deploymentSummary{},
+			}
+			summary.Namespaces[namespace] = nsSummary
+		}
 
-		deployment, err := s.kubeClient.Client.AppsV1().Deployments(dSummary.Namespace).Get(dSummary.DeploymentName, metav1.GetOptions{})
+		// VPA.Name := Deployment.Name, as that's how goldilocks works
+		dSummary := deploymentSummary{
+			DeploymentName: vpa.Name,
+			Containers:     map[string]containerSummary{},
+		}
+
+		// find all deployments in the namespace for this VPA
+		deployment, err := s.kubeClient.Client.AppsV1().Deployments(namespace).Get(dSummary.DeploymentName, metav1.GetOptions{})
 		if err != nil {
 			klog.Errorf("Error retrieving deployment from API: %v", err)
 		}
@@ -128,7 +144,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 		// get the full set of excluded containers for this Deployment
 		excludedContainers := sets.NewString().Union(s.excludedContainers)
-		if val, exists := deployment.GetAnnotations()[deploymentExcludeContainersAnnotation]; exists {
+		if val, exists := deployment.GetAnnotations()[utils.DeploymentExcludeContainersAnnotation]; exists {
 			excludedContainers.Insert(strings.Split(val, ",")...)
 		}
 
@@ -141,6 +157,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 			var cSummary containerSummary
 			for _, c := range deployment.Spec.Template.Spec.Containers {
+				// find the matching container on the deployment
 				if c.Name == containerRecommendation.ContainerName {
 					cSummary = containerSummary{
 						ContainerName:  containerRecommendation.ContainerName,
@@ -148,20 +165,20 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
 						Target:         utils.FormatResourceList(containerRecommendation.Target),
 						UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget),
+						Limits:         utils.FormatResourceList(c.Resources.Limits),
+						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
-					cSummary.Limits = utils.FormatResourceList(c.Resources.Limits)
-					cSummary.Requests = utils.FormatResourceList(c.Resources.Requests)
 					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
 				}
 			}
 
-			dSummary.Containers = append(dSummary.Containers, cSummary)
+			dSummary.Containers[cSummary.ContainerName] = cSummary
 		}
-		summary.Deployments = append(summary.Deployments, dSummary)
-	}
 
-	// get the unique list of namespaces we've seen for this summary
-	summary.Namespaces = summaryNamespaces.List()
+		// update summary maps
+		nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+		summary.Namespaces[nsSummary.Namespace] = nsSummary
+	}
 
 	return summary, nil
 }

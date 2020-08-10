@@ -94,7 +94,9 @@ Then open your browser to [http://localhost:8080](http://localhost:8080)
 
 ## CLI Usage (not recommended)
 
-Normally we recommend installing as a controller in-cluster. However, it can be run as a CLI if desired.
+The CLI was originally developed to test the features of Goldilocks. While the CLI is still present and somewhat functional, we do not generally recommend using it. The CLI is scoped to a single namespace per run (meaning you would have to run it multiple times), and it will not automatically clean up any VPA objects that are created. The controller is a much better option, as it will monitor for changes and keep the list of VPA objects up-to-date. In addition, the controller will allow keeping multiple namespaces up to date.
+
+The CLI summary function shoul still be useful. It runs the same summary output that the dashboard uses, and can generate a JSON object that can be used elsewhere.
 
 ```
 A tool for analysis of kubernetes deployment resource usage.
@@ -184,7 +186,7 @@ This will delete all vpa objects in a namespace that are labelled for use by thi
 
 `goldilocks dashboard`
 
-Runs the goldilocks dashboard web server that will display recommendations. Listens on port `8080` by default.
+Runs the goldilocks dashboard server that will display recommendations. Listens on port `8080` by default.
 
 ### summary
 

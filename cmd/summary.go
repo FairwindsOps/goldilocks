@@ -49,7 +49,7 @@ By default the summary will be about all VPAs in all namespaces.`,
 
 		// limit to a single namespace
 		if namespace != "" {
-			opts = append(opts, summary.ForNamespace(args[0]))
+			opts = append(opts, summary.ForNamespace(namespace))
 		}
 
 		// exclude containers from the summary
