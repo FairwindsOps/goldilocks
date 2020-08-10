@@ -134,7 +134,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 		deployment, ok := s.deploymentForVPANamed[vpa.Name]
 		if !ok {
-			klog.Errorf("Error, no matching Deployment found for VPA/%s", vpa.Name)
+			klog.Errorf("no matching Deployment found for VPA/%s", vpa.Name)
 			continue
 		}
 
