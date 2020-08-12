@@ -24,14 +24,6 @@ $(function () {
     // filter namespace cards on every key typed
     $searchBox.on("keyup", filterNamespaceCards)
 
-    // visit the first filtered namespace card's view/dashboard page by pressing enter
-    $searchBox.on("keypress", function(e) {
-        var key = e.which;
-        if(key == 13) { // enter
-            viewDashboardForFirstNamespace()
-        }
-    })
-
     // start with a filter incase the browser caches input data
     filterNamespaceCards()
 })
