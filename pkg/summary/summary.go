@@ -94,9 +94,20 @@ func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Optio
 
 // GetSummary returns a Summary of the Summarizer using its options
 func (s Summarizer) GetSummary() (Summary, error) {
+	// blank summary
 	summary := Summary{
 		Namespaces: map[string]namespaceSummary{},
 	}
+
+	// if the summarizer is filtering for a single namespace,
+	// then add that namespace by default to the blank summary
+	if s.namespace != namespaceAllNamespaces {
+		summary.Namespaces[s.namespace] = namespaceSummary{
+			Namespace:   s.namespace,
+			Deployments: map[string]deploymentSummary{},
+		}
+	}
+
 	// cached vpas and deployments
 	if s.vpas == nil || s.deploymentForVPANamed == nil {
 		err := s.Update()
@@ -174,10 +185,10 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
 					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
+					dSummary.Containers[cSummary.ContainerName] = cSummary
+					continue CONTAINER_REC_LOOP
 				}
 			}
-
-			dSummary.Containers[cSummary.ContainerName] = cSummary
 		}
 
 		// update summary maps
