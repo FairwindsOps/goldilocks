@@ -19,8 +19,7 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
