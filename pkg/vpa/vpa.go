@@ -193,16 +193,9 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *vpav1.VerticalPodAutoscaler) error {
-	// get the desiredVPA as configured by annotations on the Namespace
+func (r Reconciler) reconcileDeploymentAndVPA(nsName string, deployment appsv1.Deployment, vpa *v1beta2.VerticalPodAutoscaler, vpaUpdateMode v1beta2.UpdateMode) error {
 	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name)
-
-	// check if the Deployment has its own vpa-update-mode set
-	if _, ok := deployment.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
-		vpaUpdateMode := vpaUpdateModeForResource(&deployment)
-		desiredVPA.Spec.UpdatePolicy.UpdateMode = vpaUpdateMode
-		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%v", deployment.Name, vpaUpdateMode)
-	}
+	vpaUpdateMode = vpaUpdateModeForResource(&deployment)
 
 	if vpa == nil {
 		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
@@ -348,21 +341,14 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
 // key/value and uses that key/value to return the proper UpdateMode type
 func vpaUpdateModeForResource(obj runtime.Object) *vpav1.UpdateMode {
-	var requestedVPAMode string
+	requestedVPAMode := string(v1beta2.UpdateModeOff)
 
 	// check for vpa-update-mode in annotations first
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
 		requestedVPAMode = val
-	} else {
-		// check for vpa-update-mode in labels
-		for k, v := range accessor.GetLabels() {
-			if strings.ToLower(k) != utils.VpaUpdateModeKey {
-				continue
-			}
-
-			requestedVPAMode = v
-		}
+	} else if val, ok := accessor.GetLabels()[utils.VpaUpdateModeKey]; ok {
+		requestedVPAMode = val
 	}
 
 	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/vpa/types.go#L101
