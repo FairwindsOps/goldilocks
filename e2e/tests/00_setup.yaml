@@ -3,7 +3,7 @@ name: Setup
 vars:
   timeout: 60s
   vpa-wait: 20
-  vpa-ref: vertical-pod-autoscaler-0.8.0
+  vpa-ref: e0f63c1caeec518f85c4347b673e4e99e4fb0059
 testcases:
 - name: Install metrics-server
   steps:
