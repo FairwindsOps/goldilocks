@@ -20,14 +20,17 @@ import (
 )
 
 var (
-	LabelBase                             = "goldilocks.fairwinds.com"
-	VpaEnabledLabel                       = LabelBase + "/" + "enabled"
-	VpaUpdateModeKey                      = LabelBase + "/" + "vpa-update-mode"
+	// LabelBase is the string that will be used for labels on namespaces
+	LabelBase = "goldilocks.fairwinds.com"
+	// VpaEnabledLabel is the label used to indicate that Goldilocks is enabled.
+	VpaEnabledLabel = LabelBase + "/" + "enabled"
+	// VpaUpdateModeKey is the label used to indicate the vpa update mode.
+	VpaUpdateModeKey = LabelBase + "/" + "vpa-update-mode"
+	// DeploymentExcludeContainersAnnotation is the label used to exclude container names from being reported.
 	DeploymentExcludeContainersAnnotation = LabelBase + "/" + "exclude-containers"
 )
 
 // VPALabels is a set of default labels that get placed on every VPA.
-// TODO: Replace this with the OwnerRef pattern
 var VPALabels = map[string]string{
 	"creator": "Fairwinds",
 	"source":  "goldilocks",
