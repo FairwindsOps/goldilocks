@@ -347,34 +347,21 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
 // key/value and uses that key/value to return the proper UpdateMode type
 func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
-	requestedVPAMode := string(vpav1.UpdateModeOff)
+	requestedVPAMode := vpav1.UpdateModeOff
 	explicit := false
 
-	// check for vpa-update-mode in annotations first
+	requestStr := ""
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaUpdateModeKey]; ok {
-		requestedVPAMode = val
+		requestStr = val
 	} else if val, ok := accessor.GetLabels()[utils.VpaUpdateModeKey]; ok {
-		requestedVPAMode = val
+		requestStr = val
+	}
+	if requestStr != "" {
+		requestStr = strings.ToUpper(requestStr[0:1]) + strings.ToLower(requestStr[1:])
+		requestedVPAMode = vpav1.UpdateMode(requestStr)
 		explicit = true
 	}
 
-	// See: https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/vpa/types.go#L101
-	var updateMode vpav1.UpdateMode
-	switch strings.ToLower(requestedVPAMode) {
-	case "off":
-		updateMode = vpav1.UpdateModeOff
-	case "auto":
-		updateMode = vpav1.UpdateModeAuto
-	case "initial":
-		updateMode = vpav1.UpdateModeInitial
-	case "recreate":
-		updateMode = vpav1.UpdateModeRecreate
-	default:
-		klog.Warningf("Found unsupported value for vpa-update-mode: %s, using default vpa-update-mode", requestedVPAMode)
-		updateMode = vpav1.UpdateModeOff
-		explicit = false
-	}
-
-	return &updateMode, explicit
+	return &requestedVPAMode, explicit
 }
