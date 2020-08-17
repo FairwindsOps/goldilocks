@@ -8,7 +8,7 @@ testcases:
 - name: Install metrics-server
   steps:
   - script: |
-      helm repo add bitnami https://charts.bitnami.com
+      helm repo add bitnami https://charts.bitnami.com/bitnami
       helm repo update
       kubectl create namespace metrics-server
       helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs.kubelet-insecure-tls=true
