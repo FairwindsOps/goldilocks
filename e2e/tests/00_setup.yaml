@@ -3,20 +3,20 @@ name: Setup
 vars:
   timeout: 60s
   vpa-wait: 20
-  vpa-ref: e16a0adef6c7d79a23d57f9bbbef26fc9da59378
+  vpa-ref: vertical-pod-autoscaler-0.8.0
 testcases:
 - name: Install metrics-server
   steps:
   - script: |
-      helm repo add stable https://kubernetes-charts.storage.googleapis.com
+      helm repo add bitnami https://charts.bitnami.com
       helm repo update
       kubectl create namespace metrics-server
-      helm install metrics-server stable/metrics-server --version=2.9.0 --set args[0]=--kubelet-insecure-tls --set args[1]=--kubelet-preferred-address-types=InternalIP --namespace metrics-server
+      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs.kubelet-insecure-tls=true
 - name: Install VPA Recommender
   steps:
   - script: |
       kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/recommender-deployment.yaml
-      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-beta2-crd.yaml
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-v1-crd.yaml
       kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
   - script: kubectl get crd verticalpodautoscalers.autoscaling.k8s.io -oname
     retry: 6
