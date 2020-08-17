@@ -55,15 +55,9 @@ if $install_vpa; then
   cd ../../
 fi
 
-## Helm Init
-kubectl -n kube-system create sa tiller --dry-run -o yaml --save-config | kubectl apply -f -;
-kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount="kube-system:tiller" --serviceaccount=kube-system:tiller -o yaml --dry-run | kubectl -n "kube-system" apply -f -
-
-helm init --wait --upgrade --service-account tiller
-
 ## Reckoner
 
-reckoner plot course.yml
+reckoner plot course.yml -a
 
 if $install_goldilocks; then
   ## Install Goldilocks

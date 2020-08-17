@@ -1,4 +1,5 @@
 repository: stable
+namespace: demo
 minimum_versions:
   helm: 2.13.1
   reckoner: 1.4.0
