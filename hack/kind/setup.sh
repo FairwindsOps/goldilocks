@@ -2,9 +2,9 @@
 
 set -e
 
-kind_required_version=0.6.1
-kind_node_image="kindest/node:v1.15.6@sha256:18c4ab6b61c991c249d29df778e651f443ac4bcd4e6bdd37e0c83c0d33eaae78"
-vertical_pod_autoscaler_tag=vertical-pod-autoscaler-0.6.3
+kind_required_version=0.8.1
+kind_node_image="kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a"
+vertical_pod_autoscaler_ref=e0f63c1caeec518f85c4347b673e4e99e4fb0059
 install_vpa=${1:-true}
 install_goldilocks=${2:-true}
 
@@ -32,7 +32,6 @@ fi
 ## Create the kind cluster
 
 kind create cluster \
-  --config kind.yaml \
   --name test-infra \
   --image="$kind_node_image" || true
 
@@ -50,7 +49,7 @@ if $install_vpa; then
   fi
 
   cd autoscaler/vertical-pod-autoscaler
-  git checkout "$vertical_pod_autoscaler_tag"
+  git checkout "$vertical_pod_autoscaler_ref"
   ./hack/vpa-up.sh
 
   cd ../../
