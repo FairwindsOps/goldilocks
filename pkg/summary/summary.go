@@ -15,6 +15,7 @@
 package summary
 
 import (
+	"context"
 	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -22,7 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog"
 
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -64,7 +65,7 @@ type Summarizer struct {
 	options
 
 	// cached list of vpas
-	vpas []v1beta2.VerticalPodAutoscaler
+	vpas []vpav1.VerticalPodAutoscaler
 
 	// cached map of deploy/vpa name -> deployment
 	deploymentForVPANamed map[string]*appsv1.Deployment
@@ -83,7 +84,7 @@ func NewSummarizer(setters ...Option) *Summarizer {
 }
 
 // NewSummarizerForVPAs returns a Summarizer for a known list of VPAs
-func NewSummarizerForVPAs(vpas []v1beta2.VerticalPodAutoscaler, setters ...Option) *Summarizer {
+func NewSummarizerForVPAs(vpas []vpav1.VerticalPodAutoscaler, setters ...Option) *Summarizer {
 	summarizer := NewSummarizer(setters...)
 
 	// set the cached vpas list directly
@@ -232,8 +233,8 @@ func (s *Summarizer) updateVPAs() error {
 	return nil
 }
 
-func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]v1beta2.VerticalPodAutoscaler, error) {
-	vpas, err := s.vpaClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(s.namespace).List(listOptions)
+func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]vpav1.VerticalPodAutoscaler, error) {
+	vpas, err := s.vpaClient.Client.AutoscalingV1().VerticalPodAutoscalers(s.namespace).List(context.TODO(), listOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +271,7 @@ func (s *Summarizer) updateDeployments() error {
 }
 
 func (s Summarizer) listDeployments(listOptions metav1.ListOptions) ([]appsv1.Deployment, error) {
-	deployments, err := s.kubeClient.Client.AppsV1().Deployments(s.namespace).List(listOptions)
+	deployments, err := s.kubeClient.Client.AppsV1().Deployments(s.namespace).List(context.TODO(), listOptions)
 	if err != nil {
 		return nil, err
 	}

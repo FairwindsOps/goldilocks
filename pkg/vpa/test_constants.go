@@ -20,7 +20,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // Some namespaces that can be used for tests
@@ -59,20 +59,20 @@ var nsEnabledUpdateModeAuto = &corev1.Namespace{
 }
 
 // A VPA Object that can be used to verify tests
-var updateMode = v1beta2.UpdateModeOff
-var testVPA = &v1beta2.VerticalPodAutoscaler{
+var updateMode = vpav1.UpdateModeOff
+var testVPA = &vpav1.VerticalPodAutoscaler{
 	ObjectMeta: metav1.ObjectMeta{
 		Name:      "test-vpa",
 		Labels:    utils.VPALabels,
 		Namespace: "testing",
 	},
-	Spec: v1beta2.VerticalPodAutoscalerSpec{
+	Spec: vpav1.VerticalPodAutoscalerSpec{
 		TargetRef: &autoscaling.CrossVersionObjectReference{
 			APIVersion: "apps/v1",
 			Kind:       "Deployment",
 			Name:       "test-vpa",
 		},
-		UpdatePolicy: &v1beta2.PodUpdatePolicy{
+		UpdatePolicy: &vpav1.PodUpdatePolicy{
 			UpdateMode: &updateMode,
 		},
 	},

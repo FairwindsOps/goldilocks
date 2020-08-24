@@ -15,6 +15,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -122,10 +123,10 @@ func NewController(stop <-chan bool) {
 	DeploymentInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.AppsV1().Deployments("").List(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").List(context.TODO(), metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.AppsV1().Deployments("").Watch(metav1.ListOptions{})
+				return kubeClient.Client.AppsV1().Deployments("").Watch(context.TODO(), metav1.ListOptions{})
 			},
 		},
 		&v1.Deployment{},
@@ -142,10 +143,10 @@ func NewController(stop <-chan bool) {
 	NSInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.CoreV1().Namespaces().List(metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.CoreV1().Namespaces().Watch(metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Namespaces().Watch(context.TODO(), metav1.ListOptions{})
 			},
 		},
 		&corev1.Namespace{},

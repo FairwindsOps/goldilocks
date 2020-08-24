@@ -15,12 +15,12 @@
 package kube
 
 import (
+	"context"
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
@@ -95,7 +95,7 @@ func getKubeClientVPA() autoscalingv1beta2.Interface {
 // GetNamespace returns a namespace object when given a name.
 func GetNamespace(kubeClient *ClientInstance, nsName string) (*corev1.Namespace, error) {
 
-	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(nsName, metav1.GetOptions{})
+	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(context.TODO(), nsName, metav1.GetOptions{})
 	if err != nil {
 		klog.Errorf("Error getting namespace from name %s: %v", nsName, err)
 		return nil, err
