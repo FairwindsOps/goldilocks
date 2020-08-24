@@ -8,7 +8,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-20200813140614-09e14469288d
