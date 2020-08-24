@@ -15,6 +15,7 @@
 package summary
 
 import (
+	"context"
 	"testing"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
@@ -22,7 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 func TestSummarizer(t *testing.T) {
@@ -33,45 +34,45 @@ func TestSummarizer(t *testing.T) {
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 
-	updateMode := v1beta2.UpdateModeOff
-	var testVPA = &v1beta2.VerticalPodAutoscaler{
+	updateMode := vpav1.UpdateModeOff
+	var testVPA = &vpav1.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-vpa",
 			Labels:    utils.VPALabels,
 			Namespace: "testing",
 		},
-		Spec: v1beta2.VerticalPodAutoscalerSpec{
+		Spec: vpav1.VerticalPodAutoscalerSpec{
 			TargetRef: &autoscalingv1.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa",
 			},
-			UpdatePolicy: &v1beta2.PodUpdatePolicy{
+			UpdatePolicy: &vpav1.PodUpdatePolicy{
 				UpdateMode: &updateMode,
 			},
 		},
 	}
-	var testVPANoLabels = &v1beta2.VerticalPodAutoscaler{
+	var testVPANoLabels = &vpav1.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-vpa-no-labels",
 			Namespace: "testing",
 		},
-		Spec: v1beta2.VerticalPodAutoscalerSpec{
+		Spec: vpav1.VerticalPodAutoscalerSpec{
 			TargetRef: &autoscalingv1.CrossVersionObjectReference{
 				APIVersion: "apps/v1",
 				Kind:       "Deployment",
 				Name:       "test-vpa-no-labels",
 			},
-			UpdatePolicy: &v1beta2.PodUpdatePolicy{
+			UpdatePolicy: &vpav1.PodUpdatePolicy{
 				UpdateMode: &updateMode,
 			},
 		},
 	}
 
-	_, errOk := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPA)
+	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPA, metav1.CreateOptions{})
 	assert.NoError(t, errOk)
 
-	_, errOk2 := kubeClientVPA.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Create(testVPANoLabels)
+	_, errOk2 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPANoLabels, metav1.CreateOptions{})
 	assert.NoError(t, errOk2)
 
 	var summary = Summary{

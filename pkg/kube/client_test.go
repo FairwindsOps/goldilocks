@@ -15,6 +15,7 @@
 package kube
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,7 +36,7 @@ func TestGetNamespace(t *testing.T) {
 	_, errNotFound := GetNamespace(kubeClient, "nothere")
 	assert.EqualError(t, errNotFound, "namespaces \"nothere\" not found")
 
-	_, err := kubeClient.Client.CoreV1().Namespaces().Create(namespace)
+	_, err := kubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), namespace, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	got, err := GetNamespace(kubeClient, "test")
