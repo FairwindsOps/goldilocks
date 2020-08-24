@@ -18,7 +18,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // Some namespaces that can be used for tests
@@ -75,8 +75,8 @@ var nsLabeledTrueUpdateModeAuto = &corev1.Namespace{
 	},
 }
 
-var updateModeOff = v1beta2.UpdateModeOff
-var updateModeAuto = v1beta2.UpdateModeAuto
+var updateModeOff = vpav1.UpdateModeOff
+var updateModeAuto = vpav1.UpdateModeAuto
 
 // A deployment object that can be used for testing
 var testDeployment = &appsv1.Deployment{

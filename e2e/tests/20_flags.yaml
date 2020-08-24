@@ -12,9 +12,9 @@ testcases:
       kubectl create ns demo-excluded
 
       helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-      helm install basic-demo-no-label fairwinds-incubator/basic-demo --namespace demo-no-label --version=0.2.3
-      helm install basic-demo-included fairwinds-incubator/basic-demo --namespace demo-included --version=0.2.3
-      helm install basic-demo-excluded fairwinds-incubator/basic-demo --namespace demo-excluded --version=0.2.3
+      helm install basic-demo-no-label fairwinds-incubator/basic-demo --namespace demo-no-label --version=0.4.0
+      helm install basic-demo-included fairwinds-incubator/basic-demo --namespace demo-included --version=0.4.0
+      helm install basic-demo-excluded fairwinds-incubator/basic-demo --namespace demo-excluded --version=0.4.0
 
       kubectl -n demo-no-label wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
       kubectl -n demo-included wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo

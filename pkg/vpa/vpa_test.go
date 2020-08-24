@@ -15,6 +15,7 @@
 package vpa
 
 import (
+	"context"
 	"testing"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
@@ -26,8 +27,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 func setupVPAForTests() {
@@ -45,32 +45,32 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 	tests := []struct {
 		name       string
 		ns         *corev1.Namespace
-		updateMode v1beta2.UpdateMode
+		updateMode vpav1.UpdateMode
 	}{
 		{
 			name:       "unlabeled (default)",
 			ns:         nsNotLabeled,
-			updateMode: v1beta2.UpdateModeOff,
+			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labeled: enabled=false",
 			ns:         nsLabeledFalse,
-			updateMode: v1beta2.UpdateModeOff,
+			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true",
 			ns:         nsLabeledTrue,
-			updateMode: v1beta2.UpdateModeOff,
+			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=off",
 			ns:         nsLabeledTrueUpdateModeOff,
-			updateMode: v1beta2.UpdateModeOff,
+			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=auto",
 			ns:         nsLabeledTrueUpdateModeAuto,
-			updateMode: v1beta2.UpdateModeAuto,
+			updateMode: vpav1.UpdateModeAuto,
 		},
 	}
 
@@ -92,13 +92,13 @@ func Test_getVPAObject(t *testing.T) {
 	tests := []struct {
 		name       string
 		ns         *corev1.Namespace
-		updateMode v1beta2.UpdateMode
-		vpa        *v1beta2.VerticalPodAutoscaler
+		updateMode vpav1.UpdateMode
+		vpa        *vpav1.VerticalPodAutoscaler
 	}{
 		{
 			name:       "example-vpa",
 			ns:         nsLabeledTrueUpdateModeAuto,
-			updateMode: v1beta2.UpdateModeAuto,
+			updateMode: vpav1.UpdateModeAuto,
 			vpa:        nil,
 		},
 	}
@@ -136,13 +136,13 @@ func Test_createVPA(t *testing.T) {
 
 	err := rec.createVPA(testVPA)
 	assert.NoError(t, err)
-	_, err = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsTesting.Name).Get("test-vpa", metav1.GetOptions{})
+	_, err = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, err, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
 
 	// Now actually create and compare
 	rec.DryRun = false
 	errCreate := rec.createVPA(testVPA)
-	newVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsTesting.Name).Get("test-vpa", metav1.GetOptions{})
+	newVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, &testVPA, newVPA)
 }
@@ -156,19 +156,19 @@ func Test_deleteVPA(t *testing.T) {
 	rec.DryRun = true
 
 	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa")
-	_, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsTesting.Name).Create(&testVPA)
+	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	errDeleteDryRun := rec.deleteVPA(testVPA)
 	assert.NoError(t, errDeleteDryRun)
-	oldVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsTesting.Name).Get("test-vpa", metav1.GetOptions{})
+	oldVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.EqualValues(t, &testVPA, oldVPA)
 
 	// Test actual deletion
 	rec.DryRun = false
 	errDelete := rec.deleteVPA(testVPA)
 	assert.NoError(t, errDelete)
-	_, errNotFound := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers("testing").Get("test-vpa", metav1.GetOptions{})
+	_, errNotFound := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.EqualError(t, errNotFound, "verticalpodautoscalers.autoscaling.k8s.io \"test-vpa\" not found")
 }
 
@@ -184,20 +184,20 @@ func Test_updateVPA(t *testing.T) {
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "off"
 
 	testVPA := rec.getVPAObject(nil, testNS, "test-vpa")
-	_, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(testNS.Name).Create(&testVPA)
+	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// dry run
 	errUpdateDryRun := rec.updateVPA(testVPA)
 	assert.NoError(t, errUpdateDryRun)
-	currVPA, _ := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(testNS.Name).Get("test-vpa", metav1.GetOptions{})
+	currVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.EqualValues(t, &testVPA, currVPA)
 
 	// live update
 	rec.DryRun = false
 	errUpdate := rec.updateVPA(testVPA)
 	assert.NoError(t, errUpdate)
-	currVPA, _ = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(testNS.Name).Get("test-vpa", metav1.GetOptions{})
+	currVPA, _ = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	// no change between create and update
 	assert.EqualValues(t, &testVPA, currVPA)
 
@@ -207,7 +207,7 @@ func Test_updateVPA(t *testing.T) {
 
 	errUpdate2 := rec.updateVPA(newVPA)
 	assert.NoError(t, errUpdate2)
-	currVPA, _ = VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(testNS.Name).Get("test-vpa", metav1.GetOptions{})
+	currVPA, _ = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	// no change between create and update
 	assert.NotEqual(t, &testVPA, currVPA)
 	// check that the update mode changed
@@ -389,21 +389,21 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledFalse)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledFalse, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledFalse.ObjectMeta.Name
 
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// False labels should generate 0 vpa objects
 	err = GetInstance().ReconcileNamespace(nsLabeledFalse)
 	assert.NoError(t, err)
 
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.Equal(t, 0, len(vpaList.Items))
 	assert.NoError(t, err)
-	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 }
 
 func Test_ReconcileNamespaceWithLabels(t *testing.T) {
@@ -411,18 +411,18 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// This should create a single VPA
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
 	assert.Equal(t, "test-deploy", vpaList.Items[0].ObjectMeta.Name)
@@ -433,25 +433,25 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	VPAClient := GetInstance().VPAClient
 	KubeClient := GetInstance().KubeClient
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create deploy, reconcile, delete deploy, reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
-	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(testDeployment.ObjectMeta.Name, &metav1.DeleteOptions{})
+	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(context.TODO(), testDeployment.ObjectMeta.Name, metav1.DeleteOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// No VPA objects left after deleted deployment
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 
 }
 
@@ -461,12 +461,12 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create a deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
@@ -480,16 +480,16 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 			},
 		},
 	}
-	_, err = KubeClient.Client.CoreV1().Namespaces().Update(updatedNS)
+	_, err = KubeClient.Client.CoreV1().Namespaces().Update(context.TODO(), updatedNS, metav1.UpdateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(updatedNS)
 	assert.NoError(t, err)
 
 	// There should be zero vpa objects
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &v1beta2.VerticalPodAutoscalerList{})
+	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 }
 
 func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
@@ -498,21 +498,21 @@ func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
 	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrueUpdateModeAuto)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrueUpdateModeAuto, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create an excluded deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeploymentExcluded)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeploymentExcluded, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with UpdateModeOff
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
-	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeOff)
+	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeOff)
 }
 
 func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
@@ -521,21 +521,21 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	KubeClient := GetInstance().KubeClient
 
 	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(nsLabeledTrue)
+	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	nsName := nsLabeledTrue.ObjectMeta.Name
 
 	// Create a deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(testDeployment)
+	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with updatemode "off"
-	vpaList, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
-	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeOff)
+	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeOff)
 
 	// Update the namespace labels to be be vpa-update-mode=auto and reconcile
 	updatedNS := &corev1.Namespace{
@@ -547,14 +547,14 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 			},
 		},
 	}
-	_, err = KubeClient.Client.CoreV1().Namespaces().Update(updatedNS)
+	_, err = KubeClient.Client.CoreV1().Namespaces().Update(context.TODO(), updatedNS, metav1.UpdateOptions{})
 	assert.NoError(t, err)
 	err = GetInstance().ReconcileNamespace(updatedNS)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with updatemode "auto"
-	vpaList1, err := VPAClient.Client.AutoscalingV1beta2().VerticalPodAutoscalers(nsName).List(metav1.ListOptions{})
+	vpaList1, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
-	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, v1beta2.UpdateModeAuto)
+	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeAuto)
 }

@@ -1,4 +1,5 @@
 repository: stable
+namespace: demo
 minimum_versions:
   helm: 2.13.1
   reckoner: 1.4.0
@@ -29,7 +30,7 @@ charts:
       - load-generator-values.yaml
   basic-demo:
     namespace: demo
-    version: 0.2.1
+    version: 0.4.0
     hooks:
       post_install:
         - kubectl get ns demo || kubectl create ns demo
