@@ -75,7 +75,6 @@ var nsLabeledTrueUpdateModeAuto = &corev1.Namespace{
 	},
 }
 
-var updateModeOff = vpav1.UpdateModeOff
 var updateModeAuto = vpav1.UpdateModeAuto
 
 // A deployment object that can be used for testing
