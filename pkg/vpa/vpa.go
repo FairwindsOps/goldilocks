@@ -197,8 +197,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpa
 func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
 	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name)
 
-	vpaUpdateModeOverride, override := vpaUpdateModeForResource(&deployment)
-	if override {
+	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(&deployment); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
 		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, vpaUpdateMode)
 	}
@@ -328,7 +327,6 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	// update the labels on the VPA
 	desiredVPA.Labels = utils.VPALabels
 
-	updateMode, _ := vpaUpdateModeForResource(ns)
 	// update the spec on the VPA
 	desiredVPA.Spec = vpav1.VerticalPodAutoscalerSpec{
 		TargetRef: &autoscaling.CrossVersionObjectReference{
