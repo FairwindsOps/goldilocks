@@ -1,7 +1,7 @@
 {{define "container"}}{{/*template "container" $containerSummary*/}}
 {{ $cpuRequest := (index $.Requests (resourceName "cpu")) }}
 {{ $cpuLimit := (index $.Limits (resourceName "cpu")) }}
-{{ $memRequest := (index $.Limits (resourceName "memory")) }}
+{{ $memRequest := (index $.Requests (resourceName "memory")) }}
 {{ $memLimit := (index $.Limits (resourceName "memory")) }}
 {{ $cpuLowerBound := (index $.LowerBound (resourceName "cpu")) }}
 {{ $cpuUpperBound := (index $.UpperBound (resourceName "cpu")) }}
