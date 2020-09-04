@@ -195,7 +195,7 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpa
 }
 
 func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
-	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name)
+	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name, vpaUpdateMode)
 
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(&deployment); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
@@ -308,7 +308,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, vpaName string) vpav1.VerticalPodAutoscaler {
+func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, vpaName string, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
