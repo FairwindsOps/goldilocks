@@ -45,31 +45,37 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 	tests := []struct {
 		name       string
 		ns         *corev1.Namespace
+		explicit   bool
 		updateMode vpav1.UpdateMode
 	}{
 		{
 			name:       "unlabeled (default)",
 			ns:         nsNotLabeled,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labeled: enabled=false",
 			ns:         nsLabeledFalse,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true",
 			ns:         nsLabeledTrue,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=off",
 			ns:         nsLabeledTrueUpdateModeOff,
+			explicit:   true,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=auto",
 			ns:         nsLabeledTrueUpdateModeAuto,
+			explicit:   true,
 			updateMode: vpav1.UpdateModeAuto,
 		},
 	}
@@ -81,7 +87,7 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			want := test.updateMode
 			got, explicit := vpaUpdateModeForResource(test.ns)
 			assert.Equal(t, want, *got)
-			assert.Equal(t, true, explicit)
+			assert.Equal(t, test.explicit, explicit)
 		})
 	}
 }
