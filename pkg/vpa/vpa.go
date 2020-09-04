@@ -199,7 +199,7 @@ func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment a
 
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(&deployment); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
-		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, vpaUpdateMode)
+		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, *vpaUpdateMode)
 	}
 	if vpa == nil {
 		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
