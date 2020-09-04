@@ -45,31 +45,37 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 	tests := []struct {
 		name       string
 		ns         *corev1.Namespace
+		explicit   bool
 		updateMode vpav1.UpdateMode
 	}{
 		{
 			name:       "unlabeled (default)",
 			ns:         nsNotLabeled,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labeled: enabled=false",
 			ns:         nsLabeledFalse,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true",
 			ns:         nsLabeledTrue,
+			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=off",
 			ns:         nsLabeledTrueUpdateModeOff,
+			explicit:   true,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=auto",
 			ns:         nsLabeledTrueUpdateModeAuto,
+			explicit:   true,
 			updateMode: vpav1.UpdateModeAuto,
 		},
 	}
@@ -79,8 +85,9 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			want := test.updateMode
-			got := vpaUpdateModeForResource(test.ns)
+			got, explicit := vpaUpdateModeForResource(test.ns)
 			assert.Equal(t, want, *got)
+			assert.Equal(t, test.explicit, explicit)
 		})
 	}
 }
@@ -108,7 +115,8 @@ func Test_getVPAObject(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			vpa := rec.getVPAObject(test.vpa, test.ns, "test-vpa")
+			mode, _ := vpaUpdateModeForResource(test.ns)
+			vpa := rec.getVPAObject(test.vpa, test.ns, "test-vpa", mode)
 
 			// expected ObjectMeta
 			assert.Equal(t, "test-vpa", vpa.Name)
@@ -132,7 +140,8 @@ func Test_createVPA(t *testing.T) {
 	rec := GetInstance()
 	rec.DryRun = true
 
-	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa")
+	updateMode, _ := vpaUpdateModeForResource(nsTesting)
+	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa", updateMode)
 
 	err := rec.createVPA(testVPA)
 	assert.NoError(t, err)
@@ -155,7 +164,8 @@ func Test_deleteVPA(t *testing.T) {
 	rec := GetInstance()
 	rec.DryRun = true
 
-	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa")
+	updateMode, _ := vpaUpdateModeForResource(nsTesting)
+	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa", updateMode)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -183,7 +193,8 @@ func Test_updateVPA(t *testing.T) {
 	testNS := nsTesting.DeepCopy()
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "off"
 
-	testVPA := rec.getVPAObject(nil, testNS, "test-vpa")
+	updateMode, _ := vpaUpdateModeForResource(testNS)
+	testVPA := rec.getVPAObject(nil, testNS, "test-vpa", updateMode)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -203,7 +214,8 @@ func Test_updateVPA(t *testing.T) {
 
 	// change the update mode
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "auto"
-	newVPA := rec.getVPAObject(nil, testNS, "test-vpa")
+	updateMode, _ = vpaUpdateModeForResource(testNS)
+	newVPA := rec.getVPAObject(nil, testNS, "test-vpa", updateMode)
 
 	errUpdate2 := rec.updateVPA(newVPA)
 	assert.NoError(t, errUpdate2)
@@ -227,9 +239,11 @@ func Test_listVPA(t *testing.T) {
 	testNS2.Namespace = "ns2"
 
 	// test vpas
-	vpa1 := rec.getVPAObject(nil, testNS1, "test1")
-	vpa2 := rec.getVPAObject(nil, testNS1, "test2")
-	vpa3 := rec.getVPAObject(nil, testNS2, "test3")
+	updateMode1, _ := vpaUpdateModeForResource(testNS1)
+	updateMode2, _ := vpaUpdateModeForResource(testNS2)
+	vpa1 := rec.getVPAObject(nil, testNS1, "test1", updateMode1)
+	vpa2 := rec.getVPAObject(nil, testNS1, "test2", updateMode1)
+	vpa3 := rec.getVPAObject(nil, testNS2, "test3", updateMode2)
 
 	// create vpas
 	_ = rec.createVPA(vpa1)
