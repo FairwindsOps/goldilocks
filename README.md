@@ -31,7 +31,7 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 There are multiple ways to install VPA for use with Goldilocks:
 
 * Install using the `hack/vpa-up.sh` script from the [vertical-pod-autoscaler repository](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler)
-* Set the value `installVPA=true` when doing the Helm chart installation of Goldilocks. This will run the script from VPA in your cluster.
+* Install using the [Fairwinds VPA Helm Chart](https://github.com/FairwindsOps/charts/tree/master/stable/vpa)
 
 #### Important Note about VPA
 
@@ -39,7 +39,7 @@ The full VPA install includes the updater and the admission webhook for VPA. Gol
 
 ### Prometheus (optional)
 
-[VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported.
+[VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) does not require the use of prometheus, but it is supported. The use of prometheus may provide more accurate results.
 
 ### GKE Notes
 
