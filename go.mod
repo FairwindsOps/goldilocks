@@ -1,6 +1,6 @@
 module github.com/fairwindsops/goldilocks
 
-go 1.14
+go 1.15
 
 require (
 	github.com/gobuffalo/packr/v2 v2.8.0
