@@ -10,14 +10,13 @@ testcases:
   - script: |
       helm repo add bitnami https://charts.bitnami.com/bitnami
       helm repo update
-      kubectl create namespace metrics-server
-      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs.kubelet-insecure-tls=true
+      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs.kubelet-insecure-tls=true --create-namespace
 - name: Install VPA Recommender
   steps:
   - script: |
-      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/recommender-deployment.yaml
-      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-v1-crd.yaml
-      kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/{{.vpa-ref}}/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+      helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+      helm repo update
+      helm install vpa fairwinds-stable/vpa --namespace vpa --create-namespace
   - script: kubectl get crd verticalpodautoscalers.autoscaling.k8s.io -oname
     retry: 6
     delay: 5

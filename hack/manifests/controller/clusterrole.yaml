@@ -32,3 +32,4 @@ rules:
       - 'list'
       - 'create'
       - 'delete'
+      - 'update'

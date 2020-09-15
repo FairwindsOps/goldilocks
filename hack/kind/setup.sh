@@ -2,10 +2,8 @@
 
 set -e
 
-kind_required_version=0.8.1
-kind_node_image="kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a"
-vertical_pod_autoscaler_ref=e0f63c1caeec518f85c4347b673e4e99e4fb0059
-install_vpa=${1:-true}
+kind_required_version=0.9.0
+kind_node_image="kindest/node:v1.18.8@sha256:f4bcc97a0ad6e7abaf3f643d890add7efe6ee4ab90baeb374b4f41a4c95567eb"
 install_goldilocks=${2:-true}
 
 ## Test Infra Setup
@@ -41,21 +39,8 @@ until kubectl cluster-info; do
     sleep 3
 done
 
-if $install_vpa; then
-  ## Install VPA
-
-  if [ ! -d "autoscaler" ] ; then
-      git clone "https://github.com/kubernetes/autoscaler.git"
-  fi
-
-  cd autoscaler/vertical-pod-autoscaler
-  git checkout "$vertical_pod_autoscaler_ref"
-  ./hack/vpa-up.sh
-
-  cd ../../
-fi
-
 ## Reckoner
+## Installs all dependencies such as metrics-server and vpa
 
 reckoner plot course.yml -a
 

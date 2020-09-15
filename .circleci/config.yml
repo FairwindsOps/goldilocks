@@ -10,6 +10,7 @@ references:
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
+    kind_version: 0.9.0
     requires:
       - build-container
     filters:
@@ -64,16 +65,20 @@ workflows:
             tags:
               ignore: /.*/
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.15.7"
-          kind_node_image: "kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d"
+          name: "End-To-End Kubernetes 1.16.15"
+          kind_node_image: "kindest/node:v1.16.15@sha256:a89c771f7de234e6547d43695c7ab047809ffc71a0c3b65aa54eda051c45ed20"
           <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.16.4"
-          kind_node_image: "kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55"
+          name: "End-To-End Kubernetes 1.17.11"
+          kind_node_image: "kindest/node:v1.17.11@sha256:5240a7a2c34bf241afb54ac05669f8a46661912eab05705d660971eeb12f6555"
           <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.17.0"
-          kind_node_image: "kindest/node:v1.17.0@sha256:9512edae126da271b66b990b6fff768fbb7cd786c7d39e86bdf55906352fdf62"
+          name: "End-To-End Kubernetes 1.18.8"
+          kind_node_image: "kindest/node:v1.18.8@sha256:f4bcc97a0ad6e7abaf3f643d890add7efe6ee4ab90baeb374b4f41a4c95567eb"
+          <<: *e2e_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.19.1"
+          kind_node_image: "kindest/node:v1.19.1@sha256:98cf5288864662e37115e362b23e4369c8c4a408f99cbc06e58ac30ddc721600"
           <<: *e2e_configuration
       - rok8s-scripts/docker_build_and_push:
           name: build-and-push-container

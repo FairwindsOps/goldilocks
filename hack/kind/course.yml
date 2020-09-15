@@ -12,16 +12,23 @@ repositories:
     url: https://charts.fairwinds.com/stable
   fairwinds-incubator:
     url: https://charts.fairwinds.com/incubator
+  bitnami:
+    url: https://charts.bitnami.com/bitnami
 charts:
   metrics-server:
     namespace: metrics-server
-    version: "2.8.2"
-    set-values:
-      args:
-        - --kubelet-insecure-tls
-        - --kubelet-preferred-address-types=InternalIP
-        - --metric-resolution=30s
-        - --v=3
+    repository: bitnami
+    version: "4.3.1"
+    values:
+      apiService:
+        create: true
+      extraArgs:
+        kubelet-insecure-tls: 1
+        kubelet-preferred-address-types: InternalIP
+  vpa:
+    namespace: vpa
+    version: "0.1.0"
+    repository: fairwinds-stable
   load-generator:
     namespace: demo
     version: 0.1.1
