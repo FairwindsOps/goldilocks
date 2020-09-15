@@ -2,8 +2,8 @@
 
 set -e
 
-kind_required_version=0.8.1
-kind_node_image="kindest/node:v1.17.5@sha256:ab3f9e6ec5ad8840eeb1f76c89bb7948c77bbf76bcebe1a8b59790b8ae9a283a"
+kind_required_version=0.9.0
+kind_node_image="kindest/node:v1.18.8@sha256:f4bcc97a0ad6e7abaf3f643d890add7efe6ee4ab90baeb374b4f41a4c95567eb"
 install_goldilocks=${2:-true}
 
 ## Test Infra Setup

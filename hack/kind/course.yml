@@ -23,8 +23,8 @@ charts:
       apiService:
         create: true
       extraArgs:
-        - --kubelet-insecure-tls
-        - --kubelet-preferred-address-types=InternalIP
+        kubelet-insecure-tls: 1
+        kubelet-preferred-address-types: InternalIP
   vpa:
     namespace: vpa
     version: "0.1.0"
