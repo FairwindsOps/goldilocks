@@ -2,7 +2,7 @@
 
 set -e
 
-curl -LO https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64
+curl -LO https://github.com/kubernetes-sigs/kind/releases/download/v0.9.0/kind-linux-amd64
 chmod +x kind-linux-amd64
 bindir=$(pwd)/bin-kind
 mkdir -p "$bindir"
