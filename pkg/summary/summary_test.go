@@ -31,14 +31,14 @@ func TestSummarizer(t *testing.T) {
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 
-	kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentBasic, metav1.CreateOptions{})
+	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentBasic, metav1.CreateOptions{})
 	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPABasic, metav1.CreateOptions{})
 	assert.NoError(t, errOk)
 
 	_, errOk2 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPANoLabels, metav1.CreateOptions{})
 	assert.NoError(t, errOk2)
 
-	kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithReco, metav1.CreateOptions{})
+	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithReco, metav1.CreateOptions{})
 	_, errOk3 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPAWithReco, metav1.CreateOptions{})
 	assert.NoError(t, errOk3)
 
