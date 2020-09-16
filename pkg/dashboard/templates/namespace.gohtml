@@ -5,7 +5,7 @@
   {{ if lt (len $.Deployments)  1 }}
     <div class="resource-info">
       <div class="name">
-        <span class="controller-type">No VPAs were found in this namespace. You can check by running 'kubectl get vpa -n {{$.Namespace}}</span>
+        <span class="controller-type">No VPAs were found in this namespace. You can check by running 'kubectl get vpa -n {{$.Namespace}}'</span>
       </div>
     </div>
   {{ else }}

@@ -13,6 +13,11 @@
   {{ template "navbar" . }}
   <div class="main-content">
     {{ template "preamble" . }}
+    {{ if lt (len .Data) 1 }}
+      <div>
+        No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true'
+      </div>
+    {{ else }}
     <div class="card namespace">
       <h2><strong>All Namespaces ({{len .Data}})</strong></h2>
       <a class="button" href="/dashboard">View All</a>
@@ -36,6 +41,7 @@
       {{end}}
     </div>
   </div>
+  {{end}}
   {{ template "footer" . }}
 </body>
 </html>
