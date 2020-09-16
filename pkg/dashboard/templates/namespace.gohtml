@@ -2,17 +2,35 @@
 <div class="card namespace">
   <h3>Namespace: <strong>{{ $.Namespace }}</strong></h3>
   <div class="expandable-table">
+  {{ if lt (len $.Deployments)  1 }}
+    <div class="resource-info">
+      <div class="name card" >
+        <span>No VPAs were found in this namespace. You can check by running 'kubectl get vpa -n {{$.Namespace}}'</span>
+      </div>
+    </div>
+  {{ else }}
     {{ range $deployment := $.Deployments }}
-      <div class="resource-info">
+      <div class="resource-info expanded">
         <div class="name"><span class="caret-expander"></span>
           <span class="controller-type">Deployment:</span>
           <strong>{{ $deployment.DeploymentName }}</strong>
         </div>
+        {{ if lt (len $deployment.Containers) 1 }}
+          <div class="result-messages expandable-content">
+            This deployment has no recommendations in it. There are a few reasons this could happen:
+            <ul>
+              <li>The metrics-api is not available</li>
+              <li>The VPA was recently created and has not been populated yet</li>
+            </ul>
+          </div>
+        {{ else }}
         {{ range $cName, $cSummary := $deployment.Containers }}
           {{ template "container" $cSummary }}
         {{ end }}
-        </div>
+        {{ end }}
+      </div>
     {{end}}
+  {{end}}
   </div>
 </div>
 {{end}}

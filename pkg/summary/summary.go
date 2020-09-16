@@ -152,10 +152,14 @@ func (s Summarizer) GetSummary() (Summary, error) {
 
 		if vpa.Status.Recommendation == nil {
 			klog.V(2).Infof("Empty status on %v", dSummary.DeploymentName)
+			nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No recommendations found in the %v vpa.", dSummary.DeploymentName)
+			klog.V(2).Infof("No container recommendations found in the %v vpa.", dSummary.DeploymentName)
+			nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
 
@@ -191,7 +195,6 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				}
 			}
 		}
-
 		// update summary maps
 		nsSummary.Deployments[dSummary.DeploymentName] = dSummary
 		summary.Namespaces[nsSummary.Namespace] = nsSummary
