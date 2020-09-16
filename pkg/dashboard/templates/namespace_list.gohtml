@@ -23,6 +23,7 @@
       <a class="button" href="/dashboard">View All</a>
     </div>
     <hr>
+    {{ if gt (len .Data) 10 }}
     <div class="search">
       <label for="search">namespace search</label>
       <input id="search"
@@ -32,6 +33,7 @@
              placeholder="Filter Namespaces..."
       ></input>
     </div>
+    {{end}}
     <div id="namespaceCards">
       {{ range .Data }}
       <div id="namespaceCard-{{.Name}}" class="card namespace">

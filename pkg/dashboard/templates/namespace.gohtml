@@ -4,13 +4,13 @@
   <div class="expandable-table">
   {{ if lt (len $.Deployments)  1 }}
     <div class="resource-info">
-      <div class="name">
-        <span class="controller-type">No VPAs were found in this namespace. You can check by running 'kubectl get vpa -n {{$.Namespace}}'</span>
+      <div class="name card" >
+        <span>No VPAs were found in this namespace. You can check by running 'kubectl get vpa -n {{$.Namespace}}'</span>
       </div>
     </div>
   {{ else }}
     {{ range $deployment := $.Deployments }}
-      <div class="resource-info">
+      <div class="resource-info expanded">
         <div class="name"><span class="caret-expander"></span>
           <span class="controller-type">Deployment:</span>
           <strong>{{ $deployment.DeploymentName }}</strong>
