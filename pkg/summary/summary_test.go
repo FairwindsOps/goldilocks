@@ -19,11 +19,8 @@ import (
 	"testing"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/stretchr/testify/assert"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 func TestSummarizer(t *testing.T) {
@@ -34,58 +31,19 @@ func TestSummarizer(t *testing.T) {
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 
-	updateMode := vpav1.UpdateModeOff
-	var testVPA = &vpav1.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-vpa",
-			Labels:    utils.VPALabels,
-			Namespace: "testing",
-		},
-		Spec: vpav1.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscalingv1.CrossVersionObjectReference{
-				APIVersion: "apps/v1",
-				Kind:       "Deployment",
-				Name:       "test-vpa",
-			},
-			UpdatePolicy: &vpav1.PodUpdatePolicy{
-				UpdateMode: &updateMode,
-			},
-		},
-	}
-	var testVPANoLabels = &vpav1.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-vpa-no-labels",
-			Namespace: "testing",
-		},
-		Spec: vpav1.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscalingv1.CrossVersionObjectReference{
-				APIVersion: "apps/v1",
-				Kind:       "Deployment",
-				Name:       "test-vpa-no-labels",
-			},
-			UpdatePolicy: &vpav1.PodUpdatePolicy{
-				UpdateMode: &updateMode,
-			},
-		},
-	}
-
-	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPA, metav1.CreateOptions{})
+	kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentBasic, metav1.CreateOptions{})
+	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPABasic, metav1.CreateOptions{})
 	assert.NoError(t, errOk)
 
 	_, errOk2 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPANoLabels, metav1.CreateOptions{})
 	assert.NoError(t, errOk2)
 
-	var summary = Summary{
-		Namespaces: map[string]namespaceSummary{
-			"testing": namespaceSummary{
-				Namespace:   "testing",
-				Deployments: map[string]deploymentSummary{},
-			},
-		},
-	}
+	kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithReco, metav1.CreateOptions{})
+	_, errOk3 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPAWithReco, metav1.CreateOptions{})
+	assert.NoError(t, errOk3)
 
 	got, err := summarizer.GetSummary()
 	assert.NoError(t, err)
 
-	assert.EqualValues(t, summary, got)
+	assert.EqualValues(t, testSummary, got)
 }
