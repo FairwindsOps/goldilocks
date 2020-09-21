@@ -14,8 +14,6 @@
     </header>
 
     <main>
-      {{ template "preamble" . }}
-
       {{ range $nsName, $nsSummary := .Data.Namespaces }}
         {{ template "namespace" $nsSummary }}
       {{end}}
