@@ -1,21 +1,21 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    {{ template "head" . }}
+    
+    <script>
+      window.summaryData = {{ .JSON }};
+    </script>
+  </head>
 
-<head>
-  <script>
-    window.summaryData = {{ .JSON }};
-  </script>
-  {{ template "head" . }}
-</head>
-
-<body>
-  {{ template "navbar" . }}
-  <div class="main-content">
-    {{ template "preamble" . }}
-    {{ range $nsName, $nsSummary := .Data.Namespaces }}
-      {{ template "namespace" $nsSummary }}
-    {{end}}
-  </div>
-  {{ template "footer" . }}
-</body>
+  <body>
+    {{ template "navbar" . }}
+    <div class="main-content">
+      {{ template "preamble" . }}
+      {{ range $nsName, $nsSummary := .Data.Namespaces }}
+        {{ template "namespace" $nsSummary }}
+      {{end}}
+    </div>
+    {{ template "footer" . }}
+  </body>
 </html>
