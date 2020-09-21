@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en-US">
-  <head>
-    {{ template "head" . }}
+<head>
+  {{ template "head" . }}
 
-    <script>
-      window.summaryData = {{ .JSON }};
-    </script>
-  </head>
+  <script>
+    window.summaryData = {{ .JSON }};
+  </script>
+</head>
 
-  <body>
-    <header>
-      {{ template "navbar" . }}
-    </header>
+<body>
+  <header>
+    {{ template "navbar" . }}
+  </header>
 
-    <main>
-      {{ range $nsName, $nsSummary := .Data.Namespaces }}
-        {{ template "namespace" $nsSummary }}
-      {{end}}
-    </main>
+  <main>
+    {{ range $nsName, $nsSummary := .Data.Namespaces }}
+      {{ template "namespace" $nsSummary }}
+    {{end}}
+  </main>
 
-    <footer>
-      {{ template "footer" . }}
-    </footer>
-  </body>
+  <footer>
+    {{ template "footer" . }}
+  </footer>
+</body>
 </html>
