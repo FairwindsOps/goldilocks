@@ -18,7 +18,6 @@ var templateBox = (*packr.Box)(nil)
 const (
 	HeadTemplateName         = "head.gohtml"
 	NavbarTemplateName       = "navbar.gohtml"
-	PreambleTemplateName     = "preamble.gohtml"
 	DashboardTemplateName    = "dashboard.gohtml"
 	NamespaceTemplateName    = "namespace.gohtml"
 	ContainerTemplateName    = "container.gohtml"
@@ -31,7 +30,6 @@ var (
 	defaultIncludedTemplates = []string{
 		"head",
 		"navbar",
-		"preamble",
 		"footer",
 	}
 )
