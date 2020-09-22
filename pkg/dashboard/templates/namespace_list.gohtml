@@ -10,39 +10,43 @@
 </head>
 
 <body>
-  {{ template "navbar" . }}
-  <div class="main-content">
+  <header>
+    {{ template "navbar" . }}
+  </header>
+
+  <main>
+    <h1>Namespaces</h1>
+
     {{ if lt (len .Data) 1 }}
-      <div class="card namespace">
-        No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true'
-      </div>
+    <article>
+      No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code>
+    </article>
+
     {{ else }}
-    <div class="card namespace">
-      <h2><strong>All Namespaces ({{len .Data}})</strong></h2>
-      <a class="button" href="/dashboard">View All</a>
-    </div>
-    <hr>
-    {{ if gt (len .Data) 10 }}
-    <div class="search">
-      <label for="search">namespace search</label>
-      <input id="search"
-             name="namespace-search"
-             type="text"
-             class="search"
-             placeholder="Filter Namespaces..."
-      ></input>
-    </div>
-    {{end}}
-    <div id="namespaceCards">
+    <p>{{len .Data}} namespaces found</p>
+    <p><a href="/dashboard">View All</a></p>
+
+      {{ if gt (len .Data) 10 }}
+    <form role="search">
+      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+
+      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search"/>
+
+      <button type="submit">Search</button>
+    </form>
+      {{ end }}
+
+    <ul>
       {{ range .Data }}
-      <div id="namespaceCard-{{.Name}}" class="card namespace">
-        <h2>Namespace: <strong>{{.Name}}</strong></h2>
-        <a data-name="view" class="button" href="/dashboard/{{.Name}}">View</a>
-      </div>
-      {{end}}
-    </div>
-  </div>
-  {{end}}
+      <li>
+        <a href="/dashboard/{{ .Name }}">{{ .Name }}</a>
+      </li>
+      {{ end }}
+    </ul>
+    
+    {{end}}
+  </main>
+
   {{ template "footer" . }}
 </body>
 </html>
