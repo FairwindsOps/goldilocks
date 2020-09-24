@@ -15,6 +15,8 @@
   <header class="namespaceList__sidebar">
     {{ template "navbar" . }}
 
+    <hr />
+
     {{ if gt (len .Data) 0 }}
     <p>{{len .Data}} namespaces found</p>
     <p><a href="/dashboard">View All</a></p>
@@ -24,7 +26,7 @@
     <form role="search">
       <label class="visually-hidden" for="namespace-search">Search namespaces</label>
 
-      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search"/>
+      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
 
       <button type="submit">Search</button>
     </form>

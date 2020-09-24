@@ -1,3 +1,9 @@
+/*
+-----
+GLOBAL STYLES
+-----
+*/
+
 :root {
     --color-accent-1: #23103a;
     --color-accent-2: #ff6c00;
@@ -6,6 +12,14 @@
     --color-border: #8bd2dc;
     --color-text: #373a36;
     --color-text-2: var(--color-accent-1);
+
+    --gap--1: var(--step--1);
+    --gap-0: var(--step-0);
+    --gap-1: var(--step-1);
+    --gap-2: var(--step-2);
+    --gap-3: var(--step-3);
+    --gap-4: var(--step-4);
+    --gap-5: var(--step-5);
 }
 
 html {
@@ -14,6 +28,12 @@ html {
     font-family: "Muli", Helvetica, Arial, sans-serif;
     font-size: var(--step-0);
 }
+
+/*
+-----
+ELEMENT STYLES
+-----
+*/
 
 h1,
 h2,
@@ -36,28 +56,54 @@ img.logo {
     object-fit: contain;
 }
 
+/*
+-----
+COMPONENTS
+-----
+*/
+
 .globalNav ul {
     list-style: none;
     padding: 0;
 }
 
 .namespaceList {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-areas:
+        "sidebar    main"
+        "sidebar    footer";
+    grid-template-columns: 30ch 1fr;
+    grid-template-rows: 1fr auto;
 }
 
 .namespaceList__footer {
-    flex-basis: 100vw;
+    grid-area: footer;
     text-align: center;
 }
 
 .namespaceList__main {
-    flex-basis: 0;
-    flex-grow: 999;
-    min-width: 60vw;
+    grid-area: main;
+    padding: var(--gap-0);
 }
 
 .namespaceList__sidebar {
-    flex-basis: 30ch;
-    flex-grow: 1;
+    background: var(--color-background-2);
+    grid-area: sidebar;
+    padding: 0 var(--gap-0);
+}
+
+/*
+-----
+UTILITIES
+-----
+*/
+
+.visually-hidden:not(:focus):not(:active) {
+    clip: rect(0 0 0 0); 
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap; 
+    width: 1px;
 }
