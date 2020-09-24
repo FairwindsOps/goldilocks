@@ -5,16 +5,33 @@
   <script>
     window.data = {{ .JSON }};
   </script>
+
   {{ template "head" . }}
-   <script type="text/javascript" src="static/js/namespace_list.js"></script>
+  
+  <script type="text/javascript" src="static/js/namespace_list.js"></script>
 </head>
 
-<body>
-  <header>
+<body class="namespaceList">
+  <header class="namespaceList__sidebar">
     {{ template "navbar" . }}
+
+    {{ if gt (len .Data) 0 }}
+    <p>{{len .Data}} namespaces found</p>
+    <p><a href="/dashboard">View All</a></p>
+    {{ end }}
+
+    {{ if gt (len .Data) 10 }}
+    <form role="search">
+      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+
+      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search"/>
+
+      <button type="submit">Search</button>
+    </form>
+    {{ end }}
   </header>
 
-  <main>
+  <main class="namespaceList__main">
     <h1>Namespaces</h1>
 
     {{ if lt (len .Data) 1 }}
@@ -23,19 +40,6 @@
     </article>
 
     {{ else }}
-    <p>{{len .Data}} namespaces found</p>
-    <p><a href="/dashboard">View All</a></p>
-
-      {{ if gt (len .Data) 10 }}
-    <form role="search">
-      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
-
-      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search"/>
-
-      <button type="submit">Search</button>
-    </form>
-      {{ end }}
-
     <ul>
       {{ range .Data }}
       <li>
@@ -43,10 +47,12 @@
       </li>
       {{ end }}
     </ul>
-    
+
     {{end}}
   </main>
 
-  {{ template "footer" . }}
+  <footer class="namespaceList__footer">
+    {{ template "footer" . }}
+  </footer>
 </body>
 </html>
