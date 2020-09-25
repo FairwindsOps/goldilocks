@@ -53,6 +53,27 @@ a:active {
     text-decoration: underline;
 }
 
+form[role="search"] {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+form[role="search"] button[type="submit"] {
+    background: none;
+    border: none;
+}
+
+form[role="search"] input[type="search"] {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-accent-1);
+    color: var(--color-text);
+}
+
+form[role="search"] label {
+    grid-column: 1 / -1;
+}
+
 h1,
 h2,
 h3,
@@ -90,6 +111,15 @@ COMPONENTS
 -----
 */
 
+.badge--primary {
+    background: var(--color-accent-2);
+    color: var(--color-alt-text);
+    font-size: var(--step--1);
+    padding: 0 var(--gap--1);
+    text-align: center;
+    text-transform: uppercase;
+}
+
 .button--primary {
     border: 1px solid var(--color-border);
     border-radius: 999em;
@@ -102,7 +132,7 @@ COMPONENTS
 .button--primary:hover,
 .button--primary:active {
     background: var(--color-accent-1);
-    box-shadow: 0 1.25rem 3.4375rem 0 rgba(139,210,220,.3);
+    box-shadow: 0 1.25rem 3.4375rem 0 rgba(139,210,220,.3); /* TODO: clean up */
     color: var(--color-alt-text);
     text-decoration: none;
     transform: scale(1.1);
@@ -112,12 +142,16 @@ COMPONENTS
     align-items: center;
     display: flex;
     justify-content: space-between;
-    max-width: 30ch;
-    word-wrap: anywhere;
+    max-width: 30ch; /* TODO: extract to variable? */
+    overflow-wrap: break-word;
 }
 
 .buttonIcon i {
     margin-left: var(--gap--1);
+}
+
+.flow > * + * {
+    margin-top: var(--gap-0);
 }
 
 .globalNav ul {
@@ -125,6 +159,7 @@ COMPONENTS
     display: flex;
     flex-direction: column;
     list-style: none;
+    margin: 0;
     padding: 0;
 }
 
@@ -156,11 +191,12 @@ COMPONENTS
     text-align: center;
 }
 
-ul.namespaceList__list {
+.namespaceList__list {
     display: grid;
     grid-gap: var(--gap--1);
     grid-template-columns: repeat(auto-fit, 30ch);
     justify-content: space-evenly;
+    margin: 0;
 }
 
 .namespaceList__main {
@@ -168,7 +204,7 @@ ul.namespaceList__list {
     padding: var(--gap-0);
 }
 
-.namespaceList__main > * + * {
+.namespaceList__main > :not(.visually-hidden) + * {
     margin-top: var(--gap-2);
 }
 
@@ -177,9 +213,26 @@ ul.namespaceList__list {
     background: var(--color-background-2);
     grid-area: sidebar;
     min-height: 100vh;
-    padding: 0 var(--gap-0);
+    padding: var(--gap-0);
     position: sticky;
     top: 0;
+}
+
+.namespaceList__sidebar > * + * {
+    margin-top: var(--gap-5);
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.stack--center {
+    align-items: center;
+}
+
+.stack__fullWidth {
+    width: 100%;
 }
 
 /*

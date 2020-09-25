@@ -15,24 +15,29 @@
   <header class="namespaceList__sidebar">
     {{ template "navbar" . }}
 
-    <hr />
-
     {{ if gt (len .Data) 0 }}
-    <p>{{len .Data}} namespaces found</p>
-    <p><a href="/dashboard">View All</a></p>
-    {{ end }}
+    <section class="flow stack stack--center">
+      <p class="badge--primary">{{len .Data}} namespaces found</p>
 
-    {{ if gt (len .Data) 10 }}
-    <form role="search">
-      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+      {{ if gt (len .Data) 10 }}
+      <form class="stack__fullWidth" role="search">
+        <label class="visually-hidden" for="namespace-search">Search namespaces</label>
 
-      <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
+        <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
 
-      <button type="submit">
-        <i aria-hidden="true" class="fas fa-search"></i>
-        <span class="visually-hidden">Search</span>
-      </button>
-    </form>
+        <button type="submit">
+          <i aria-hidden="true" class="fas fa-search"></i>
+          <span class="visually-hidden">Search</span>
+        </button>
+      </form>
+      {{ end }}
+
+      <p><a href="/dashboard">
+        <i aria-hidden="true" class="fas fa-stream"></i>
+        View All
+      </a></p>
+
+    </section>
     {{ end }}
   </header>
 

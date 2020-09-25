@@ -6,7 +6,7 @@
   --fluid-min-size: 17;
   --fluid-max-size: 20;
   --fluid-min-ratio: 1.2;
-  --fluid-max-ratio: 1.25;
+  --fluid-max-ratio: 1.33;
   
   --fluid-screen: 100vw;
   --fluid-bp: calc(
