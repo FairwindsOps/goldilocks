@@ -167,12 +167,7 @@ COMPONENTS
     margin-top: var(--gap-0);
 }
 
-.logoSupport {
-    font-size: var(--step--1);
-    text-align: center;
-}
-
-.namespaceList {
+.layoutSidebar {
     display: grid;
     grid-template-areas:
         "sidebar    main"
@@ -181,9 +176,39 @@ COMPONENTS
     grid-template-rows: 1fr auto;
 }
 
-.namespaceList__footer {
+.layoutSidebar__footer {
     font-size: var(--step--1);
     grid-area: footer;
+    text-align: center;
+}
+
+
+.layoutSidebar__main {
+    grid-area: main;
+    padding: var(--gap-0);
+}
+
+/* TODO: should this be specific to the namespaces list page? */
+.layoutSidebar__main > :not(.visually-hidden) + * {
+    margin-top: var(--gap-2);
+}
+
+.layoutSidebar__sidebar {
+    align-self: start;
+    background: var(--color-background-2);
+    grid-area: sidebar;
+    min-height: 100vh;
+    padding: var(--gap-0);
+    position: sticky;
+    top: 0;
+}
+
+.layoutSidebar__sidebar > * + * {
+    margin-top: var(--gap-5);
+}
+
+.logoSupport {
+    font-size: var(--step--1);
     text-align: center;
 }
 
@@ -199,29 +224,6 @@ COMPONENTS
     margin: 0;
 }
 
-.namespaceList__main {
-    grid-area: main;
-    padding: var(--gap-0);
-}
-
-.namespaceList__main > :not(.visually-hidden) + * {
-    margin-top: var(--gap-2);
-}
-
-.namespaceList__sidebar {
-    align-self: start;
-    background: var(--color-background-2);
-    grid-area: sidebar;
-    min-height: 100vh;
-    padding: var(--gap-0);
-    position: sticky;
-    top: 0;
-}
-
-.namespaceList__sidebar > * + * {
-    margin-top: var(--gap-5);
-}
-
 .stack {
     display: flex;
     flex-direction: column;
@@ -231,7 +233,7 @@ COMPONENTS
     align-items: center;
 }
 
-.stack__fullWidth {
+.stack__item--fullWidth {
     width: 100%;
 }
 

@@ -11,8 +11,8 @@
   <script type="text/javascript" src="static/js/namespace_list.js"></script>
 </head>
 
-<body class="namespaceList">
-  <header class="namespaceList__sidebar">
+<body class="layoutSidebar">
+  <header class="layoutSidebar__sidebar">
     {{ template "navbar" . }}
 
     {{ if gt (len .Data) 0 }}
@@ -20,7 +20,7 @@
       <p class="badge--primary">{{len .Data}} namespaces found</p>
 
       {{ if gt (len .Data) 10 }}
-      <form class="stack__fullWidth" role="search">
+      <form class="stack__item--fullWidth" role="search">
         <label class="visually-hidden" for="namespace-search">Search namespaces</label>
 
         <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
@@ -41,7 +41,7 @@
     {{ end }}
   </header>
 
-  <main class="namespaceList__main">
+  <main class="layoutSidebar__main">
     <h1 class="namespaceList__heading">Namespaces</h1>
 
     {{ if lt (len .Data) 1 }}
@@ -64,7 +64,7 @@
     {{end}}
   </main>
 
-  <footer class="namespaceList__footer">
+  <footer class="layoutSidebar__footer">
     {{ template "footer" . }}
   </footer>
 </body>
