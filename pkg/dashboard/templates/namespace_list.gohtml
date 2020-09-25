@@ -28,13 +28,16 @@
 
       <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
 
-      <button type="submit">Search</button>
+      <button type="submit">
+        <i aria-hidden="true" class="fas fa-search"></i>
+        <span class="visually-hidden">Search</span>
+      </button>
     </form>
     {{ end }}
   </header>
 
   <main class="namespaceList__main">
-    <h1>Namespaces</h1>
+    <h1 class="namespaceList__heading overrideFontSize--step-1">Namespaces</h1>
 
     {{ if lt (len .Data) 1 }}
     <article>
@@ -42,10 +45,13 @@
     </article>
 
     {{ else }}
-    <ul>
+    <ul class="namespaceList__list">
       {{ range .Data }}
       <li>
-        <a href="/dashboard/{{ .Name }}">{{ .Name }}</a>
+        <a class="button--primary buttonIcon" href="/dashboard/{{ .Name }}">
+          {{ .Name }}
+          <i aria-hidden="true" class="fas fa-chevron-right"></i>
+        </a>
       </li>
       {{ end }}
     </ul>
