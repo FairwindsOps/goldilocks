@@ -160,7 +160,7 @@ ul.namespaceList__list {
     display: grid;
     grid-gap: var(--gap--1);
     grid-template-columns: repeat(auto-fit, 30ch);
-    justify-content: center;
+    justify-content: space-evenly;
 }
 
 .namespaceList__main {
@@ -169,7 +169,7 @@ ul.namespaceList__list {
 }
 
 .namespaceList__main > * + * {
-    margin-top: var(--gap-0);
+    margin-top: var(--gap-2);
 }
 
 .namespaceList__sidebar {
