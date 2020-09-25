@@ -182,7 +182,6 @@ COMPONENTS
     text-align: center;
 }
 
-
 .layoutSidebar__main {
     grid-area: main;
     padding: var(--gap-0);
@@ -205,6 +204,18 @@ COMPONENTS
 
 .layoutSidebar__sidebar > * + * {
     margin-top: var(--gap-5);
+}
+
+@media (max-width: 700px) {
+    .layoutSidebar {
+        grid-template-areas: "sidebar" "main" "footer";
+        grid-template-columns: 1fr;
+    }
+
+    .layoutSidebar__sidebar {
+        min-height: auto;
+        position: initial;
+    }
 }
 
 .logoSupport {
