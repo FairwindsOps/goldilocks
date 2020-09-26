@@ -11,36 +11,39 @@
 
     console.log(submitBtn);
 
+    function showSearchResult(result) {
+        result.style.removeProperty("display");
+    }
+
+    function hideSearchResult(result) {
+        result.style.display = "none";
+    }
+
     function updateResults() {
         let searchTerm = searchInput.value;
 
         if (searchTerm) {
-            let showList = [];
-            let hideList = [];
-            let regex = new RegExp(`.*${ searchTerm }.*`, "i");
+            let regex = new RegExp(`${ searchTerm.trim().replace(" ", "|") }`, "i");
 
             for (let i = 0; i < numPotentialResults; i++) {
                 let result = potentialResults[i];
                 let searchWithin = result.dataset.search;
 
                 if (regex.test(searchWithin)) {
-                    showList.push(result);
-                    result.style.removeProperty("display");
+                    showSearchResult(result);
                 } else {
-                    hideList.push(result);
-                    result.style.display = "none";
+                    hideSearchResult(result);
                 }
             }
-
-            console.log(showList);
-            console.log(hideList);
         } else {
             clearSearch();
         }
     }
 
     function clearSearch() {
-        console.log("todo");
+        for (let i = 0; i < numPotentialResults; i++) {
+            showSearchResult(potentialResults[i]);
+        }
     }
 
     searchInput.addEventListener("input", updateResults);
