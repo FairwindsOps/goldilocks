@@ -9,6 +9,7 @@
   {{ template "head" . }}
   
   <script type="text/javascript" src="static/js/namespace_list.js"></script>
+  <script defer src="static/js/search.js"></script>
 </head>
 
 <body class="layoutSidebar">
@@ -20,10 +21,10 @@
       <p class="badge--primary">{{len .Data}} namespaces found</p>
 
       {{ if gt (len .Data) 10 }}
-      <form class="stack__item--fullWidth" role="search">
+      <form class="stack__item--fullWidth" id="js-search-form" role="search">
         <label class="visually-hidden" for="namespace-search">Search namespaces</label>
 
-        <input id="namespace-search" name="q" placeholder="Search namespaces..." type="search" />
+        <input aria-controls="js-search-container" name="q" placeholder="Search namespaces..." type="search" />
 
         <button type="submit">
           <i aria-hidden="true" class="fas fa-search"></i>
@@ -50,9 +51,9 @@
     </article>
 
     {{ else }}
-    <ul class="namespaceList__list">
+    <ul aria-live="off" class="namespaceList__list" id="js-search-container">
       {{ range .Data }}
-      <li>
+      <li data-search="{{ .Name }}">
         <a class="button--primary buttonIcon" href="/dashboard/{{ .Name }}">
           {{ .Name }}
           <i aria-hidden="true" class="fas fa-chevron-right"></i>
