@@ -9,8 +9,6 @@
     const potentialResults = container.children;
     const numPotentialResults = potentialResults.length;
 
-    console.log(submitBtn);
-
     function showSearchResult(result) {
         result.style.removeProperty("display");
     }
@@ -47,8 +45,8 @@
     }
 
     searchInput.addEventListener("input", updateResults);
-    submitBtn.addEventListener("submit", function(event) {
-        console.log("submit event triggered");
+    
+    form.addEventListener("submit", function(event) {
         event.preventDefault();
         updateResults();
     })
