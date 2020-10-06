@@ -53,6 +53,24 @@ a:active {
     text-decoration: underline;
 }
 
+details > summary > h2,
+details > summary > h3,
+details > summary > h4 {
+    display: inline-block;
+}
+
+dl {
+    display: grid;
+    grid-gap: var(--gap--1);
+    grid-template-columns: repeat(auto-fill, 30ch);
+    justify-content: center;
+    text-align: center;
+}
+
+dl dt {
+    font-size: var(--step-1);
+}
+
 form[role="search"] {
     display: grid;
     grid-template-columns: 1fr auto;

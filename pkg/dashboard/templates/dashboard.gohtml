@@ -11,14 +11,61 @@
 <body>
   <header>
     {{ template "navbar" . }}
+
+    <nav aria-label="Secondary Navigation" class="flow stack stack--center">
+      <ul class="flow stack stack--center">
+        <li>
+          <a href="/">
+            <i aria-hidden="true" class="fas fa-arrow-left"></i>
+            List all namespaces
+          </a>
+        </li>
+        <li>
+          <a href="/dashboard">
+            View details of all namespaces
+            <i aria-hidden="true" class="fas fa-arrow-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </header>
 
   <main>
+    <h1>Namespace Details</h1>
+
+    <h2>Glossary</h2>
+    <dl>
+      <div>
+        <dt>QoS</dt>
+        <dd>
+          Quality of Service
+        </dd>
+      </div>
+
+      <div>
+        <dt>Guaranteed</dt>
+        <dd>
+          Info goes here
+        </dd>
+      </div>
+
+      <div>
+        <dt>Burstable</dt>
+        <dd>
+          Info goes here
+        </dd>
+      </div>
+    </dl>
+
+    <hr />
+
     {{ range $nsName, $nsSummary := .Data.Namespaces }}
       {{ template "namespace" $nsSummary }}
     {{end}}
   </main>
 
-  {{ template "footer" . }}
+  <footer>
+    {{ template "footer" . }}
+  </footer>
 </body>
 </html>
