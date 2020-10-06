@@ -1,5 +1,23 @@
-{{define "namespace"}}{{/*template "namespace" $namespaceSummary*/}}
-<div class="card namespace">
+{{define "namespace"}}
+<article>
+  <h2>{{ $.Namespace }} <span>Namespace</span></h2>
+
+  {{ range $deployment := $.Deployments }}
+  <details open>
+    <summary>
+      <h3>{{ $deployment.DeploymentName }} <span>Deployment</span></h3>
+    </summary>
+
+    {{ range $cName, $cSummary := $deployment.Containers }}
+    <h4>{{ $cName }} <span>Container</span></h4>
+
+    {{ template "container" $cSummary }}
+    {{ end }}
+  </details>
+  {{ end }}
+</article>
+
+{{/* <div class="card namespace">
   <h3>Namespace: <strong>{{ $.Namespace }}</strong></h3>
   <div class="expandable-table">
   {{ if lt (len $.Deployments)  1 }}
@@ -32,5 +50,5 @@
     {{end}}
   {{end}}
   </div>
-</div>
+</div> */}}
 {{end}}
