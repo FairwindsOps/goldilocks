@@ -1,19 +1,21 @@
 {{define "namespace"}}
-<article class="dashboard__main">
+<article class="dashboard__content namespaceDetail flow">
   <h2>{{ $.Namespace }} <span class="badge--primary">Namespace</span></h2>
 
   {{ range $deployment := $.Deployments }}
-  <details open>
+  <details class="namespaceDetail__deployment callout flow" open>
     <summary>
       <h3>{{ $deployment.DeploymentName }} <span class="badge--primary">Deployment</span></h3>
     </summary>
 
     {{ range $cName, $cSummary := $deployment.Containers }}
-    <h4>{{ $cName }} <span class="badge--primary">Container</span></h4>
+    <section class="namespaceDetail__container">
+      <h4>{{ $cName }} <span class="badge--primary">Container</span></h4>
 
-    <div class="columns">
-      {{ template "container" $cSummary }}
-    </div>
+      <div class="columns">
+        {{ template "container" $cSummary }}
+      </div>
+    </section>
     {{ end }}
   </details>
   {{ end }}
