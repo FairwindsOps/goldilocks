@@ -1,6 +1,10 @@
 {{define "namespace"}}
 <article class="dashboard__content namespaceDetail flow">
-  <h2>{{ $.Namespace }} <span class="badge--primary">Namespace</span></h2>
+  <h2>
+    <a href="/dashboard/{{ $.Namespace }}">
+      {{ $.Namespace }} <span class="badge--primary">Namespace</span>
+    </a>
+  </h2>
 
   {{ range $deployment := $.Deployments }}
   <details class="namespaceDetail__deployment callout flow" open>

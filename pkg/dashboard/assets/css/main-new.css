@@ -131,13 +131,15 @@ h4 {
 h5 {
     font-size: var(--step-0);
     font-weight: normal;
+    margin: var(--gap-1) 0 var(--gap--1) 0;
     text-align: center;
-    text-decoration: underline;
 }
 
 h6 {
-    font-size: var(--step-0);
+    font-size: var(--step--1);
+    font-style: italic;
     font-weight: normal;
+    margin: var(--gap-1) 0 var(--gap--1) 0;
     text-align: center;
 }
 
@@ -181,6 +183,11 @@ nav.--lineup ul li {
 
 nav.--stack ul li + li {
     margin-top: var(--gap-0);
+}
+
+pre {
+    border: 1px solid var(--color-border);
+    border-radius: var(--gap--1);
 }
 
 /*
@@ -363,7 +370,11 @@ COMPONENTS
 }
 
 .stack__item--fullWidth {
-    width: 100%;
+    align-self: stretch;
+}
+
+.stack__item--halfWidth {
+    width: 50%;
 }
 
 /*
