@@ -123,6 +123,32 @@ img.logo--secondary {
     max-height: var(--step-3);
 }
 
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav.--lineup ul {
+    align-items: center;
+    display: flex;
+    justify-content: space-around;
+}
+
+nav.--stack ul {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+nav.--lineup ul li {
+    margin: var(--gap--1);
+}
+
+nav.--stack ul li + li {
+    margin-top: var(--gap-0);
+}
+
 /*
 -----
 COMPONENTS
@@ -172,16 +198,8 @@ COMPONENTS
     margin-top: var(--gap-0);
 }
 
-.globalNav ul {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    list-style: none;
-    margin: 0;
-    padding: 0;
 }
 
-.globalNav ul li + li {
     margin-top: var(--gap-0);
 }
 
