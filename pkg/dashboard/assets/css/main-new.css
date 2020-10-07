@@ -206,22 +206,37 @@ COMPONENTS
     text-transform: uppercase;
 }
 
-.button--primary {
+.button,
+.button--1 {
     border: 1px solid var(--color-border);
     border-radius: 999em;
     display: block;
     padding: var(--gap--1);
-    transition: all 500ms ease;
+    transition: all 250ms ease;
 }
 
-.button--primary:focus,
-.button--primary:hover,
-.button--primary:active {
+.button:focus,
+.button:hover,
+.button:active,
+.button--1:focus,
+.button--1:hover,
+.button--1:active {
     background: var(--color-accent-1);
     box-shadow: 0 1.25rem 3.4375rem 0 rgba(139,210,220,.3); /* TODO: clean up */
     color: var(--color-alt-text);
     text-decoration: none;
     transform: scale(1.1);
+}
+
+.button--2 {
+    border-color: var(--color-accent-3);
+}
+
+.button--2:focus,
+.button--2:hover,
+.button--2:active {
+    background: var(--color-accent-3);
+    border-color: var(--color-accent-1);
 }
 
 .buttonIcon {
@@ -236,11 +251,17 @@ COMPONENTS
     margin-left: var(--gap--1);
 }
 
-.callout {
+.callout,
+.callout--1 {
     background: var(--color-background-2);
     border: 1px solid var(--color-border);
     border-radius: var(--gap--1);
     padding: var(--gap--1);
+}
+
+.callout--2 {
+    background: none;
+    border-color: var(--color-accent-3);
 }
 
 .columns {
