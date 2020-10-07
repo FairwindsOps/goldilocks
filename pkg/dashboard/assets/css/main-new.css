@@ -55,7 +55,9 @@ a:active {
 
 details > summary > h2,
 details > summary > h3,
-details > summary > h4 {
+details > summary > h4,
+details > summary > h5,
+details > summary > h6 {
     display: inline-block;
 }
 
@@ -64,7 +66,6 @@ dl {
     grid-gap: var(--gap--1);
     grid-template-columns: repeat(auto-fill, 30ch);
     justify-content: center;
-    text-align: center;
 }
 
 dl dt {
@@ -159,6 +160,7 @@ COMPONENTS
     background: var(--color-accent-2);
     color: var(--color-alt-text);
     font-size: var(--step--1);
+    font-weight: normal;
     padding: 0 var(--gap--1);
     text-align: center;
     text-transform: uppercase;
@@ -194,12 +196,33 @@ COMPONENTS
     margin-left: var(--gap--1);
 }
 
+.callout {
+    background: var(--color-background-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--gap--1);
+    padding: var(--gap--1);
+}
+
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.columns > * {
+    flex-basis: calc(100% / var(--num-cols, 2));
+    flex-grow: 1;
+}
+
+.dashboard {
+    display: grid;
+    grid-gap: var(--gap-5) var(--gap--1);
+    grid-template-columns: 1fr 2fr;
+    padding: var(--gap--1);
+}
+
+.dashboard__main { grid-column: 1 / -1; }
+
 .flow > * + * {
-    margin-top: var(--gap-0);
-}
-
-}
-
     margin-top: var(--gap-0);
 }
 

@@ -10,34 +10,34 @@
 
 <body>
   <header>
-    {{ template "navbar" . }}
+    {{ template "navbar" "--lineup" }}
+  </header>
 
-    <nav aria-label="Secondary" class="--lineup">
-      <ul>
+  <main class="dashboard">
+    <h1 class="dashboard__heading visually-hidden">Namespace Details</h1>
+
+    <nav aria-label="Go to Page" class="dashboard__aside">
+      <ul class="flow">
         <li>
-          <a href="/">
-            <i aria-hidden="true" class="fas fa-arrow-left"></i>
-            All Namespaces
+          <a class="button--primary buttonIcon" href="/">
+            Namespace List
+            <i aria-hidden="true" class="fas fa-list-ul"></i>
           </a>
         </li>
         <li>
-          <a href="/dashboard">
-            All Details
-            <i aria-hidden="true" class="fas fa-arrow-right"></i>
+          <a class="button--primary buttonIcon" href="/dashboard">
+            View All Namespaces
+            <i aria-hidden="true" class="fas fa-info-circle"></i>
           </a>
         </li>
       </ul>
     </nav>
-  </header>
 
-  <main class="flow">
-    <h1>Namespace Details</h1>
-
-    <details>
+    <details class="dashboard__aside callout">
       <summary>
         <h2>Glossary</h2>
       </summary>
-      
+
       <dl>
         <div>
           <dt>QoS</dt>
@@ -61,8 +61,6 @@
         </div>
       </dl>
     </details>
-
-    <hr />
 
     {{ range $nsName, $nsSummary := .Data.Namespaces }}
       {{ template "namespace" $nsSummary }}

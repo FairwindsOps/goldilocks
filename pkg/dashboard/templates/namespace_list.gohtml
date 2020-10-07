@@ -13,7 +13,7 @@
 
 <body class="layoutSidebar">
   <header class="layoutSidebar__sidebar">
-    {{ template "navbar" . }}
+    {{ template "navbar" "--stack" }}
 
     {{ if gt (len .Data) 0 }}
     <section class="flow stack stack--center">
