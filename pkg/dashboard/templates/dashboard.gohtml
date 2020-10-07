@@ -12,17 +12,17 @@
   <header>
     {{ template "navbar" . }}
 
-    <nav aria-label="Secondary" class="flow stack stack--center">
-      <ul class="flow stack stack--center">
+    <nav aria-label="Secondary" class="--lineup">
+      <ul>
         <li>
           <a href="/">
             <i aria-hidden="true" class="fas fa-arrow-left"></i>
-            List all namespaces
+            All Namespaces
           </a>
         </li>
         <li>
           <a href="/dashboard">
-            View details of all namespaces
+            All Details
             <i aria-hidden="true" class="fas fa-arrow-right"></i>
           </a>
         </li>
@@ -33,29 +33,34 @@
   <main class="flow">
     <h1>Namespace Details</h1>
 
-    <h2>Glossary</h2>
-    <dl>
-      <div>
-        <dt>QoS</dt>
-        <dd>
-          Quality of Service
-        </dd>
-      </div>
+    <details>
+      <summary>
+        <h2>Glossary</h2>
+      </summary>
+      
+      <dl>
+        <div>
+          <dt>QoS</dt>
+          <dd>
+            Quality of Service
+          </dd>
+        </div>
 
-      <div>
-        <dt>Guaranteed</dt>
-        <dd>
-          Info goes here
-        </dd>
-      </div>
+        <div>
+          <dt>Guaranteed</dt>
+          <dd>
+            Info goes here
+          </dd>
+        </div>
 
-      <div>
-        <dt>Burstable</dt>
-        <dd>
-          Info goes here
-        </dd>
-      </div>
-    </dl>
+        <div>
+          <dt>Burstable</dt>
+          <dd>
+            Info goes here
+          </dd>
+        </div>
+      </dl>
+    </details>
 
     <hr />
 

@@ -1,17 +1,19 @@
 {{define "namespace"}}
 <article>
-  <h2>{{ $.Namespace }} <span>Namespace</span></h2>
+  <h2>{{ $.Namespace }} <span class="badge--primary">Namespace</span></h2>
 
   {{ range $deployment := $.Deployments }}
   <details open>
     <summary>
-      <h3>{{ $deployment.DeploymentName }} <span>Deployment</span></h3>
+      <h3>{{ $deployment.DeploymentName }} <span class="badge--primary">Deployment</span></h3>
     </summary>
 
     {{ range $cName, $cSummary := $deployment.Containers }}
-    <h4>{{ $cName }} <span>Container</span></h4>
+    <h4>{{ $cName }} <span class="badge--primary">Container</span></h4>
 
-    {{ template "container" $cSummary }}
+    <div class="columns">
+      {{ template "container" $cSummary }}
+    </div>
     {{ end }}
   </details>
   {{ end }}
@@ -51,4 +53,5 @@
   {{end}}
   </div>
 </div> */}}
-{{end}}
+
+{{end}}{{/* end define "namespace" */}}
