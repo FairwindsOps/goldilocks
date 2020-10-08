@@ -390,6 +390,11 @@ COMPONENTS
     align-items: center;
 }
 
+.stack--center > details > summary {
+    text-align: center;
+    width: 100%;
+}
+
 .stack__item--fullWidth {
     align-self: stretch;
 }
