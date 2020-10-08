@@ -1,4 +1,6 @@
 {{define "namespace"}}
+{{ $foundFirstDeployment := false }}
+
 <article class="dashboard__content namespaceDetail flow">
   <h2>
     <a href="/dashboard/{{ $.Namespace }}">
@@ -7,7 +9,12 @@
   </h2>
 
   {{ range $deployment := $.Deployments }}
+    {{ if not $foundFirstDeployment }}
+      {{ $foundFirstDeployment = true }}
   <details class="namespaceDetail__deployment callout flow" open>
+    {{ else }}
+  <details class="namespaceDetail__deployment callout flow">
+    {{ end }}
     <summary>
       <h3>{{ $deployment.DeploymentName }} <span class="badge badge--2">Deployment</span></h3>
     </summary>
