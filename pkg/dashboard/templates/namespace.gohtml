@@ -2,19 +2,19 @@
 <article class="dashboard__content namespaceDetail flow">
   <h2>
     <a href="/dashboard/{{ $.Namespace }}">
-      {{ $.Namespace }} <span class="badge--primary">Namespace</span>
+      {{ $.Namespace }} <span class="badge badge--2">Namespace</span>
     </a>
   </h2>
 
   {{ range $deployment := $.Deployments }}
   <details class="namespaceDetail__deployment callout flow" open>
     <summary>
-      <h3>{{ $deployment.DeploymentName }} <span class="badge--primary">Deployment</span></h3>
+      <h3>{{ $deployment.DeploymentName }} <span class="badge badge--2">Deployment</span></h3>
     </summary>
 
     {{ range $cName, $cSummary := $deployment.Containers }}
     <section class="namespaceDetail__container">
-      <h4>{{ $cName }} <span class="badge--primary">Container</span></h4>
+      <h4>{{ $cName }} <span class="badge badge--2">Container</span></h4>
 
       <div class="columns">
         {{ template "container" $cSummary }}

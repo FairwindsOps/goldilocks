@@ -8,9 +8,11 @@ GLOBAL STYLES
     --color-accent-1: #23103a;
     --color-accent-2: #ff6c00;
     --color-accent-3: #a0204c;
-    --color-border: #8bd2dc;
+    --color-accent-4: #8bd2dc;
 
-    --color-positive: var(--color-border);
+    --color-border: var(--color-accent-4);
+
+    --color-positive: var(--color-accent-4);
     --color-negative: var(--color-accent-3);
     --color-warning: var(--color-accent-2);
 
@@ -19,6 +21,7 @@ GLOBAL STYLES
     --color-background-2: #f4f6f9;
     --color-text: #373a36;
     --color-text-2: var(--color-accent-1);
+    --color-text-3: #00838e;
 
     /* dark elements */
     --color-alt-text: var(--color-background);
@@ -50,6 +53,7 @@ a:link,
 a:visited {
     color: var(--color-text-2);
     text-decoration: none;
+    transition: all 250ms;
 }
 
 a:focus,
@@ -196,14 +200,25 @@ COMPONENTS
 -----
 */
 
-.badge--primary {
-    background: var(--color-accent-2);
+.badge.badge--1 {
+    background: var(--color-accent-3);
     color: var(--color-alt-text);
     font-size: var(--step--1);
     font-weight: normal;
-    padding: 0 var(--gap--1);
+    padding: 0 1ch;
     text-align: center;
     text-transform: uppercase;
+}
+
+/* TODO: this isn't reall a badge, more like a subtitle */
+.badge.badge--2 {
+    color: var(--color-text-3);
+    font-weight: normal;
+    text-transform: lowercase;
+}
+
+.badge.badge--2::before {
+    content: "| ";
 }
 
 .button,
