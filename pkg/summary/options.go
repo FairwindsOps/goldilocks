@@ -20,8 +20,8 @@ type options struct {
 // defaultOptions for a Summarizer
 func defaultOptions() *options {
 	return &options{
-		kubeClient:         kube.GetInstance(),
-		vpaClient:          kube.GetVPAInstance(),
+		kubeClient:         kube.GetInstanceWithContext("tooling-west-1-admin"),
+		vpaClient:          kube.GetVPAInstanceWithContext("tooling-west-1-admin"),
 		namespace:          namespaceAllNamespaces,
 		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),

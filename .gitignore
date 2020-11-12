@@ -9,3 +9,4 @@ coverage.txt
 debug
 
 hack/kind/autoscaler
+.idea/

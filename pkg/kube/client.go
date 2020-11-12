@@ -16,9 +16,14 @@ package kube
 
 import (
 	"context"
-	"sync"
-
+	"fmt"
+	"github.com/mitchellh/go-homedir"
+	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"log"
+	"sync"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
@@ -39,17 +44,82 @@ type VPAClientInstance struct {
 	Client autoscalingv1beta2.Interface
 }
 
+type ConfigContext map[string]string
+
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
 var clientOnce sync.Once
 var clientOnceVPA sync.Once
 
+// configForContext creates a Kubernetes REST client configuration for a given kubeconfig context.
+func configForContext(context string) (*rest.Config, error) {
+	config, err := getConfig(context).ClientConfig()
+	if err != nil {
+		return nil, fmt.Errorf("could not get Kubernetes config for context %q: %s", context, err)
+	}
+	return config, nil
+}
+
+// getConfig returns a Kubernetes client config for a given context.
+func getConfig(context string) clientcmd.ClientConfig {
+	rules := clientcmd.NewDefaultClientConfigLoadingRules()
+	rules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+
+	overrides := &clientcmd.ConfigOverrides{ClusterDefaults: clientcmd.ClusterDefaults}
+
+	if context != "" {
+		overrides.CurrentContext = context
+	}
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
+}
+
 // GetInstance returns a Kubernetes interface based on the current configuration
+func GetContexts(kubeconfigPath string) ConfigContext {
+	kubecontexts := make(map[string]string)
+
+	// expand the ~ to the full path
+	expandedPath, err := homedir.Expand(kubeconfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Read entire file content, giving us little control but
+	// making it very simple. No need to close the file.
+	content, err := ioutil.ReadFile(expandedPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// loading all the contexts from the kube config file
+	kubeConfigData, err := clientcmd.Load(content)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// adding the clustername and context name to the map
+	for _, c := range kubeConfigData.Contexts {
+		kubecontexts[c.Cluster] = c.AuthInfo
+	}
+	return kubecontexts
+}
+
+// GetInstanceWithContext returns a Kubernetes interface based on the current configuration
+func GetInstanceWithContext(context string) *ClientInstance {
+	clientOnce.Do(func() {
+		if kubeClient == nil {
+			kubeClient = &ClientInstance{
+				Client: getKubeClient(context),
+			}
+		}
+	})
+	return kubeClient
+}
+
 func GetInstance() *ClientInstance {
 	clientOnce.Do(func() {
 		if kubeClient == nil {
 			kubeClient = &ClientInstance{
-				Client: getKubeClient(),
+				Client: getKubeClient(""),
 			}
 		}
 	})
@@ -61,18 +131,41 @@ func GetVPAInstance() *VPAClientInstance {
 	clientOnceVPA.Do(func() {
 		if kubeClientVPA == nil {
 			kubeClientVPA = &VPAClientInstance{
-				Client: getKubeClientVPA(),
+				Client: getKubeClientVPA(""),
 			}
 		}
 	})
 	return kubeClientVPA
 }
 
-func getKubeClient() kubernetes.Interface {
-	kubeConf, err := config.GetConfig()
-	if err != nil {
-		klog.Fatalf("Error getting kubeconfig: %v", err)
-	}
+// GetVPAInstanceWithContext returns an interface for VPA based on the current configuration
+func GetVPAInstanceWithContext(context string) *VPAClientInstance {
+    clientOnceVPA.Do(func() {
+        if kubeClientVPA == nil {
+            kubeClientVPA = &VPAClientInstance{
+                Client: getKubeClientVPA(context),
+            }
+        }
+    })
+    return kubeClientVPA
+}
+
+// getKubeClient creates a Kubernetes config and client for a given kubeconfig context.
+func getKubeClient(context string) kubernetes.Interface {
+	var kubeConf *rest.Config
+	var err error
+	if context != "" {
+		kubeConf, err = configForContext(context)
+		if err != nil {
+			klog.Fatalf("Error getting kubeconfig: %v", err)
+		}
+	} else {
+        kubeConf, err = config.GetConfig()
+        if err != nil {
+            klog.Fatalf("Error getting kubeconfig: %v", err)
+        }
+    }
+
 	clientset, err := kubernetes.NewForConfig(kubeConf)
 	if err != nil {
 		klog.Fatalf("Error creating kubernetes client: %v", err)
@@ -80,11 +173,21 @@ func getKubeClient() kubernetes.Interface {
 	return clientset
 }
 
-func getKubeClientVPA() autoscalingv1beta2.Interface {
-	kubeConf, err := config.GetConfig()
-	if err != nil {
-		klog.Fatalf("Error getting kubeconfig: %v", err)
-	}
+func getKubeClientVPA(context string) autoscalingv1beta2.Interface {
+    var kubeConf *rest.Config
+    var err error
+    if context != "" {
+        kubeConf, err = configForContext(context)
+        if err != nil {
+            klog.Fatalf("Error getting kubeconfig: %v", err)
+        }
+    } else {
+        kubeConf, err = config.GetConfig()
+        if err != nil {
+            klog.Fatalf("Error getting kubeconfig: %v", err)
+        }
+    }
+
 	clientset, err := autoscalingv1beta2.NewForConfig(kubeConf)
 	if err != nil {
 		klog.Fatalf("Error creating kubernetes client: %v", err)

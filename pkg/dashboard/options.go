@@ -14,6 +14,7 @@ type Options struct {
 	basePath           string
 	vpaLabels          map[string]string
 	excludedContainers sets.String
+	kubeconfigPath     string
 }
 
 // default options for the dashboard
@@ -51,5 +52,12 @@ func ExcludeContainers(excludedContainers sets.String) Option {
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *Options) {
 		opts.vpaLabels = vpaLabels
+	}
+}
+
+// Option for setting kubeconfgi
+func ForKubeconfig(kubeconfigPath string) Option {
+	return func(opts *Options) {
+		opts.kubeconfigPath = kubeconfigPath
 	}
 }
