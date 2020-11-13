@@ -15,6 +15,8 @@
 package dashboard
 
 import (
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -47,6 +49,23 @@ func Dashboard(opts Options) http.Handler {
 			return
 		}
 
+        // get all kube config contexts
+		contexts := kube.GetContexts(opts.kubeconfigPath)
+
+		clientCfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
+		if err != nil {
+			klog.Errorf("Error getting current k8s context: %v", err)
+			http.Error(w, "Error running summary.", http.StatusInternalServerError)
+			return
+		}
+		klog.Infof("Current %s", clientCfg.CurrentContext)
+
+		data := struct {
+			Summary        summary.Summary
+			ClusterContext map[string]string
+			DefaultCluster string
+		}{Summary: vpaData, ClusterContext: contexts, DefaultCluster: clientCfg.CurrentContext}
+
 		tmpl, err := getTemplate("dashboard",
 			"container",
 			"namespace",
@@ -58,6 +77,6 @@ func Dashboard(opts Options) http.Handler {
 			return
 		}
 
-		writeTemplate(tmpl, opts, &vpaData, w)
+		writeTemplate(tmpl, opts, &data, w)
 	})
 }

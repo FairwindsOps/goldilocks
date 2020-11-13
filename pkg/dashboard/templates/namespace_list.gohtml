@@ -13,17 +13,20 @@
   {{ template "navbar" . }}
   <div class="main-content">
     {{ template "preamble" . }}
-    {{ if lt (len .Data) 1 }}
-      <div class="card namespace">
-        No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true'
-      </div>
+
+
+    {{ if lt (len .Data.Name) 1 }}
+    <div class="card namespace">
+        No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME
+        goldilocks.fairwinds.com/enabled=true'
+    </div>
     {{ else }}
     <div class="card namespace">
-      <h2><strong>All Namespaces ({{len .Data}})</strong></h2>
-      <a class="button" href="/dashboard">View All</a>
+        <h2><strong>All Namespaces ({{len .Data.Name}})</strong></h2>
+        <a class="button" href="/dashboard">View All</a>
     </div>
     <hr>
-    {{ if gt (len .Data) 10 }}
+    {{ if gt (len .Data.Name) 10 }}
     <div class="search">
       <label for="search">namespace search</label>
       <input id="search"
@@ -35,12 +38,12 @@
     </div>
     {{end}}
     <div id="namespaceCards">
-      {{ range .Data }}
-      <div id="namespaceCard-{{.Name}}" class="card namespace">
-        <h2>Namespace: <strong>{{.Name}}</strong></h2>
-        <a data-name="view" class="button" href="/dashboard/{{.Name}}">View</a>
-      </div>
-      {{end}}
+        {{ range $key, $value := .Data.Name }}
+            <div id="namespaceCard-{{$value}}" class="card namespace">
+                <h2>Namespace: <strong>{{$value}}</strong></h2>
+                <a data-name="view" class="button" href="/dashboard/{{$value}}">View</a>
+            </div>
+        {{end}}
     </div>
   </div>
   {{end}}

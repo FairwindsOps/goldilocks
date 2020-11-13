@@ -97,8 +97,8 @@ func GetContexts(kubeconfigPath string) ConfigContext {
 	}
 
 	// adding the clustername and context name to the map
-	for _, c := range kubeConfigData.Contexts {
-		kubecontexts[c.Cluster] = c.AuthInfo
+	for v, c := range kubeConfigData.Contexts {
+		kubecontexts[c.Cluster] = v
 	}
 	return kubecontexts
 }
@@ -140,14 +140,14 @@ func GetVPAInstance() *VPAClientInstance {
 
 // GetVPAInstanceWithContext returns an interface for VPA based on the current configuration
 func GetVPAInstanceWithContext(context string) *VPAClientInstance {
-    clientOnceVPA.Do(func() {
-        if kubeClientVPA == nil {
-            kubeClientVPA = &VPAClientInstance{
-                Client: getKubeClientVPA(context),
-            }
-        }
-    })
-    return kubeClientVPA
+	clientOnceVPA.Do(func() {
+		if kubeClientVPA == nil {
+			kubeClientVPA = &VPAClientInstance{
+				Client: getKubeClientVPA(context),
+			}
+		}
+	})
+	return kubeClientVPA
 }
 
 // getKubeClient creates a Kubernetes config and client for a given kubeconfig context.
@@ -160,11 +160,11 @@ func getKubeClient(context string) kubernetes.Interface {
 			klog.Fatalf("Error getting kubeconfig: %v", err)
 		}
 	} else {
-        kubeConf, err = config.GetConfig()
-        if err != nil {
-            klog.Fatalf("Error getting kubeconfig: %v", err)
-        }
-    }
+		kubeConf, err = config.GetConfig()
+		if err != nil {
+			klog.Fatalf("Error getting kubeconfig: %v", err)
+		}
+	}
 
 	clientset, err := kubernetes.NewForConfig(kubeConf)
 	if err != nil {
@@ -174,19 +174,19 @@ func getKubeClient(context string) kubernetes.Interface {
 }
 
 func getKubeClientVPA(context string) autoscalingv1beta2.Interface {
-    var kubeConf *rest.Config
-    var err error
-    if context != "" {
-        kubeConf, err = configForContext(context)
-        if err != nil {
-            klog.Fatalf("Error getting kubeconfig: %v", err)
-        }
-    } else {
-        kubeConf, err = config.GetConfig()
-        if err != nil {
-            klog.Fatalf("Error getting kubeconfig: %v", err)
-        }
-    }
+	var kubeConf *rest.Config
+	var err error
+	if context != "" {
+		kubeConf, err = configForContext(context)
+		if err != nil {
+			klog.Fatalf("Error getting kubeconfig: %v", err)
+		}
+	} else {
+		kubeConf, err = config.GetConfig()
+		if err != nil {
+			klog.Fatalf("Error getting kubeconfig: %v", err)
+		}
+	}
 
 	clientset, err := autoscalingv1beta2.NewForConfig(kubeConf)
 	if err != nil {

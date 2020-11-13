@@ -2,20 +2,35 @@
 <html>
 
 <head>
-  <script>
-    window.summaryData = {{ .JSON }};
-  </script>
-  {{ template "head" . }}
+    <script>
+        window.summaryData = {{ .JSON }};
+    </script>
+    {{ template "head" . }}
 </head>
 
 <body>
-  {{ template "navbar" . }}
-  <div class="main-content">
+{{ template "navbar" . }}
+<div class="main-content">
     {{ template "preamble" . }}
-    {{ range $nsName, $nsSummary := .Data.Namespaces }}
-      {{ template "namespace" $nsSummary }}
+    <div class="clusters">
+        <form action="/dashboard">
+            <label for="cluster">Select a cluster:</label>
+            <select id="cluster" name="cluster">
+                {{range $key, $value := .Data.ClusterContext }}
+                    {{ if (eq  $.Data.DefaultCluster $value) }}
+                        <option selected="{{ $key }}" value="{{ $value }}">{{ $key }}</option>
+                    {{ else }}
+                        <option value="{{ $value }}">{{ $key }}</option>
+                    {{ end }}
+                {{end}}
+            </select>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    {{ range $nsName, $nsSummary := .Data.Summary.Namespaces }}
+        {{ template "namespace" $nsSummary }}
     {{end}}
-  </div>
-  {{ template "footer" . }}
+</div>
+{{ template "footer" . }}
 </body>
 </html>
