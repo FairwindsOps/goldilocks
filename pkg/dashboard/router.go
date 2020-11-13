@@ -51,10 +51,13 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.PathPrefix("/static/").Handler(StaticAssets("/static/"))
 
 	// dashboard
-	router.Handle("/dashboard", Dashboard(*opts))
+	router.Handle("/dashboard/{namespace:[a-zA-Z0-9-]+}", Dashboard(*opts)).Queries("cluster", "{cluster}")
 	router.Handle("/dashboard/{namespace:[a-zA-Z0-9-]+}", Dashboard(*opts))
+	router.Handle("/dashboard", Dashboard(*opts)).Queries("cluster", "{cluster}")
+	router.Handle("/dashboard", Dashboard(*opts))
 
 	// namespace list
+	router.Handle("/namespaces", NamespaceList(*opts)).Queries("cluster", "{cluster}")
 	router.Handle("/namespaces", NamespaceList(*opts))
 
 	// root

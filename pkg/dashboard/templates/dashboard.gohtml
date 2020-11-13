@@ -12,23 +12,30 @@
 {{ template "navbar" . }}
 <div class="main-content">
     {{ template "preamble" . }}
-    <div class="clusters">
-        <form action="/dashboard">
-            <label for="cluster">Select a cluster:</label>
+    <div class="card cluster">
+        <form>
+            <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
             <select id="cluster" name="cluster">
                 {{range $key, $value := .Data.ClusterContext }}
-                    {{ if (eq  $.Data.DefaultCluster $value) }}
-                        <option selected="{{ $key }}" value="{{ $value }}">{{ $key }}</option>
+                    {{ if (eq  $.Data.CurrentCluster $key) }}
+                        <option selected="{{ $key }}" value="{{ $key }}">{{ $key }}</option>
                     {{ else }}
-                        <option value="{{ $value }}">{{ $key }}</option>
+                        <option value="{{ $key }}">{{ $key }}</option>
                     {{ end }}
                 {{end}}
             </select>
             <input type="submit" value="Submit">
+            <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
         </form>
     </div>
+    {{ if lt (len .Data.Summary.Namespaces) 1 }}
+    <div class="card dashboard">
+        No vpa summaries are found for use by Goldilocks. Is the Vertical Pod Autoscaler installed?
+    </div>
+    {{ else }}
     {{ range $nsName, $nsSummary := .Data.Summary.Namespaces }}
         {{ template "namespace" $nsSummary }}
+    {{end}}
     {{end}}
 </div>
 {{ template "footer" . }}

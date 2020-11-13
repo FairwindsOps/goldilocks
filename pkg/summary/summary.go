@@ -72,8 +72,8 @@ type Summarizer struct {
 }
 
 // NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
-func NewSummarizer(setters ...Option) *Summarizer {
-	opts := defaultOptions()
+func NewSummarizer(context string, setters ...Option) *Summarizer {
+	opts := defaultOptions(context)
 	for _, setter := range setters {
 		setter(opts)
 	}
@@ -84,8 +84,8 @@ func NewSummarizer(setters ...Option) *Summarizer {
 }
 
 // NewSummarizerForVPAs returns a Summarizer for a known list of VPAs
-func NewSummarizerForVPAs(vpas []vpav1.VerticalPodAutoscaler, setters ...Option) *Summarizer {
-	summarizer := NewSummarizer(setters...)
+func NewSummarizerForVPAs(context string, vpas []vpav1.VerticalPodAutoscaler, setters ...Option) *Summarizer {
+	summarizer := NewSummarizer(context, setters...)
 
 	// set the cached vpas list directly
 	summarizer.vpas = vpas

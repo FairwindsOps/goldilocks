@@ -16,7 +16,6 @@ package dashboard
 
 import (
 	"github.com/fairwindsops/goldilocks/pkg/kube"
-	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -35,8 +34,51 @@ func Dashboard(opts Options) http.Handler {
 			namespace = val
 		}
 
+		var submittedCluster string
+		if val, ok := vars["cluster"]; ok {
+			submittedCluster = val
+		}
+
+		// get all kube config contexts
+		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
+		if err != nil {
+			klog.Errorf("Error getting k8s client config: %v", err)
+			http.Error(w, "Error getting k8s client config.", http.StatusInternalServerError)
+			return
+		}
+
+		// adding the clustername and context name to the map
+		contexts := make(map[string]string)
+		for v, c := range clientCfg.Contexts {
+			contexts[c.Cluster] = v
+		}
+
+		var currentCluster string
+		var currentContext string
+		if submittedCluster != "" {
+			currentCluster = submittedCluster
+			currentContext = contexts[currentCluster]
+		} else {
+			allContexts := clientCfg.Contexts
+			currentContext := clientCfg.CurrentContext
+			if val, ok := allContexts[currentContext]; ok {
+				currentCluster = val.Cluster
+			} else {
+				currentContext = ""
+			}
+		}
+
+		if usedCluster == "" {
+			kube.ResetInstance()
+			usedCluster = currentCluster
+		} else if usedCluster != submittedCluster {
+			kube.ResetInstance()
+			usedCluster = submittedCluster
+		}
+
 		// TODO [hkatz] add caching or refresh button support
 		summarizer := summary.NewSummarizer(
+			currentContext,
 			summary.ForNamespace(namespace),
 			summary.ForVPAsWithLabels(opts.vpaLabels),
 			summary.ExcludeContainers(opts.excludedContainers),
@@ -45,26 +87,13 @@ func Dashboard(opts Options) http.Handler {
 		vpaData, err := summarizer.GetSummary()
 		if err != nil {
 			klog.Errorf("Error getting vpaData: %v", err)
-			http.Error(w, "Error running summary.", http.StatusInternalServerError)
-			return
 		}
-
-        // get all kube config contexts
-		contexts := kube.GetContexts(opts.kubeconfigPath)
-
-		clientCfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
-		if err != nil {
-			klog.Errorf("Error getting current k8s context: %v", err)
-			http.Error(w, "Error running summary.", http.StatusInternalServerError)
-			return
-		}
-		klog.Infof("Current %s", clientCfg.CurrentContext)
 
 		data := struct {
 			Summary        summary.Summary
 			ClusterContext map[string]string
-			DefaultCluster string
-		}{Summary: vpaData, ClusterContext: contexts, DefaultCluster: clientCfg.CurrentContext}
+			CurrentCluster string
+		}{Summary: vpaData, ClusterContext: contexts, CurrentCluster: currentCluster}
 
 		tmpl, err := getTemplate("dashboard",
 			"container",

@@ -17,13 +17,13 @@ package kube
 import (
 	"context"
 	"fmt"
+	"github.com/matryer/resync"
 	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"log"
-	"sync"
+	"k8s.io/client-go/tools/clientcmd/api"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
@@ -48,16 +48,16 @@ type ConfigContext map[string]string
 
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
-var clientOnce sync.Once
-var clientOnceVPA sync.Once
+var clientOnce resync.Once
+var clientOnceVPA resync.Once
 
 // configForContext creates a Kubernetes REST client configuration for a given kubeconfig context.
 func configForContext(context string) (*rest.Config, error) {
-	config, err := getConfig(context).ClientConfig()
+	cfg, err := getConfig(context).ClientConfig()
 	if err != nil {
 		return nil, fmt.Errorf("could not get Kubernetes config for context %q: %s", context, err)
 	}
-	return config, nil
+	return cfg, nil
 }
 
 // getConfig returns a Kubernetes client config for a given context.
@@ -73,34 +73,34 @@ func getConfig(context string) clientcmd.ClientConfig {
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
 }
 
-// GetInstance returns a Kubernetes interface based on the current configuration
-func GetContexts(kubeconfigPath string) ConfigContext {
+// GetContexts returns a Kubernetes interface based on the current configuration
+func GetClientCfg(kubeconfigPath string) (*api.Config, error) {
 	kubecontexts := make(map[string]string)
 
 	// expand the ~ to the full path
 	expandedPath, err := homedir.Expand(kubeconfigPath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// Read entire file content, giving us little control but
 	// making it very simple. No need to close the file.
 	content, err := ioutil.ReadFile(expandedPath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// loading all the contexts from the kube config file
 	kubeConfigData, err := clientcmd.Load(content)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 
 	// adding the clustername and context name to the map
 	for v, c := range kubeConfigData.Contexts {
 		kubecontexts[c.Cluster] = v
 	}
-	return kubecontexts
+	return kubeConfigData, nil
 }
 
 // GetInstanceWithContext returns a Kubernetes interface based on the current configuration
@@ -113,6 +113,13 @@ func GetInstanceWithContext(context string) *ClientInstance {
 		}
 	})
 	return kubeClient
+}
+
+func ResetInstance() {
+	clientOnce.Reset()
+	clientOnceVPA.Reset()
+	kubeClient = nil
+	kubeClientVPA = nil
 }
 
 func GetInstance() *ClientInstance {

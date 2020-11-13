@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/client-go/tools/clientcmd"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -57,7 +58,14 @@ By default the summary will be about all VPAs in all namespaces.`,
 			opts = append(opts, summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)))
 		}
 
-		summarizer := summary.NewSummarizer(opts...)
+		// get the current context from kube package and then also all contexts
+		clientCfg, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
+		if err != nil {
+			klog.Errorf("Error getting current k8s context: %v", err)
+			return
+		}
+
+		summarizer := summary.NewSummarizer(clientCfg.CurrentContext, opts...)
 		data, err := summarizer.GetSummary()
 		if err != nil {
 			klog.Fatalf("Error getting summary: %v", err)
