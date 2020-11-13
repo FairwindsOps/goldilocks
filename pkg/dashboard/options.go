@@ -56,7 +56,7 @@ func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 }
 
 // Option for setting kubeconfgi
-func ForKubeconfig(kubeconfigPath string) Option {
+func WithKubeconfig(kubeconfigPath string) Option {
 	return func(opts *Options) {
 		opts.kubeconfigPath = kubeconfigPath
 	}

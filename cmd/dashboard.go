@@ -44,7 +44,7 @@ var dashboardCmd = &cobra.Command{
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
 			dashboard.WithBasePath(basePath),
-			dashboard.ForKubeconfig(kubeconfig),
+			dashboard.WithKubeconfig(kubeconfig),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 		)
 		http.Handle("/", router)
