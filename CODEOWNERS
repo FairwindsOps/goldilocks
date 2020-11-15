@@ -1,1 +1,3 @@
-* @sudermanjr @lucasreed
+# the team needs to have at least write permissions for this repo to be added as reviewers in a PR
+# https://github.community/t/codeowners-works-with-users-but-not-teams/733/2
+* @Maersk-Global/digital-platform
