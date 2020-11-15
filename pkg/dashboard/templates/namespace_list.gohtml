@@ -2,32 +2,34 @@
 <html>
 
 <head>
-  <script>
-    window.data = {{ .JSON }};
-  </script>
-  {{ template "head" . }}
-   <script type="text/javascript" src="static/js/namespace_list.js"></script>
+    <script>
+        window.data = {{ .JSON }};
+    </script>
+    {{ template "head" . }}
+    <script type="text/javascript" src="static/js/namespace_list.js"></script>
 </head>
 
 <body>
-  {{ template "navbar" . }}
-  <div class="main-content">
+{{ template "navbar" . }}
+<div class="main-content">
     {{ template "preamble" . }}
-      <div class="card cluster">
-      <form>
-          <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
-          <select id="cluster" name="cluster">
-              {{range $key, $value := .Data.ClusterContext }}
-                  {{ if (eq  $.Data.CurrentCluster $key) }}
-                      <option selected="{{ $key }}" value="{{ $key }}">{{ $key }}</option>
-                  {{ else }}
-                      <option value="{{ $key }}">{{ $key }}</option>
-                  {{ end }}
-              {{end}}
-          </select>
-          <input type="submit" value="Submit">
-      </form>
-      </div>
+    {{ if .Data.ClusterContext }}
+        <div class="card cluster">
+            <form>
+                <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
+                <select id="cluster" name="cluster">
+                    {{range $key, $value := .Data.ClusterContext }}
+                        {{ if (eq  $.Data.CurrentCluster $key) }}
+                            <option selected="{{ $key }}" value="{{ $key }}">{{ $key }}</option>
+                        {{ else }}
+                            <option value="{{ $key }}">{{ $key }}</option>
+                        {{ end }}
+                    {{end}}
+                </select>
+                <input type="submit" value="Submit">
+            </form>
+        </div>
+    {{ end }}
     {{ if lt (len .Data.Name) 1 }}
     <div class="card namespace">
         No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME
@@ -36,30 +38,38 @@
     {{ else }}
     <div class="card namespace">
         <h2><strong>All Namespaces ({{len .Data.Name}})</strong></h2>
-        <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+        {{ if .Data.ClusterContext }}
+            <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+        {{ else }}
+            <a class="button" href="/dashboard">View All</a>
+        {{ end }}
     </div>
     <hr>
     {{ if gt (len .Data.Name) 10 }}
-    <div class="search">
-      <label for="search">namespace search</label>
-      <input id="search"
-             name="namespace-search"
-             type="text"
-             class="search"
-             placeholder="Filter Namespaces..."
-      ></input>
-    </div>
+        <div class="search">
+            <label for="search">namespace search</label>
+            <input id="search"
+                   name="namespace-search"
+                   type="text"
+                   class="search"
+                   placeholder="Filter Namespaces..."
+            ></input>
+        </div>
     {{end}}
     <div id="namespaceCards">
         {{ range $key, $value := .Data.Name }}
             <div id="namespaceCard-{{$value}}" class="card namespace">
                 <h2>Namespace: <strong>{{$value}}</strong></h2>
-                <a data-name="view" class="button" href="/dashboard/{{$value}}?cluster={{$.Data.CurrentCluster}}">View</a>
+                {{ if $.Data.ClusterContext }}
+                    <a data-name="view" class="button" href="/dashboard/{{$value}}?cluster={{$.Data.CurrentCluster}}">View</a>
+                {{ else }}
+                    <a data-name="view" class="button" href="/dashboard/{{$value}}">View</a>
+                {{ end }}
             </div>
         {{end}}
     </div>
-  </div>
-  {{end}}
-  {{ template "footer" . }}
+</div>
+{{end}}
+{{ template "footer" . }}
 </body>
 </html>

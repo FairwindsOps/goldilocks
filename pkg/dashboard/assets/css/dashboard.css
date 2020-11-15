@@ -53,6 +53,23 @@
     text-decoration: none;
 }
 
+.view-all-button {
+    display: inline-block;
+    font-weight: 300;
+    padding: 8px 12px;
+    /*padding: 15px 32px;*/
+    /*margin: 8px 0px 0px 0px;*/
+    background-color: #c8c8c8;
+    color: black;
+    text-decoration: none;
+    width: 65px;
+}
+
+.view-all-button:active {
+    background-color: #f78e1e; /* Fairwinds' Orange */
+}
+
+
 .button:active {
     background-color: #f78e1e; /* Fairwinds' Orange */
 }

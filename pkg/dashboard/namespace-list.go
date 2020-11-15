@@ -25,31 +25,29 @@ func NamespaceList(opts Options) http.Handler {
 		}
 
 		// get all kube config contexts
-		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
-		if err != nil {
-			klog.Errorf("Error getting k8s client config: %v", err)
-			http.Error(w, "Error getting k8s client config.", http.StatusInternalServerError)
-			return
-		}
-
-		// adding the clustername and context name to the map
-		contexts := make(map[string]string)
-		for v, c := range clientCfg.Contexts {
-			contexts[c.Cluster] = v
-		}
-
 		var currentCluster string
 		var currentContext string
-		if submittedCluster != "" {
-			currentCluster = submittedCluster
-			currentContext = contexts[currentCluster]
+		contexts := make(map[string]string)
+		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
+		if err != nil {
+			klog.Warning("Error getting k8s client config: %v, using InClusterConfig", err)
 		} else {
-			allContexts := clientCfg.Contexts
-			currentContext := clientCfg.CurrentContext
-			if val, ok := allContexts[currentContext]; ok {
-				currentCluster = val.Cluster
+			// adding the clustername and context name to the map
+			for v, c := range clientCfg.Contexts {
+				contexts[c.Cluster] = v
+			}
+
+			if submittedCluster != "" {
+				currentCluster = submittedCluster
+				currentContext = contexts[currentCluster]
 			} else {
-				currentContext = ""
+				allContexts := clientCfg.Contexts
+				currentContext := clientCfg.CurrentContext
+				if val, ok := allContexts[currentContext]; ok {
+					currentCluster = val.Cluster
+				} else {
+					currentCluster = ""
+				}
 			}
 		}
 
@@ -68,7 +66,6 @@ func NamespaceList(opts Options) http.Handler {
 		})
 		if err != nil {
 			klog.Errorf("Error getting namespace list: %v", err)
-			http.Error(w, "Error getting namespace list", http.StatusInternalServerError)
 		}
 
 		tmpl, err := getTemplate("namespace_list",

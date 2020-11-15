@@ -12,30 +12,40 @@
 {{ template "navbar" . }}
 <div class="main-content">
     {{ template "preamble" . }}
-    <div class="card cluster">
-        <form>
-            <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
-            <select id="cluster" name="cluster">
-                {{range $key, $value := .Data.ClusterContext }}
-                    {{ if (eq  $.Data.CurrentCluster $key) }}
-                        <option selected="{{ $key }}" value="{{ $key }}">{{ $key }}</option>
-                    {{ else }}
-                        <option value="{{ $key }}">{{ $key }}</option>
-                    {{ end }}
-                {{end}}
-            </select>
-            <input type="submit" value="Submit">
-            <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
-        </form>
-    </div>
+    {{ if .Data.ClusterContext }}
+        <div class="card cluster">
+            <form>
+                <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
+                <select id="cluster" name="cluster">
+                    {{range $key, $value := .Data.ClusterContext }}
+                        {{ if (eq  $.Data.CurrentCluster $key) }}
+                            <option selected="{{ $key }}" value="{{ $key }}">{{ $key }}</option>
+                        {{ else }}
+                            <option value="{{ $key }}">{{ $key }}</option>
+                        {{ end }}
+                    {{end}}
+                </select>
+                <input type="submit" value="Submit">
+                {{ if  (eq (len .Data.Summary.Namespaces) 1) }}
+                <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+                {{ end }}
+            </form>
+        </div>
+    {{ end }}
+    {{ if and (not .Data.ClusterContext) (eq (len .Data.Summary.Namespaces) 1) }}
+        <div class="card cluster">
+            <a class="view-all-button" href="/dashboard">View All</a>
+        </div>
+    {{ end }}
+
     {{ if lt (len .Data.Summary.Namespaces) 1 }}
-    <div class="card dashboard">
-        No vpa summaries are found for use by Goldilocks. Is the Vertical Pod Autoscaler installed?
-    </div>
+        <div class="card dashboard">
+            No vpa summaries are found for use by Goldilocks. Is the Vertical Pod Autoscaler installed?
+        </div>
     {{ else }}
-    {{ range $nsName, $nsSummary := .Data.Summary.Namespaces }}
-        {{ template "namespace" $nsSummary }}
-    {{end}}
+        {{ range $nsName, $nsSummary := .Data.Summary.Namespaces }}
+            {{ template "namespace" $nsSummary }}
+        {{end}}
     {{end}}
 </div>
 {{ template "footer" . }}
