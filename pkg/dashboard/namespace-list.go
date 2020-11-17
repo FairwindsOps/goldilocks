@@ -1,56 +1,56 @@
 package dashboard
 
 import (
-    "context"
-    "github.com/gorilla/mux"
-    "k8s.io/client-go/tools/clientcmd/api"
-    "net/http"
-    "sort"
+	"context"
+	"github.com/gorilla/mux"
+	"k8s.io/client-go/tools/clientcmd/api"
+	"net/http"
+	"sort"
 
-    "github.com/fairwindsops/goldilocks/pkg/kube"
-    "github.com/fairwindsops/goldilocks/pkg/utils"
-    v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-    "k8s.io/apimachinery/pkg/labels"
-    "k8s.io/klog"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog"
 )
 
 var lastCluster string
 
 // ClustersInfo contains all information to be passed to other functions
 type ClusterDetails struct {
-    Contexts  map[string]string
-    CurrentContext string
-    SubmittedCluster string
-    CurrentCluster string
-    ClientCfg *api.Config
+	Contexts         map[string]string
+	CurrentContext   string
+	SubmittedCluster string
+	CurrentCluster   string
+	ClientCfg        *api.Config
 }
 
 // NamespaceList replies with the rendered namespace list of all goldilocks enabled namespaces
 func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-        var Clusters ClusterDetails
+		var Clusters ClusterDetails
 
-        // the clusters which was submitted via dashboard ui
-        if val, ok := vars["cluster"]; ok {
-            Clusters.SubmittedCluster = val
-        }
+		// the clusters which was submitted via dashboard ui
+		if val, ok := vars["cluster"]; ok {
+			Clusters.SubmittedCluster = val
+		}
 
 		// get all kube config contexts
-        useKubeConfig := true
+		useKubeConfig := true
 		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
 		if err != nil {
 			klog.Warning("Error getting k8s client config: %v, using InClusterConfig", err)
-            useKubeConfig = false
+			useKubeConfig = false
 		}
 
-        if useKubeConfig && len(clientCfg.Contexts) > 0 {
-            Clusters.ClientCfg = clientCfg
-            Clusters.Contexts = makeContextClusterMap(clientCfg)
-            getClusterAndContext(&Clusters)
-        }
+		if useKubeConfig && len(clientCfg.Contexts) > 0 {
+			Clusters.ClientCfg = clientCfg
+			Clusters.Contexts = makeContextClusterMap(clientCfg)
+			getClusterAndContext(&Clusters)
+		}
 
-        setLastCluster(Clusters.CurrentCluster, Clusters.SubmittedCluster)
+		setLastCluster(Clusters.CurrentCluster, Clusters.SubmittedCluster)
 
 		namespacesList, err := kube.GetInstanceWithContext(Clusters.CurrentContext).Client.CoreV1().Namespaces().List(context.TODO(), v1.ListOptions{
 			LabelSelector: labels.Set(map[string]string{
@@ -91,50 +91,50 @@ func NamespaceList(opts Options) http.Handler {
 // setLastCluster keeps track of the last submitted clusters was
 // it updates the variable if it changes
 // and it resets the kube client if it changes so that it can load again
-func setLastCluster(currentCluster string, submittedCluster string)  {
-    // reset k8s client if needed
-    if lastCluster == "" {
-        kube.ResetInstance()
-        lastCluster = currentCluster
-    } else if lastCluster != submittedCluster {
-        kube.ResetInstance()
-        lastCluster = submittedCluster
-    }
+func setLastCluster(currentCluster string, submittedCluster string) {
+	// reset k8s client if needed
+	if lastCluster == "" {
+		kube.ResetInstance()
+		lastCluster = currentCluster
+	} else if lastCluster != submittedCluster {
+		kube.ResetInstance()
+		lastCluster = submittedCluster
+	}
 }
 
 func makeContextClusterMap(clientCfg *api.Config) map[string]string {
-    // creating map of clustername and context
-    contexts := make(map[string]string)
-    for v, c := range clientCfg.Contexts {
-        contexts[c.Cluster] = v
-    }
-    return contexts
+	// creating map of clustername and context
+	contexts := make(map[string]string)
+	for v, c := range clientCfg.Contexts {
+		contexts[c.Cluster] = v
+	}
+	return contexts
 }
 
 // getClusterAndContext sets the currentCluster and currentContext to the one,
 // belonging to the submitted cluster via dashboard ui
 func getClusterAndContext(Clusters *ClusterDetails) {
-    if Clusters.SubmittedCluster != "" {
-        Clusters.CurrentCluster = Clusters.SubmittedCluster
-        Clusters.CurrentContext = Clusters.Contexts[Clusters.CurrentCluster]
-    } else {
-        allContexts := Clusters.ClientCfg.Contexts
-        Clusters.CurrentContext = Clusters.ClientCfg.CurrentContext
+	if Clusters.SubmittedCluster != "" {
+		Clusters.CurrentCluster = Clusters.SubmittedCluster
+		Clusters.CurrentContext = Clusters.Contexts[Clusters.CurrentCluster]
+	} else {
+		allContexts := Clusters.ClientCfg.Contexts
+		Clusters.CurrentContext = Clusters.ClientCfg.CurrentContext
 
-        // if not currentContext is set select the first context sorted alphabetically
-        if Clusters.CurrentContext == "" {
-            // get alphabetically first item from contexts
-            mk := make([]string, len(Clusters.ClientCfg.Contexts))
-            i := 0
-            for k, _ := range Clusters.ClientCfg.Contexts {
-                mk[i] = k
-                i++
-            }
-            sort.Strings(mk)
-            Clusters.CurrentContext = mk[0]
-        }
-        if val, ok := allContexts[Clusters.CurrentContext]; ok {
-            Clusters.CurrentCluster = val.Cluster
-        }
-    }
+		// if not currentContext is set select the first context sorted alphabetically
+		if Clusters.CurrentContext == "" {
+			// get alphabetically first item from contexts
+			mk := make([]string, len(Clusters.ClientCfg.Contexts))
+			i := 0
+			for k, _ := range Clusters.ClientCfg.Contexts {
+				mk[i] = k
+				i++
+			}
+			sort.Strings(mk)
+			Clusters.CurrentContext = mk[0]
+		}
+		if val, ok := allContexts[Clusters.CurrentContext]; ok {
+			Clusters.CurrentCluster = val.Cluster
+		}
+	}
 }

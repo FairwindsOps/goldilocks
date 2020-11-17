@@ -15,19 +15,19 @@
 package dashboard
 
 import (
-    "github.com/fairwindsops/goldilocks/pkg/kube"
-    "github.com/gorilla/mux"
-    "k8s.io/klog"
-    "net/http"
+	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/gorilla/mux"
+	"k8s.io/klog"
+	"net/http"
 
-    "github.com/fairwindsops/goldilocks/pkg/summary"
+	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
 // Dashboard replies with the rendered dashboard (on the basePath) for the summarizer
 func Dashboard(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-        var Clusters ClusterDetails
+		var Clusters ClusterDetails
 
 		var namespace string
 		if val, ok := vars["namespace"]; ok {
@@ -36,10 +36,10 @@ func Dashboard(opts Options) http.Handler {
 
 		// the clusters which was submitted via dashboard ui
 		if val, ok := vars["cluster"]; ok {
-		    Clusters.SubmittedCluster = val
+			Clusters.SubmittedCluster = val
 		}
 
-        // get all kube config contexts
+		// get all kube config contexts
 		useKubeConfig := true
 		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
 		if err != nil {
@@ -48,12 +48,12 @@ func Dashboard(opts Options) http.Handler {
 		}
 
 		if useKubeConfig && len(clientCfg.Contexts) > 0 {
-            Clusters.ClientCfg = clientCfg
-            Clusters.Contexts = makeContextClusterMap(clientCfg)
-            getClusterAndContext(&Clusters)
-        }
+			Clusters.ClientCfg = clientCfg
+			Clusters.Contexts = makeContextClusterMap(clientCfg)
+			getClusterAndContext(&Clusters)
+		}
 
-        setLastCluster(Clusters.CurrentCluster, Clusters.SubmittedCluster)
+		setLastCluster(Clusters.CurrentCluster, Clusters.SubmittedCluster)
 
 		// TODO [hkatz] add caching or refresh button support
 		summarizer := summary.NewSummarizer(
@@ -67,8 +67,6 @@ func Dashboard(opts Options) http.Handler {
 		if err != nil {
 			klog.Errorf("Error getting vpaData: %v", err)
 		}
-
-        klog.Infof("Contexts: %v, currentCluster %s, currentContext", Clusters.Contexts, Clusters.CurrentCluster, Clusters.CurrentContext)
 
 		data := struct {
 			Summary        summary.Summary
