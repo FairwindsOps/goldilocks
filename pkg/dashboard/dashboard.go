@@ -15,68 +15,49 @@
 package dashboard
 
 import (
-	"github.com/fairwindsops/goldilocks/pkg/kube"
-	"net/http"
+    "github.com/fairwindsops/goldilocks/pkg/kube"
+    "github.com/gorilla/mux"
+    "k8s.io/klog"
+    "net/http"
 
-	"github.com/gorilla/mux"
-	"k8s.io/klog"
-
-	"github.com/fairwindsops/goldilocks/pkg/summary"
+    "github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
 // Dashboard replies with the rendered dashboard (on the basePath) for the summarizer
 func Dashboard(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+        var Clusters ClusterDetails
 
 		var namespace string
 		if val, ok := vars["namespace"]; ok {
 			namespace = val
 		}
 
-		var submittedCluster string
+		// the clusters which was submitted via dashboard ui
 		if val, ok := vars["cluster"]; ok {
-			submittedCluster = val
+		    Clusters.SubmittedCluster = val
 		}
 
-		// get all kube config contexts
-		var currentCluster string
-		var currentContext string
-		contexts := make(map[string]string)
+        // get all kube config contexts
+		useKubeConfig := true
 		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
 		if err != nil {
 			klog.Warning("Error getting k8s client config: %v, using inClusterConfig", err)
-		} else {
-			// adding the clustername and context name to the map
-			for v, c := range clientCfg.Contexts {
-				contexts[c.Cluster] = v
-			}
-
-			if submittedCluster != "" {
-				currentCluster = submittedCluster
-				currentContext = contexts[currentCluster]
-			} else {
-				allContexts := clientCfg.Contexts
-				currentContext := clientCfg.CurrentContext
-				if val, ok := allContexts[currentContext]; ok {
-					currentCluster = val.Cluster
-				} else {
-					currentCluster = ""
-				}
-			}
+			useKubeConfig = false
 		}
 
-		if usedCluster == "" {
-			kube.ResetInstance()
-			usedCluster = currentCluster
-		} else if usedCluster != submittedCluster {
-			kube.ResetInstance()
-			usedCluster = submittedCluster
-		}
+		if useKubeConfig && len(clientCfg.Contexts) > 0 {
+            Clusters.ClientCfg = clientCfg
+            Clusters.Contexts = makeContextClusterMap(clientCfg)
+            getClusterAndContext(&Clusters)
+        }
+
+        setLastCluster(Clusters.CurrentCluster, Clusters.SubmittedCluster)
 
 		// TODO [hkatz] add caching or refresh button support
 		summarizer := summary.NewSummarizer(
-			currentContext,
+			Clusters.CurrentContext,
 			summary.ForNamespace(namespace),
 			summary.ForVPAsWithLabels(opts.vpaLabels),
 			summary.ExcludeContainers(opts.excludedContainers),
@@ -87,11 +68,13 @@ func Dashboard(opts Options) http.Handler {
 			klog.Errorf("Error getting vpaData: %v", err)
 		}
 
+        klog.Infof("Contexts: %v, currentCluster %s, currentContext", Clusters.Contexts, Clusters.CurrentCluster, Clusters.CurrentContext)
+
 		data := struct {
 			Summary        summary.Summary
 			ClusterContext map[string]string
 			CurrentCluster string
-		}{Summary: vpaData, ClusterContext: contexts, CurrentCluster: currentCluster}
+		}{Summary: vpaData, ClusterContext: Clusters.Contexts, CurrentCluster: Clusters.CurrentCluster}
 
 		tmpl, err := getTemplate("dashboard",
 			"container",

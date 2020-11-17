@@ -16,7 +16,6 @@ package kube
 
 import (
 	"context"
-	"fmt"
 	"github.com/matryer/resync"
 	"github.com/mitchellh/go-homedir"
 	"io/ioutil"
@@ -51,32 +50,8 @@ var kubeClientVPA *VPAClientInstance
 var clientOnce resync.Once
 var clientOnceVPA resync.Once
 
-// configForContext creates a Kubernetes REST client configuration for a given kubeconfig context.
-func configForContext(context string) (*rest.Config, error) {
-	cfg, err := getConfig(context).ClientConfig()
-	if err != nil {
-		return nil, fmt.Errorf("could not get Kubernetes config for context %q: %s", context, err)
-	}
-	return cfg, nil
-}
-
-// getConfig returns a Kubernetes client config for a given context.
-func getConfig(context string) clientcmd.ClientConfig {
-	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	rules.DefaultClientConfig = &clientcmd.DefaultClientConfig
-
-	overrides := &clientcmd.ConfigOverrides{ClusterDefaults: clientcmd.ClusterDefaults}
-
-	if context != "" {
-		overrides.CurrentContext = context
-	}
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
-}
-
 // GetContexts returns a Kubernetes interface based on the current configuration
 func GetClientCfg(kubeconfigPath string) (*api.Config, error) {
-	kubecontexts := make(map[string]string)
-
 	// expand the ~ to the full path
 	expandedPath, err := homedir.Expand(kubeconfigPath)
 	if err != nil {
@@ -94,11 +69,6 @@ func GetClientCfg(kubeconfigPath string) (*api.Config, error) {
 	kubeConfigData, err := clientcmd.Load(content)
 	if err != nil {
 		return nil, err
-	}
-
-	// adding the clustername and context name to the map
-	for v, c := range kubeConfigData.Contexts {
-		kubecontexts[c.Cluster] = v
 	}
 	return kubeConfigData, nil
 }
@@ -162,7 +132,7 @@ func getKubeClient(context string) kubernetes.Interface {
 	var kubeConf *rest.Config
 	var err error
 	if context != "" {
-		kubeConf, err = configForContext(context)
+		kubeConf, err = config.GetConfigWithContext(context)
 		if err != nil {
 			klog.Fatalf("Error getting kubeconfig: %v", err)
 		}
@@ -177,6 +147,7 @@ func getKubeClient(context string) kubernetes.Interface {
 	if err != nil {
 		klog.Fatalf("Error creating kubernetes client: %v", err)
 	}
+
 	return clientset
 }
 
@@ -184,7 +155,7 @@ func getKubeClientVPA(context string) autoscalingv1beta2.Interface {
 	var kubeConf *rest.Config
 	var err error
 	if context != "" {
-		kubeConf, err = configForContext(context)
+		kubeConf, err = config.GetConfigWithContext(context)
 		if err != nil {
 			klog.Fatalf("Error getting kubeconfig: %v", err)
 		}

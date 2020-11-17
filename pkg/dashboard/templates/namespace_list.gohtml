@@ -38,7 +38,7 @@
     {{ else }}
     <div class="card namespace">
         <h2><strong>All Namespaces ({{len .Data.Name}})</strong></h2>
-        {{ if .Data.ClusterContext }}
+        {{ if .Data.CurrentCluster }}
             <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
         {{ else }}
             <a class="button" href="/dashboard">View All</a>
@@ -60,7 +60,7 @@
         {{ range $key, $value := .Data.Name }}
             <div id="namespaceCard-{{$value}}" class="card namespace">
                 <h2>Namespace: <strong>{{$value}}</strong></h2>
-                {{ if $.Data.ClusterContext }}
+                {{ if $.Data.CurrentCluster }}
                     <a data-name="view" class="button" href="/dashboard/{{$value}}?cluster={{$.Data.CurrentCluster}}">View</a>
                 {{ else }}
                     <a data-name="view" class="button" href="/dashboard/{{$value}}">View</a>

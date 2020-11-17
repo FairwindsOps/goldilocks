@@ -1,0 +1,128 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: k8s-goldilocks-
+  labels:
+    workflow: ci
+    component: goldilocks
+  annotations:
+    ci.maerskdigital.io/product: platform
+    ci.maerskdigital.io/slack-channel: "#platform-alerts"
+spec:
+  entrypoint: start
+  ttlSecondsAfterFinished: 86400
+  parallelism: 4
+
+  imagePullSecrets:
+    - name: maerskao
+  volumes:
+    - name: maerskao
+      secret:
+        secretName: maerskao
+        items:
+          - key: ".dockerconfigjson"
+            path: config.json
+
+  templates:
+    - name: start
+      steps:
+        - - name: checkout
+            template: checkout
+
+        - - name: build
+            template: docker-worker
+            arguments:
+              parameters:
+                - name: cmd
+                  value: |-
+                    set -ae
+                    DOCKER_REPO=maerskao.azurecr.io
+                      make build
+                      if (($?)); then exit 1; fi
+                      make tag
+                    if [ "{{workflow.parameters.branch}}" == "master" ]; then
+                      make publish
+                    else
+                      make publish-git-hash
+                      make -e VERSION=develop publish-version
+                    fi
+              artifacts:
+                - name: source
+                  from: "{{steps.checkout.outputs.artifacts.source}}"
+
+        - - name: conclude
+            template: generic-echo
+            arguments:
+              parameters:
+                - name: message
+                  value: "Build is complete"
+
+    - name: checkout
+      inputs:
+        artifacts:
+          - name: source
+            path: /src
+            git:
+              repo: "{{workflow.parameters.repo}}"
+              revision: "{{workflow.parameters.commit-id}}"
+              sshPrivateKeySecret:
+                name: bitbucketssh
+                key: ssh-ci
+      outputs:
+        artifacts:
+          - name: source
+            path: /src
+      script:
+        image: maerskao.azurecr.io/ci-runner:latest
+        command: ["/bin/bash"]
+        # git-crypt unlock secrets in the repository
+        workingDir: /src
+        source: |
+          # Print branch name
+          printf "#########################\n"
+          printf "# branch                #\n"
+          printf "#########################\n"
+          printf "{{workflow.parameters.branch}}\n"
+
+          # Print commit logs - 1 per line
+          printf "#########################\n"
+          printf "# git commit message(s) #\n"
+          printf "#########################\n"
+          #echo '{{workflow.parameters.commit-log}}' | jq -r '.[]'
+
+    - name: docker-worker
+      inputs:
+        parameters:
+          - name: cmd
+        artifacts:
+          - name: source
+            path: /src
+      container:
+        image: maerskao.azurecr.io/ci-runner:latest
+        command: [bash, -c]
+        workingDir: /src
+        args: ["export COMMIT_ID={{workflow.parameters.commit-id}} && {{inputs.parameters.cmd}}"]
+        # For automatic login to maerskao container registry
+        volumeMounts:
+          - mountPath: /root/.docker
+            readOnly: true
+            name: maerskao
+        env:
+          - name: DOCKER_HOST
+            value: tcp://docker.argo:2375
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 50m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+
+    - name: generic-echo
+      inputs:
+        parameters:
+          - name: message
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args: ["set -x; echo {{inputs.parameters.message}};"]
