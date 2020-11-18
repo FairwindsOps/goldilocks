@@ -34,7 +34,7 @@ var (
 
 func init() {
 	// Flags
-	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "~/.kube/config", "Kubeconfig location.")
+	rootCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "$HOME/.kube/config", "Kubeconfig location.")
 
 	klog.InitFlags(nil)
 	flag.Parse()

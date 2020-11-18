@@ -27,7 +27,11 @@
                 </select>
                 <input type="submit" value="Submit">
                 {{ if  (eq (len .Data.Summary.Namespaces) 1) }}
-                <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+                    {{ if $.Data.CurrentCluster }}
+                        <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+                    {{ else }}
+                        <a class="button" href="/dashboard?cluster={{$.Data.CurrentCluster}}">View All</a>
+                    {{ end }}
                 {{ end }}
             </form>
         </div>
