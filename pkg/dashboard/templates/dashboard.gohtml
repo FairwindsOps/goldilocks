@@ -14,7 +14,7 @@
     {{ template "preamble" . }}
     {{ if .Data.ClusterContext }}
         <div class="card cluster">
-            <form>
+            <form action="/dashboard">
                 <label for="cluster"><h2><strong>Select a cluster:</strong></h2></label>
                 <select id="cluster" name="cluster">
                     {{range $key, $value := .Data.ClusterContext }}
