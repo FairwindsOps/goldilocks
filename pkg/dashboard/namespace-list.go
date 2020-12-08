@@ -16,7 +16,7 @@ import (
 
 var lastCluster string
 
-// ClustersInfo contains all information to be passed to other functions
+// ClusterDetails contains all information to be passed to other functions
 type ClusterDetails struct {
 	Contexts         map[string]string
 	CurrentContext   string
@@ -40,7 +40,7 @@ func NamespaceList(opts Options) http.Handler {
 		useKubeConfig := true
 		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
 		if err != nil {
-			klog.Warning("Error getting k8s client config: %v, using InClusterConfig", err)
+			klog.Warningf("Error getting k8s client config: %v, using InClusterConfig", err)
 			useKubeConfig = false
 		}
 
@@ -126,7 +126,7 @@ func getClusterAndContext(Clusters *ClusterDetails) {
 			// get alphabetically first item from contexts
 			mk := make([]string, len(Clusters.ClientCfg.Contexts))
 			i := 0
-			for k, _ := range Clusters.ClientCfg.Contexts {
+			for k := range Clusters.ClientCfg.Contexts {
 				mk[i] = k
 				i++
 			}

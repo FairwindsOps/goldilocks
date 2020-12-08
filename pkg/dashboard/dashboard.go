@@ -43,7 +43,7 @@ func Dashboard(opts Options) http.Handler {
 		useKubeConfig := true
 		clientCfg, err := kube.GetClientCfg(opts.kubeconfigPath)
 		if err != nil {
-			klog.Warning("Error getting k8s client config: %v, using inClusterConfig", err)
+			klog.Warningf("Error getting k8s client config: %v, using inClusterConfig", err)
 			useKubeConfig = false
 		}
 

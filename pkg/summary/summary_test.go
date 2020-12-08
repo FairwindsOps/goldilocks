@@ -27,7 +27,7 @@ func TestSummarizer(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
 	kubeClient := kube.GetMockClient()
 
-	summarizer := NewSummarizer()
+	summarizer := NewSummarizer("new-context")
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 
