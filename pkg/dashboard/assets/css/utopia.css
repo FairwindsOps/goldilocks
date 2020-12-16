@@ -97,6 +97,12 @@ Some modifications made
           (var(--fluid-max-size-5) - var(--fluid-min-size-5)) *
           var(--fluid-bp)
   );
+
+  /*
+    to deal with Safari fluid scaling on window resize bug:
+    https://codepen.io/martinwolf/pen/yKgagE
+  */
+  min-height: 0vw;
 }
 
 @media screen and (min-width: 1500px) {
