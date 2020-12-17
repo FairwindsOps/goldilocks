@@ -1,0 +1,178 @@
+/*
+-----
+GLOBAL STYLES
+-----
+*/
+
+:root {
+    /* colors */
+    --color-accent-1: hsl(25, 100%, 50%);
+    --color-accent-2: hsl(339, 67%, 38%);
+    --color-accent-3: hsl(187, 54%, 70%);
+    --color-accent-3-darker: hsl(187, 100%, 28%); 
+    
+    --color-dark-1: hsl(105, 4%, 22%);
+    --color-dark-2: hsl(267, 57%, 15%);
+
+    --color-light-1: hsl(0, 0%, 100%);
+    --color-light-2: hsl(216, 29%, 97%);
+
+    /* color uses */
+    --color-text-1: var(--color-dark-1);
+    --color-text-2: var(--color-dark-2);
+
+    --color-text-inverse-1: var(--color-light-1);
+
+    --color-bg-1: var(--color-light-1);
+    --color-bg-2: var(--color-light-2);
+
+    --color-positive: var(--color-accent-3);
+    --color-negative: var(--color-accent-2);
+    --color-warning: var(--color-accent-1);
+
+    /* gaps/spacing */
+    --gap--2: 5px;
+    --gap--1: var(--step--1);
+    --gap-0: var(--step-0);
+    --gap-1: var(--step-1);
+    --gap-2: var(--step-2);
+    --gap-3: var(--step-3);
+    --gap-4: var(--step-4);
+    --gap-5: var(--step-5);
+}
+
+html {
+    background: var(--color-bg-1);
+    color: var(--color-text-1);
+    font-family: "Muli", Helvetica, Arial, sans-serif;
+    font-size: var(--step-0);
+}
+
+/*
+-----
+ELEMENTS
+-----
+*/
+
+a,
+a:link,
+a:visited {
+    color: var(--color-text-2);
+    text-decoration: none;
+    transition: all 250ms;
+}
+
+a:focus,
+a:hover,
+a:active {
+    text-decoration: underline;
+}
+
+footer {
+    font-size: var(--step--1);
+    text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    line-height: 1.1;
+}
+
+h1 {
+    font-size: var(--step-5);
+}
+
+h2 {
+    font-size: var(--step-4);
+}
+
+h3 {
+    font-size: var(--step-3);
+}
+
+h4 {
+    font-size: var(--step-2);
+}
+
+h5 {
+    font-size: var(--step-1);
+}
+
+h6 {
+    font-size: var(--step-0);
+}
+
+img.logo {
+    max-height: var(--step-5);
+    object-fit: contain;
+}
+
+img.logo--secondary {
+    max-height: var(--step-3);
+}
+
+nav > ul {
+    padding: 0;
+}
+
+nav > ul[role="list"] {
+    /* 
+    role="list" is required in the html for accessibility 
+    when removing list styles,
+    see https://www.scottohara.me/blog/2019/01/12/lists-and-safari.html
+    */
+    list-style: none;
+}
+
+/*
+-----
+COMPONENTS
+-----
+*/
+
+.layoutSidebar {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.layoutSidebar .layoutSidebar__footer {
+    flex-basis: 100%;
+    flex-grow: 999;
+}
+
+.layoutSidebar .layoutSidebar__main {
+    flex-basis: 0;
+    flex-grow: 999;
+    min-width: 75%;
+    padding: var(--gap-5) var(--gap-0);
+}
+
+.layoutSidebar .layoutSidebar__sidebar {
+    background: pink;
+    flex-grow: 1;
+}
+
+.logoSupport {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/*
+-----
+UTILITIES
+-----
+*/
+
+.visually-hidden:not(:focus):not(:active) {
+    clip: rect(0 0 0 0); 
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap; 
+    width: 1px;
+}
