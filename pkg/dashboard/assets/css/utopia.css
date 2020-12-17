@@ -15,9 +15,9 @@ Some modifications made
       1500 / var(--px-per-rem)
   ); /* if changed, don't forget media query */
   --fluid-min-size: 1; /* in rem */
-  --fluid-max-size: 1.25; /* in rem */
+  --fluid-max-size: 1; /* in rem */
   --fluid-min-ratio: 1.2;
-  --fluid-max-ratio: 1.333;
+  --fluid-max-ratio: 1.25;
 
   --fluid-screen: 100vw;
   --fluid-bp: calc(
