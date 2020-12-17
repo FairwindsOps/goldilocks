@@ -9,35 +9,43 @@
   </script>
 </head>
 
-<body>
-  <header>
-    {{ template "navbar" "--lineup" }}
-  </header>
+<body class="layoutSidebar">
+  <header class="layoutSidebar__sidebar">
+    {{ template "navbar" "--stack" }}
 
-  <main class="dashboard">
-    <h1 class="dashboard__heading visually-hidden">Namespace Details</h1>
-
-    <nav aria-label="Go to Page" class="dashboard__aside">
-      <ul class="flow">
+    <nav>
+      <ul class="flow" role="list">
         <li>
           <a class="button button--2 buttonIcon" href="/">
-            Namespace List
-            <i aria-hidden="true" class="fas fa-list-ul"></i>
+            <i aria-hidden="true" class="fas fa-fw fa-list-ul"></i>
+            List All Namespaces
           </a>
         </li>
         <li>
           <a class="button button--2 buttonIcon" href="/dashboard">
-            View All Namespaces
-            <i aria-hidden="true" class="far fa-eye"></i>
+            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
+            Detail All Namespaces
+          </a>
+        </li>
+        <li>
+          <a class="button button--2 buttonIcon" href="#glossary">
+            <i aria-hidden="true" class="fas fa-fw fa-book"></i>
+            Glossary
           </a>
         </li>
       </ul>
     </nav>
+  </header>
 
-    <details class="dashboard__aside callout callout--2" style="align-self: start;">
-      <summary>
-        <h2>Glossary</h2>
-      </summary>
+  <main class="layoutSidebar__main dashboard">
+    <h1 class="dashboard__heading visually-hidden">Namespace Details</h1>
+
+    {{ range $nsName, $nsSummary := .Data.Namespaces }}
+      {{ template "namespace" $nsSummary }}
+    {{end}}
+
+    <aside id="glossary">
+      <h2>Glossary</h2>
 
       <dl>
         <div>
@@ -61,14 +69,20 @@
           </dd>
         </div>
       </dl>
-    </details>
+    </aside>
 
-    {{ range $nsName, $nsSummary := .Data.Namespaces }}
-      {{ template "namespace" $nsSummary }}
-    {{end}}
+    <div class="test">
+      <h1>Heading 1</h1>
+      <h2>Heading 2</h2>
+      <h3>Heading 3</h3>
+      <h4>Heading 4</h4>
+      <h5>Heading 5</h5>
+      <h6>Heading 6</h6>
+      <div>Body</div>
+    </div>
   </main>
 
-  <footer class="footer">
+  <footer class="layoutSidebar__footer">
     {{ template "footer" . }}
   </footer>
 </body>
