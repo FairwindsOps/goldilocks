@@ -40,31 +40,33 @@
     {{ end }}
   </header>
 
-  <main class="layoutSidebar__main">
-    <h1 class="namespaceList__heading">Namespaces</h1>
+  <div class="layoutSidebar__main">
+    <main>
+      <h1 class="namespaceList__heading">Namespaces</h1>
 
-    {{ if lt (len .Data) 1 }}
-    <article>
-      No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code>
-    </article>
+      {{ if lt (len .Data) 1 }}
+      <article>
+        No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code>
+      </article>
 
-    {{ else }}
-    <ul aria-live="off" class="namespaceList__list" id="js-search-container">
-      {{ range .Data }}
-      <li data-search="{{ .Name }}">
-        <a class="button button--1 buttonIcon" href="/dashboard/{{ .Name }}">
-          {{ .Name }}
-          <i aria-hidden="true" class="fas fa-chevron-right"></i>
-        </a>
-      </li>
-      {{ end }}
-    </ul>
+      {{ else }}
+      <ul aria-live="off" class="namespaceList__list" id="js-search-container">
+        {{ range .Data }}
+        <li data-search="{{ .Name }}">
+          <a class="button button--1 buttonIcon" href="/dashboard/{{ .Name }}">
+            {{ .Name }}
+            <i aria-hidden="true" class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+        {{ end }}
+      </ul>
 
-    {{end}}
-  </main>
+      {{end}}
+    </main>
 
-  <footer class="layoutSidebar__footer">
-    {{ template "footer" . }}
-  </footer>
+    <footer>
+      {{ template "footer" . }}
+    </footer>
+  </div>
 </body>
 </html>

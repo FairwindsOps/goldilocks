@@ -115,6 +115,10 @@ img.logo--secondary {
     max-height: var(--step-3);
 }
 
+main {
+    padding: var(--gap-5) var(--gap-0);
+}
+
 nav > ul {
     padding: 0;
 }
@@ -139,16 +143,16 @@ COMPONENTS
     flex-wrap: wrap;
 }
 
-.layoutSidebar .layoutSidebar__footer {
-    flex-basis: 100%;
-    flex-grow: 999;
-}
-
 .layoutSidebar .layoutSidebar__main {
+    display: flex;
     flex-basis: 0;
+    flex-direction: column;
     flex-grow: 999;
     min-width: 75%;
-    padding: var(--gap-5) var(--gap-0);
+}
+
+.layoutSidebar .layoutSidebar__main > :not(footer) {
+    flex-grow: 999;
 }
 
 .layoutSidebar .layoutSidebar__sidebar {
