@@ -1,7 +1,7 @@
 {{define "namespace"}}
 {{ $foundFirstDeployment := false }}
 
-<article class="detailNamespace verticalRhythm">
+<article class="detailInfo --namespace verticalRhythm">
   <h2>
     <a href="/dashboard/{{ $.Namespace }}">
       <span aria-label="Namespace:" class="badge badge--1 detailBadge">Namespace</span> {{ $.Namespace }}
@@ -9,7 +9,7 @@
   </h2>
 
   {{ range $deployment := $.Deployments }}
-  <details class="detailDeployment verticalRhythm"
+  <details class="detailInfo --deployment verticalRhythm"
     {{- if not $foundFirstDeployment -}}
     {{- $foundFirstDeployment = true -}} open
     {{- end -}}>
@@ -25,7 +25,7 @@
     </summary>
 
     {{ range $cName, $cSummary := $deployment.Containers }}
-    <section class="detailContainer verticalRhythm">
+    <section class="detailInfo --container verticalRhythm">
       <h4><span aria-label="Container:" class="badge badge--3 detailBadge">Container</span> {{ $cName }}</h4>
 
       <div class="columns">

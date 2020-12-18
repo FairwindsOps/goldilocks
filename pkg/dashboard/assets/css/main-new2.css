@@ -216,27 +216,29 @@ COMPONENTS
 }
 
 .detailBadge {
-    margin-left: calc(-1 * var(--gap-local, var(--gap-0)));
+    margin-left: calc(-1 * var(--gap-detail, var(--gap-0)));
 }
 
-.detailContainer {
+.detailInfo {
+    --gap-detail: var(--gap-0);
+
+    border-left: 2px solid;
+    padding-left: var(--gap-detail);
+}
+
+.detailInfo.--container {
     background: var(--color-accent-3-lighter);
-    border-left: 2px solid var(--color-accent-3);
-    padding-left: var(--gap-local);
+    border-color: var(--color-accent-3);
 }
 
-.detailDeployment {
+.detailInfo.--deployment {
     background: var(--color-accent-1-lighter);
-    border-left: 2px solid var(--color-accent-1);
-    padding-left: var(--gap-local);
+    border-color: var(--color-accent-1);
 }
 
-.detailNamespace {
-    --gap-local: var(--gap-0);
-
+.detailInfo.--namespace {
     background: var(--color-accent-2-lighter);
-    border-left: 2px solid var(--color-accent-2);
-    padding-left: var(--gap-local);
+    border-color: var(--color-accent-2);
 }
 
 .layoutSidebar {
