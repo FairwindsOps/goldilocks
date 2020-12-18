@@ -7,8 +7,11 @@ GLOBAL STYLES
 :root {
     /* colors */
     --color-accent-1: hsl(25, 100%, 50%);
+    --color-accent-1-lighter: hsl(25, 100%, 97%);
     --color-accent-2: hsl(339, 67%, 38%);
+    --color-accent-2-lighter: hsl(339, 67%, 97%);
     --color-accent-3: hsl(187, 54%, 70%);
+    --color-accent-3-lighter: hsl(187, 54%, 97%);
     --color-accent-3-darker: hsl(187, 100%, 28%); 
     
     --color-dark-1: hsl(105, 4%, 22%);
@@ -91,6 +94,7 @@ h6 {
 }
 
 h1 {
+    color: var(--color-text-2);
     font-size: var(--step-5);
 }
 
@@ -163,18 +167,19 @@ COMPONENTS
     display: block;
     font-size: var(--step--1);
     font-weight: normal;
+    margin-bottom: var(--gap--2);
     max-width: max-content;
     padding: var(--gap--2);
     text-transform: uppercase;
 }
 
 .badge.badge.badge--1 {
-    background: var(--color-accent-1);
+    background: var(--color-accent-2);
     color: var(--color-bg-1);
 }
 
 .badge.badge--2 {
-    background: var(--color-accent-2);
+    background: var(--color-accent-1);
     color: var(--color-bg-1);
 }
 
@@ -187,6 +192,30 @@ COMPONENTS
     border: 1px solid var(--color-accent-3);
     border-radius: var(--gap-0);
     padding: var(--gap-0);
+}
+
+.detailBadge {
+    margin-left: calc(-1 * var(--gap-local, var(--gap-0)));
+}
+
+.detailContainer {
+    background: var(--color-accent-3-lighter);
+    border-left: 2px solid var(--color-accent-3);
+    padding-left: var(--gap-local);
+}
+
+.detailDeployment {
+    background: var(--color-accent-1-lighter);
+    border-left: 2px solid var(--color-accent-1);
+    padding-left: var(--gap-local);
+}
+
+.detailNamespace {
+    --gap-local: var(--gap-0);
+
+    background: var(--color-accent-2-lighter);
+    border-left: 2px solid var(--color-accent-2);
+    padding-left: var(--gap-local);
 }
 
 .layoutSidebar {
