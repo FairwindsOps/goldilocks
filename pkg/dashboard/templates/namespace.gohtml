@@ -13,12 +13,19 @@
     {{- if not $foundFirstDeployment -}}
     {{- $foundFirstDeployment = true -}} open
     {{- end -}}>
-    <summary>
-      <h3><span aria-label="Deployment:" class="badge badge--2 detailBadge">Deployment</span> {{ $deployment.DeploymentName }}</h3>
+    <summary class="--hideMarker">
+      <h3>
+        <span aria-label="Deployment:" class="badge badge--2 detailBadge"
+          >Deployment</span
+        >
+        {{ $deployment.DeploymentName }}
+        <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+        ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+      </h3>
     </summary>
 
     {{ range $cName, $cSummary := $deployment.Containers }}
-    <section class="detailContainer indent verticalRhythm">
+    <section class="detailContainer verticalRhythm">
       <h4><span aria-label="Container:" class="badge badge--3 detailBadge">Container</span> {{ $cName }}</h4>
 
       <div class="columns">
