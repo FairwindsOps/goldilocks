@@ -135,6 +135,18 @@ h6 {
     font-size: var(--step-0);
 }
 
+i.error {
+    color: var(--color-negative);
+}
+
+i.success {
+    color: var(--color-positive);
+}
+
+i.warning {
+    color: var(--color-warning);
+}
+
 img.logo {
     margin-right: auto;
     margin-left: auto;
@@ -174,6 +186,28 @@ ul.navList li {
     padding-top: var(--gap-0);
 }
 
+td {
+    padding: 0;
+}
+
+th {
+    padding: 0;
+}
+
+th[scope="row"] {
+    padding-right: var(--cellspacing);
+    text-align: right;
+}
+
+table {
+    --cellspacing: var(--gap--1);
+
+    border-spacing: var(--cellspacing);
+}
+
+/* th { background: plum; } */
+/* td { background: pink; } */
+
 /*
 -----
 COMPONENTS
@@ -211,11 +245,16 @@ COMPONENTS
     padding: var(--gap-0);
 }
 
+.compTable td:first-of-type,
+.compTable th[scope="col"]:first-of-type {
+    text-align: right;
+}
+
 .detailBadge {
     margin-left: calc(-1 * var(--gap-detail, var(--gap-0)));
 }
 
-.detailInfo {
+.detailInfo:not(.--qos) {
     --gap-detail: var(--gap-0);
 
     border: 2px solid;
@@ -226,6 +265,7 @@ COMPONENTS
 .detailInfo.--container {
     background: var(--color-accent-3-lighter);
     border-color: var(--color-accent-3);
+    padding-right: var(--gap-0);
     padding-bottom: var(--gap-0);
 }
 
@@ -237,6 +277,10 @@ COMPONENTS
 .detailInfo.--namespace {
     background: var(--color-accent-2-lighter);
     border-color: var(--color-accent-2);
+}
+
+.detailInfo.--qos {
+    margin: var(--gap-0);
 }
 
 .layoutLineup {
