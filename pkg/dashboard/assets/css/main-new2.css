@@ -71,6 +71,12 @@ a:active {
     text-decoration: underline;
 }
 
+abbr {
+    text-decoration-color: var(--color-accent-3);
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+}
+
 details > summary > h2,
 details > summary > h3,
 details > summary > h4,
