@@ -38,8 +38,8 @@
   </header>
 
   <div class="layoutSidebar__main">
-    <main>
-      <h1 class="dashboard__heading visually-hidden">Namespace Details</h1>
+    <main class="verticalRhythm">
+      <h1 class="visually-hidden">Namespace Details</h1>
 
       {{ range $nsName, $nsSummary := .Data.Namespaces }}
         {{ template "namespace" $nsSummary }}

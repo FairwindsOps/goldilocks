@@ -68,6 +68,14 @@ a:active {
     text-decoration: underline;
 }
 
+details > summary > h2,
+details > summary > h3,
+details > summary > h4,
+details > summary > h5,
+details > summary > h6 {
+    display: inline-block;
+}
+
 footer {
     font-size: var(--step--1);
     text-align: center;
@@ -151,6 +159,36 @@ COMPONENTS
 -----
 */
 
+.badge {
+    display: block;
+    font-size: var(--step--1);
+    font-weight: normal;
+    max-width: max-content;
+    padding: var(--gap--2);
+    text-transform: uppercase;
+}
+
+.badge.badge.badge--1 {
+    background: var(--color-accent-1);
+    color: var(--color-bg-1);
+}
+
+.badge.badge--2 {
+    background: var(--color-accent-2);
+    color: var(--color-bg-1);
+}
+
+.badge.badge--3 {
+    background: var(--color-accent-3);
+}
+
+.callout {
+    background: var(--color-bg-2);
+    border: 1px solid var(--color-accent-3);
+    border-radius: var(--gap-0);
+    padding: var(--gap-0);
+}
+
 .layoutSidebar {
     display: flex;
     flex-wrap: wrap;
@@ -196,6 +234,14 @@ COMPONENTS
 UTILITIES
 -----
 */
+
+.indent {
+    margin-left: var(--gap-1);
+}
+
+.verticalRhythm > *:not(.visually-hidden) + * {
+    margin-top: max(var(--gap-0), 1em);
+}
 
 .visually-hidden:not(:focus):not(:active) {
     clip: rect(0 0 0 0); 
