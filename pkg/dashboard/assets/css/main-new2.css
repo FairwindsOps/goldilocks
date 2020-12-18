@@ -289,8 +289,16 @@ UTILITIES
     margin-left: var(--gap-1);
 }
 
-.verticalRhythm > *:not(.visually-hidden) + * {
-    margin-top: max(var(--gap-0), 1em);
+.verticalRhythm > * {
+    --gap-rhythm: var(--gap-0);
+}
+
+.verticalRhythm.--rhythm-3 > * {
+    --gap-rhythm: var(--gap-3);
+}
+
+.verticalRhythm > *:not(summary):not(.visually-hidden) + * {
+    margin-top: max(var(--gap-rhythm), 1em);
 }
 
 .visually-hidden:not(:focus):not(:active) {
