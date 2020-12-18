@@ -1,40 +1,57 @@
 {{define "namespace"}}
 {{ $foundFirstDeployment := false }}
 
-<article class="detailInfo --namespace verticalRhythm">
-  <h2>
-    <a href="/dashboard/{{ $.Namespace }}">
-      <span aria-label="Namespace:" class="badge badge--1 detailBadge">Namespace</span> {{ $.Namespace }}
-    </a>
-  </h2>
-
-  {{ range $deployment := $.Deployments }}
-  <details class="detailInfo --deployment verticalRhythm"
-    {{- if not $foundFirstDeployment -}}
-    {{- $foundFirstDeployment = true -}} open
-    {{- end -}}>
+<article>
+  <details class="detailInfo --namespace verticalRhythm" open>
     <summary class="--hideMarker">
-      <h3>
-        <span aria-label="Deployment:" class="badge badge--2 detailBadge"
-          >Deployment</span
+      <h2>
+        <span aria-label="Deployment:" class="badge detailBadge --namespace"
+          >Namespace</span
         >
-        {{ $deployment.DeploymentName }}
+        {{ $.Namespace }}
         <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
         ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
-      </h3>
+      </h2>
+      <p><a class="detailLink --namespace" href="/dashboard/{{ $.Namespace }}">View only this namespace</a></p>
     </summary>
 
-    {{ range $cName, $cSummary := $deployment.Containers }}
-    <section class="detailInfo --container verticalRhythm">
-      <h4><span aria-label="Container:" class="badge badge--3 detailBadge">Container</span> {{ $cName }}</h4>
+    {{ range $deployment := $.Deployments }}
+    <details class="detailInfo --deployment verticalRhythm"
+      {{- if not $foundFirstDeployment -}}
+      {{- $foundFirstDeployment = true -}} open
+      {{- end -}}>
+      <summary class="--hideMarker">
+        <h3>
+          <span aria-label="Deployment:" class="badge detailBadge --deployment"
+            >Deployment</span
+          >
+          {{ $deployment.DeploymentName }}
+          <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+          ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+        </h3>
+      </summary>
 
-      <div class="layoutLineup">
-        {{ template "container" $cSummary }}
-      </div>
-    </section>
+      {{ range $cName, $cSummary := $deployment.Containers }}
+      <details class="detailInfo --container verticalRhythm" open>
+        <summary class="--hideMarker">
+          <h4>
+            <span aria-label="Container:" class="badge detailBadge --container"
+              >Container</span
+            >
+            {{ $cName }}
+            <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+            ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+          </h4>
+        </summary>
+
+        <div class="layoutLineup">
+          {{ template "container" $cSummary }}
+        </div>
+      </details>
+      {{ end }}
+    </details>
     {{ end }}
   </details>
-  {{ end }}
 </article>
 
 {{/* <div class="card namespace">

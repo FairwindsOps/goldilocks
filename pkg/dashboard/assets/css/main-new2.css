@@ -33,6 +33,13 @@ GLOBAL STYLES
     --color-negative: var(--color-accent-2);
     --color-warning: var(--color-accent-1);
 
+    --color-namespace: var(--color-accent-2);
+    --color-namespace-light: var(--color-accent-2-lighter);
+    --color-deployment: var(--color-accent-1);
+    --color-deployment-light: var(--color-accent-1-lighter);
+    --color-container: var(--color-accent-3);
+    --color-container-light: var(--color-accent-3-lighter);
+
     /* gaps/spacing */
     --gap--2: 5px;
     --gap--1: var(--step--1);
@@ -221,6 +228,8 @@ COMPONENTS
 */
 
 .badge {
+    background: var(--color-accent-2);
+    color: var(--color-bg-1);
     display: block;
     font-size: var(--step--1);
     font-weight: normal;
@@ -228,20 +237,6 @@ COMPONENTS
     max-width: max-content;
     padding: var(--gap--2);
     text-transform: uppercase;
-}
-
-.badge.badge.badge--1 {
-    background: var(--color-accent-2);
-    color: var(--color-bg-1);
-}
-
-.badge.badge--2 {
-    background: var(--color-accent-1);
-    color: var(--color-bg-1);
-}
-
-.badge.badge--3 {
-    background: var(--color-accent-3);
 }
 
 .callout {
@@ -258,6 +253,20 @@ COMPONENTS
 
 .detailBadge {
     margin-left: calc(-1 * var(--gap-detail, var(--gap-0)));
+}
+
+.detailBadge.--namespace {
+    background: var(--color-namespace);
+    color: var(--color-bg-1);
+}
+
+.detailBadge.--deployment {
+    background: var(--color-deployment);
+    color: var(--color-bg-1);
+}
+
+.detailBadge.--container {
+    background: var(--color-container);
 }
 
 .detailInfo:not(.--qos) {
@@ -287,6 +296,10 @@ COMPONENTS
 
 .detailInfo.--qos {
     margin: var(--gap-0);
+}
+
+.detailLink.--namespace {
+    color: var(--color-accent-2);
 }
 
 .layoutLineup {
