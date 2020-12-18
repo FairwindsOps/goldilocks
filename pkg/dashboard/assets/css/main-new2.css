@@ -71,10 +71,6 @@ a:active {
     text-decoration: underline;
 }
 
-details > summary {
-    padding-bottom: var(--gap-0);
-}
-
 details > summary > h2,
 details > summary > h3,
 details > summary > h4,
@@ -222,13 +218,15 @@ COMPONENTS
 .detailInfo {
     --gap-detail: var(--gap-0);
 
-    border-left: 2px solid;
+    border: 2px solid;
+    margin: var(--gap-detail) var(--gap-detail) var(--gap-detail) 0;
     padding-left: var(--gap-detail);
 }
 
 .detailInfo.--container {
     background: var(--color-accent-3-lighter);
     border-color: var(--color-accent-3);
+    padding-bottom: var(--gap-0);
 }
 
 .detailInfo.--deployment {
@@ -239,6 +237,12 @@ COMPONENTS
 .detailInfo.--namespace {
     background: var(--color-accent-2-lighter);
     border-color: var(--color-accent-2);
+}
+
+.layoutLineup {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }
 
 .layoutSidebar {
