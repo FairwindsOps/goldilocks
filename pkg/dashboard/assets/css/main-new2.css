@@ -107,6 +107,8 @@ h6 {
 }
 
 img.logo {
+    margin-right: auto;
+    margin-left: auto;
     max-height: var(--step-5);
     object-fit: contain;
 }
@@ -130,6 +132,17 @@ nav > ul[role="list"] {
     see https://www.scottohara.me/blog/2019/01/12/lists-and-safari.html
     */
     list-style: none;
+}
+
+nav > ul li + li {
+    margin-top: var(--gap-1);
+}
+
+ul.navList li {
+    border-top: 1px solid var(--color-accent-3);
+    margin-right: var(--gap-0);
+    margin-left: var(--gap-0);
+    padding-top: var(--gap-0);
 }
 
 /*
@@ -156,8 +169,21 @@ COMPONENTS
 }
 
 .layoutSidebar .layoutSidebar__sidebar {
-    background: pink;
+    background: var(--color-bg-2);
     flex-grow: 1;
+    padding: 0 var(--gap-0);
+}
+
+.layoutSidebar .layoutSidebar__sidebar > * + * {
+    /* border-top: 1px solid var(--color-accent-3); */
+    margin-top: var(--gap-3);
+}
+
+.linkIcon {
+    align-items: center;
+    display: grid;
+    grid-gap: var(--gap-0);
+    grid-template-columns: auto 1fr;
 }
 
 .logoSupport {
