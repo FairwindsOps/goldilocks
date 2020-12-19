@@ -266,9 +266,6 @@ table {
     border-spacing: var(--cellspacing);
 }
 
-/* th { background: plum; } */
-/* td { background: pink; } */
-
 /*
 -----
 COMPONENTS
@@ -322,15 +319,13 @@ COMPONENTS
     --gap-detail: var(--gap-0);
 
     border: 2px solid;
-    margin: var(--gap-detail) var(--gap-detail) var(--gap-detail) 0;
-    padding-left: var(--gap-detail);
+    margin-top: var(--gap-0);
+    padding: 0 var(--gap-0) var(--gap-0) var(--gap-0);
 }
 
 .detailInfo.--container {
     background: var(--color-accent-3-lighter);
     border-color: var(--color-accent-3);
-    padding-right: var(--gap-0);
-    padding-bottom: var(--gap-0);
 }
 
 .detailInfo.--deployment {
