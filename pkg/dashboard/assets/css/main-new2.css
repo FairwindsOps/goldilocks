@@ -69,7 +69,6 @@ a:link,
 a:visited {
     color: var(--color-text-2);
     text-decoration: none;
-    transition: all 250ms;
 }
 
 a:focus,
@@ -78,10 +77,29 @@ a:active {
     text-decoration: underline;
 }
 
+a.--link-1,
+a.--link-1:link,
+a.--link-1:visited {
+    color: var(--color-accent-2);
+    text-decoration: underline;
+}
+
+a.--link-1:focus,
+a.--link-1:hover,
+a.--link-1:active {
+    text-decoration: none;
+}
+
 abbr {
     text-decoration-color: var(--color-accent-3);
     text-decoration-line: underline;
     text-decoration-style: dotted;
+}
+
+blockquote > cite {
+    display: block;
+    margin-top: var(--gap-0);
+    text-align: right;
 }
 
 details > summary > h2,
@@ -107,6 +125,36 @@ details:not([open]) > summary.--hideMarker i.--showWhenOpen {
 
 details[open] > summary.--hideMarker i.--showWhenClosed {
     display: none;
+}
+
+dd {
+    margin: var(--gap-0);
+}
+
+dl {
+    display: grid;
+    grid-gap: var(--gap-3);
+    grid-template-columns: repeat(auto-fill, 45ch);
+    justify-content: space-evenly;
+}
+
+dl > .dl-entry {
+    border: 2px solid var(--color-accent-2);
+}
+
+dl a {
+    color: var(--color-accent-3);
+}
+
+dt {
+    background: var(--color-accent-2);
+    color: var(--color-text-inverse-1);
+    font-weight: bold;
+    padding: var(--gap--2);
+}
+
+dt::after {
+    content: ":";
 }
 
 footer {

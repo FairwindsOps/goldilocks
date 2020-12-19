@@ -45,42 +45,57 @@
         {{ template "namespace" $nsSummary }}
       {{end}}
 
-      <aside id="glossary">
+      <aside class="verticalRhythm" id="glossary">
         <h2>Glossary</h2>
 
         <dl>
-          <div>
-            <dt><dfn id="qos">QoS</dfn></dt>
+          <div class="dl-entry">
+            <dt id="qos">QoS</dt>
             <dd>
-              Quality of Service
+              <blockquote>
+                "QoS (Quality of Service) class is a designation assigned to a pod based on its resource requests and limits. Kubernetes uses QoS classes to make decisions about scheduling and evicting Pods."
+                <cite><a class="--link-1" href="https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod">Kubernetes Documentation: <br>Configure Quality of Service for Pods</a></cite>
+              </blockquote>
             </dd>
           </div>
 
-          <div>
-            <dt>Guaranteed</dt>
+          <div class="dl-entry">
+            <dt>Guaranteed QoS</dt>
             <dd>
-              Info goes here
+              <blockquote>
+                "For a Pod to be given a QoS class of Guaranteed:
+                <ul>
+                  <li>
+                    Every Container, including init containers, in the Pod must have a memory limit and a memory request, and they must be the same.
+                  </li>
+                  <li>
+                    Every Container, including init containers, in the Pod must have a CPU limit and a CPU request, and they must be the same."
+                  </li>
+                </ul>
+                <cite><a class="--link-1" href="https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/#create-a-pod-that-gets-assigned-a-qos-class-of-guaranteed">Kubernetes Documentation: <br>Create a Pod That Gets Assigned a QoS Class of Guaranteed</a></cite>
+              </blockquote>
             </dd>
           </div>
 
-          <div>
-            <dt>Burstable</dt>
+          <div class="dl-entry">
+            <dt>Burstable QoS</dt>
             <dd>
-              Info goes here
+              <blockquote>
+                "A Pod is given a QoS class of Burstable if:
+                <ul>
+                  <li>
+                    The Pod does not meet the criteria for QoS class Guaranteed.
+                  </li>
+                  <li>
+                    At least one Container in the Pod has a memory or CPU request."
+                  </li>
+                </ul>
+                <cite><a class="--link-1" href="https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/#create-a-pod-that-gets-assigned-a-qos-class-of-burstable">Kubernetes Documentation: <br>Create a Pod That Gets Assigned a QoS Class of Burstable</a></cite>
+              </blockquote>
             </dd>
           </div>
         </dl>
       </aside>
-
-      <div class="test">
-        <h1>Heading 1</h1>
-        <h2>Heading 2</h2>
-        <h3>Heading 3</h3>
-        <h4>Heading 4</h4>
-        <h5>Heading 5</h5>
-        <h6>Heading 6</h6>
-        <div>Body</div>
-      </div>
     </main>
 
     <footer>
