@@ -267,6 +267,7 @@ COMPONENTS
 
 .detailBadge.--container {
     background: var(--color-container);
+    color: var(--color-text-1);
 }
 
 .detailInfo:not(.--qos) {
