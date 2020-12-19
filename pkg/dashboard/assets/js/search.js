@@ -3,10 +3,10 @@
     const containerId = "js-search-container";
 
     const form = document.getElementById(formId);
-    const searchInput = form.getElementsByTagName("input")[0];
-    const submitBtn = form.querySelector("button[type='submit']");
+    const searchInput = form.querySelector("input[type='search']");
+
     const container = document.getElementById(containerId);
-    const potentialResults = container.children;
+    const potentialResults = container.querySelectorAll("[data-search]");
     const numPotentialResults = potentialResults.length;
 
     function showSearchResult(result) {

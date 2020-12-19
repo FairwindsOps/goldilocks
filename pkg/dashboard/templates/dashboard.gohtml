@@ -35,15 +35,28 @@
         </li>
       </ul>
     </nav>
+
+    <form aria-controls="js-search-container" id="js-search-form" role="search">
+      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+
+      <input aria-controls="js-search-container" name="q" placeholder="search namespaces..." type="search" />
+
+      <button type="submit">
+        <i aria-hidden="true" class="fas fa-fw fa-search"></i>
+        <span class="visually-hidden">Search</span>
+      </button>
+    </form>
   </header>
 
   <div class="layoutSidebar__main">
     <main class="verticalRhythm --rhythm-3">
       <h1>Namespace Details</h1>
 
-      {{ range $nsName, $nsSummary := .Data.Namespaces }}
-        {{ template "namespace" $nsSummary }}
-      {{end}}
+      <div aria-live="off" id="js-search-container">
+        {{ range $nsName, $nsSummary := .Data.Namespaces }}
+          {{ template "namespace" $nsSummary }}
+        {{end}}
+      </div>
 
       <aside class="verticalRhythm" id="glossary">
         <h2>Glossary</h2>

@@ -162,6 +162,20 @@ footer {
     text-align: center;
 }
 
+form[role="search"] input[type="search"] {
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-accent-3);
+    color: var(--color-text-1);
+    margin: 0;
+    padding: 0;
+}
+
+form[role="search"] button[type="submit"] {
+    background: none;
+    border: none;
+}
+
 h1,
 h2,
 h3,
@@ -241,10 +255,8 @@ nav > ul li + li {
 }
 
 ul.navList li {
-    border-top: 1px solid var(--color-accent-3);
-    margin-right: var(--gap-0);
-    margin-left: var(--gap-0);
-    padding-top: var(--gap-0);
+    border-bottom: 1px solid var(--color-accent-3);
+    padding-bottom: var(--gap-0);
 }
 
 td {
@@ -373,6 +385,10 @@ COMPONENTS
     background: var(--color-bg-2);
     flex-grow: 1;
     padding: 0 var(--gap-0);
+}
+
+.layoutSidebar .layoutSidebar__sidebar > *:last-child {
+    margin-bottom: var(--gap-0);
 }
 
 .layoutSidebar .layoutSidebar__sidebar > * + * {
