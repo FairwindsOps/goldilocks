@@ -59,7 +59,10 @@ First, make sure you satisfy the requirements above.
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+Helm v2:
 helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilocks
+Helm v3:
+helm install goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 ```
 
 ### Method 2 - Manifests
