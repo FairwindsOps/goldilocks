@@ -449,16 +449,11 @@ COMPONENTS
 }
 
 .namespaceList {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-}
-
-.namespaceList > * {
-    flex: 1 1 30ch;
     font-size: var(--step-1);
-    margin: var(--gap-0);
-    max-width: 60ch;
+    display: grid;
+    grid-gap: var(--gap-3);
+    grid-template-columns: repeat(auto-fit, minmax(30ch, 1fr));
+    margin: var(--gap-1);
 }
 
 .summary {
