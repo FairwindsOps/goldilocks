@@ -255,17 +255,17 @@ nav > ul {
     padding: 0;
 }
 
-nav > ul[role="list"] {
+nav > ul li + li {
+    margin-top: var(--gap-1);
+}
+
+ul[role="list"] {
     /* 
     role="list" is required in the html for accessibility 
     when removing list styles,
     see https://www.scottohara.me/blog/2019/01/12/lists-and-safari.html
     */
     list-style: none;
-}
-
-nav > ul li + li {
-    margin-top: var(--gap-1);
 }
 
 ul.navList li {

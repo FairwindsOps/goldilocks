@@ -40,7 +40,7 @@
       </article>
 
       {{ else }}
-      <ul aria-live="off" class="namespaceList" id="js-filter-container">
+      <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
         <li data-filter="{{ .Name }}">
           <a class="buttonLink --withIcon" href="/dashboard/{{ .Name }}">
