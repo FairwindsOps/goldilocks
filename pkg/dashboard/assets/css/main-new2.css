@@ -14,7 +14,7 @@ GLOBAL STYLES
     --color-accent-3: hsl(var(--color-accent-3-raw));
     --color-accent-3-lighter: hsl(187, 54%, 97%);
     --color-accent-3-darker: hsl(187, 100%, 28%);
-    
+
     --color-dark-1: hsl(105, 4%, 22%);
     --color-dark-2: hsl(267, 57%, 15%);
 
@@ -196,8 +196,8 @@ form[role="search"] button[type="submit"]:active {
 
 @media (prefers-reduced-motion) {
     form[role="search"] button[type="submit"]:active {
-      background: var(--color-accent-3);
-      transform: none;
+        background: var(--color-accent-3);
+        transform: none;
     }
 }
 
@@ -276,8 +276,8 @@ pre {
 }
 
 ul[role="list"] {
-    /* 
-    role="list" is required in the html for accessibility 
+    /*
+    role="list" is required in the html for accessibility
     when removing list styles,
     see https://www.scottohara.me/blog/2019/01/12/lists-and-safari.html
     */
@@ -346,7 +346,8 @@ COMPONENTS
 .buttonLink:hover,
 .buttonLink:active {
     background: var(--color-dark-2);
-    box-shadow: var(--box-shadow-dimensions) hsla(var(--color-accent-3-raw), 0.3);
+    box-shadow: var(--box-shadow-dimensions)
+        hsla(var(--color-accent-3-raw), 0.3);
     color: var(--color-light-2);
     text-decoration: none;
     transform: scale(var(--scale));
@@ -356,7 +357,7 @@ COMPONENTS
     .buttonLink:focus,
     .buttonLink:hover,
     .buttonLink:active {
-      transform: none;
+        transform: none;
     }
 }
 
@@ -511,11 +512,11 @@ UTILITIES
 }
 
 .visually-hidden:not(:focus):not(:active) {
-    clip: rect(0 0 0 0); 
+    clip: rect(0 0 0 0);
     clip-path: inset(50%);
     height: 1px;
     overflow: hidden;
     position: absolute;
-    white-space: nowrap; 
+    white-space: nowrap;
     width: 1px;
 }
