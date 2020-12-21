@@ -10,9 +10,10 @@ GLOBAL STYLES
     --color-accent-1-lighter: hsl(25, 100%, 97%);
     --color-accent-2: hsl(339, 67%, 38%);
     --color-accent-2-lighter: hsl(339, 67%, 97%);
-    --color-accent-3: hsl(187, 54%, 70%);
+    --color-accent-3-raw: 187, 54%, 70%;
+    --color-accent-3: hsl(var(--color-accent-3-raw));
     --color-accent-3-lighter: hsl(187, 54%, 97%);
-    --color-accent-3-darker: hsl(187, 100%, 28%); 
+    --color-accent-3-darker: hsl(187, 100%, 28%);
     
     --color-dark-1: hsl(105, 4%, 22%);
     --color-dark-2: hsl(267, 57%, 15%);
@@ -296,6 +297,32 @@ COMPONENTS
     text-transform: uppercase;
 }
 
+.buttonLink {
+    border: 1px solid var(--color-accent-3);
+    border-radius: 999em;
+    display: block;
+    padding: var(--gap-0);
+    text-decoration: none;
+    transition: all 250ms ease;
+}
+
+.buttonLink.--withIcon {
+    align-items: center;
+    display: grid;
+    grid-gap: var(--gap--1);
+    grid-template-columns: 1fr auto;
+}
+
+.buttonLink:focus,
+.buttonLink:hover,
+.buttonLink:active {
+    background: var(--color-dark-2);
+    box-shadow: 0 1.25rem 3.4375rem 0 hsla(var(--color-accent-3-raw), 0.3);
+    color: var(--color-light-2);
+    text-decoration: none;
+    transform: scale(1.1);
+}
+
 .callout {
     background: var(--color-bg-2);
     border: 1px solid var(--color-accent-3);
@@ -406,6 +433,27 @@ COMPONENTS
 .logoSupport {
     text-align: center;
     white-space: nowrap;
+}
+
+.namespaceList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.namespaceList > * {
+    flex: 1 1 30ch;
+    font-size: var(--step-1);
+    margin: var(--gap-0);
+    max-width: 60ch;
+}
+
+.summary {
+    border-top: 2px solid var(--color-accent-2);
+    color: var(--color-accent-2);
+    margin-top: var(--gap-0);
+    margin-bottom: var(--gap-0);
+    padding-top: var(--gap-0);
 }
 
 /*

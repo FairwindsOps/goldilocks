@@ -10,46 +10,46 @@
 
 <body class="layoutSidebar">
   <header class="layoutSidebar__sidebar">
-    {{ template "navbar" "--stack" }}
+    {{ template "navbar" . }}
 
-    {{ if gt (len .Data) 0 }}
-    <section class="flow stack stack--center">
-      <p class="badge badge--1">{{len .Data}} namespaces found</p>
+    <nav>
+      <ul class="navList" role="list">
+        <li>
+          <a class="linkIcon" href="/dashboard">
+            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
+            Detail All Namespaces
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-      {{ if gt (len .Data) 1 }}
-      {{ template "filter" . }}
-      {{ end }}
-
-      <p><a href="/dashboard">
-        <i aria-hidden="true" class="fas fa-stream"></i>
-        View All
-      </a></p>
-
-    </section>
+    {{ if gt (len .Data) 1 }}
+    {{ template "filter" . }}
     {{ end }}
   </header>
 
   <div class="layoutSidebar__main">
-    <main>
-      <h1 class="namespaceList__heading">Namespaces</h1>
+    <main class="verticalRhythm">
+      <h1>Namespaces</h1>
+
+      <p class="summary">{{len .Data}} namespaces found</p>
 
       {{ if lt (len .Data) 1 }}
       <article>
-        No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code>
+        <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
       </article>
 
       {{ else }}
-      <ul aria-live="off" class="namespaceList__list" id="js-filter-container">
+      <ul aria-live="off" class="namespaceList" id="js-filter-container">
         {{ range .Data }}
         <li data-filter="{{ .Name }}">
-          <a class="button button--1 buttonIcon" href="/dashboard/{{ .Name }}">
+          <a class="buttonLink --withIcon" href="/dashboard/{{ .Name }}">
             {{ .Name }}
-            <i aria-hidden="true" class="fas fa-chevron-right"></i>
+            <i aria-hidden="true" class="fas fa-fw fa-chevron-right"></i>
           </a>
         </li>
         {{ end }}
       </ul>
-
       {{end}}
     </main>
 
