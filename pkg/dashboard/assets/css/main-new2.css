@@ -410,6 +410,11 @@ COMPONENTS
     border-color: var(--color-accent-1);
 }
 
+.detailInfo.--empty {
+    padding-top: var(--gap-0);
+    border: none;
+}
+
 .detailInfo.--namespace {
     background: var(--color-accent-2-lighter);
     border-color: var(--color-accent-2);

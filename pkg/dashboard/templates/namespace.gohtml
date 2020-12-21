@@ -15,11 +15,17 @@
       <p><a class="detailLink --namespace" href="/dashboard/{{ $.Namespace }}">View only this namespace</a></p>
     </summary>
 
-    {{ range $deployment := $.Deployments }}
+    {{ if lt (len $.Deployments) 1 }}
+    <section class="detailInfo --empty">
+      <p>No deployments found.</p>
+    </section>
+
+    {{ else }}
+      {{ range $deployment := $.Deployments }}
     <details class="detailInfo --deployment verticalRhythm"
-      {{ if not $foundFirstDeployment }}
-        {{ $foundFirstDeployment = true }} open
-      {{ end }}>
+        {{ if not $foundFirstDeployment }}
+          {{ $foundFirstDeployment = true }} open
+        {{ end }}>
       <summary class="--hideMarker">
         <h3>
           <span aria-label="Deployment:" class="badge detailBadge --deployment"
@@ -50,7 +56,9 @@
       </details>
       {{ end }}
     </details>
+      {{ end }}
     {{ end }}
+
   </details>
 </article>
 
