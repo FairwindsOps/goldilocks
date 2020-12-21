@@ -16,17 +16,8 @@
     <section class="flow stack stack--center">
       <p class="badge badge--1">{{len .Data}} namespaces found</p>
 
-      {{ if gt (len .Data) 10 }}
-      <form aria-controls="js-filter-container" class="stack__item--fullWidth" id="js-filter-form" role="search">
-        <label class="visually-hidden" for="namespace-search">Filter namespaces</label>
-
-        <input aria-controls="js-filter-container" name="q" placeholder="Filter Namespaces..." type="search" />
-
-        <button type="submit">
-          <i aria-hidden="true" class="fas fa-search"></i>
-          <span class="visually-hidden">Search</span>
-        </button>
-      </form>
+      {{ if gt (len .Data) 1 }}
+      {{ template "filter" . }}
       {{ end }}
 
       <p><a href="/dashboard">

@@ -37,16 +37,7 @@
     </nav>
 
     {{ if gt (len .Data.Namespaces) 1 }}
-    <form aria-controls="js-filter-container" id="js-filter-form" role="search">
-      <label class="visually-hidden" for="namespace-search">Filter namespaces</label>
-
-      <input aria-controls="js-filter-container" name="q" placeholder="Filter Namespaces..." type="search" />
-
-      <button type="submit">
-        <i aria-hidden="true" class="fas fa-fw fa-search"></i>
-        <span class="visually-hidden">Search</span>
-      </button>
-    </form>
+    {{ template "filter" . }}
     {{ end }}
   </header>
 

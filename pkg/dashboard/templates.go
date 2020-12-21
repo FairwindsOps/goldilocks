@@ -23,6 +23,7 @@ const (
 	ContainerTemplateName    = "container.gohtml"
 	FooterTemplateName       = "footer.gohtml"
 	CheckDetailsTemplateName = "check-details.gohtml"
+	FilterTemplateName       = "filter.gohtml"
 )
 
 var (

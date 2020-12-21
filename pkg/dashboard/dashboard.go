@@ -51,6 +51,7 @@ func Dashboard(opts Options) http.Handler {
 			"container",
 			"namespace",
 			"dashboard",
+			"filter",
 		)
 		if err != nil {
 			klog.Errorf("Error getting template data %v", err)
