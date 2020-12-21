@@ -27,7 +27,6 @@ import (
 )
 
 var serverPort int
-var basePath string
 
 func init() {
 	rootCmd.AddCommand(dashboardCmd)
