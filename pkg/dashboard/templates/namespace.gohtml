@@ -17,9 +17,9 @@
 
     {{ range $deployment := $.Deployments }}
     <details class="detailInfo --deployment verticalRhythm"
-      {{- if not $foundFirstDeployment -}}
-      {{- $foundFirstDeployment = true -}} open
-      {{- end -}}>
+      {{ if not $foundFirstDeployment }}
+        {{ $foundFirstDeployment = true }} open
+      {{ end }}>
       <summary class="--hideMarker">
         <h3>
           <span aria-label="Deployment:" class="badge detailBadge --deployment"
