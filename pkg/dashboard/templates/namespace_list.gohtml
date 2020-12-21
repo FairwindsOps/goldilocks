@@ -12,6 +12,7 @@
   <header class="layoutSidebar__sidebar">
     {{ template "navbar" . }}
 
+    {{ if gt (len .Data) 1 }}
     <nav>
       <ul class="navList" role="list">
         <li>
@@ -23,7 +24,6 @@
       </ul>
     </nav>
 
-    {{ if gt (len .Data) 1 }}
     {{ template "filter" . }}
     {{ end }}
   </header>
@@ -32,14 +32,14 @@
     <main class="verticalRhythm">
       <h1>Namespaces</h1>
 
-      <p class="summary">{{len .Data}} total namespaces found</p>
-
       {{ if lt (len .Data) 1 }}
       <article>
-        <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code>kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
+        <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
       </article>
 
       {{ else }}
+      <p class="summary">{{len .Data}} total namespaces found</p>
+
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
         <li data-filter="{{ .Name }}">
