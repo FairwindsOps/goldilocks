@@ -49,9 +49,9 @@ func Dashboard(opts Options) http.Handler {
 
 		tmpl, err := getTemplate("dashboard",
 			"container",
-			"namespace",
 			"dashboard",
 			"filter",
+			"namespace",
 		)
 		if err != nil {
 			klog.Errorf("Error getting template data %v", err)
