@@ -32,7 +32,6 @@ var basePath string
 func init() {
 	rootCmd.AddCommand(dashboardCmd)
 	dashboardCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the dashboard on.")
-	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served")
 	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 }
 
@@ -43,7 +42,6 @@ var dashboardCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
-			dashboard.WithBasePath(basePath),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 		)
 		http.Handle("/", router)

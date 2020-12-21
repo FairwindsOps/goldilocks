@@ -50,7 +50,7 @@
             console.error("No filterable entries found, removed filter form");
         } else {
             filterInput.addEventListener("input", updateResults);
-            
+
             form.addEventListener("submit", function(event) {
                 event.preventDefault();
                 updateResults();

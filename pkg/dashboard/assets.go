@@ -35,5 +35,6 @@ func Asset(assetPath string) http.Handler {
 
 // StaticAssets replies with a FileServer for all assets, the prefix is used to strip the URL path
 func StaticAssets(prefix string) http.Handler {
+	klog.V(3).Infof("stripping prefix: %s", prefix)
 	return http.StripPrefix(prefix, http.FileServer(getAssetBox()))
 }
