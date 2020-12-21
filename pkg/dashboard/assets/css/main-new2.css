@@ -50,6 +50,11 @@ GLOBAL STYLES
     --gap-3: var(--step-3);
     --gap-4: var(--step-4);
     --gap-5: var(--step-5);
+
+    /* misc */
+    --box-shadow-dimensions: 0 1.25rem 3.4375rem 0;
+    --scale: 1.1;
+    --transition: all 250ms ease;
 }
 
 html {
@@ -188,6 +193,12 @@ form[role="search"] button[type="submit"]:active {
     color: inherit;
     transform: scale(var(--scale));
 }
+
+@media (prefers-reduced-motion) {
+    form[role="search"] button[type="submit"]:active {
+      background: var(--color-accent-3);
+      transform: none;
+    }
 }
 
 h1,
@@ -316,7 +327,7 @@ COMPONENTS
     display: block;
     padding: var(--gap-0);
     text-decoration: none;
-    transition: all 250ms ease;
+    transition: var(--transition);
 }
 
 .buttonLink.--withIcon {
@@ -330,10 +341,18 @@ COMPONENTS
 .buttonLink:hover,
 .buttonLink:active {
     background: var(--color-dark-2);
-    box-shadow: 0 1.25rem 3.4375rem 0 hsla(var(--color-accent-3-raw), 0.3);
+    box-shadow: var(--box-shadow-dimensions) hsla(var(--color-accent-3-raw), 0.3);
     color: var(--color-light-2);
     text-decoration: none;
-    transform: scale(1.1);
+    transform: scale(var(--scale));
+}
+
+@media (prefers-reduced-motion) {
+    .buttonLink:focus,
+    .buttonLink:hover,
+    .buttonLink:active {
+      transform: none;
+    }
 }
 
 .callout {
