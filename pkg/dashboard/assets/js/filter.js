@@ -21,7 +21,7 @@
         let filterTerm = filterInput.value;
 
         if (filterTerm) {
-            let regex = new RegExp(`${ filterTerm.trim().replace(" ", "|") }`, "i");
+            let regex = new RegExp(`${ filterTerm.trim().replace(/\s/g, "|") }`, "i");
 
             for (let i = 0; i < numPotentialResults; i++) {
                 let result = potentialResults[i];
