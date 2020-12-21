@@ -270,6 +270,11 @@ nav > ul li + li {
     margin-top: var(--gap-1);
 }
 
+pre {
+    border: 1px solid var(--color-accent-3);
+    border-radius: var(--gap-0);
+}
+
 ul[role="list"] {
     /* 
     role="list" is required in the html for accessibility 
