@@ -12,12 +12,17 @@
         <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
         ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
       </h2>
-      <p><a class="detailLink --namespace" href="/dashboard/{{ $.Namespace }}">View only this namespace</a></p>
+      <p>
+        <a 
+          class="detailLink --namespace" 
+          href="/dashboard/{{ $.Namespace }}"
+        >View only this namespace</a>
+      </p>
     </summary>
 
     {{ if lt (len $.Deployments) 1 }}
     <section class="detailInfo --empty">
-      <p>No deployments found.</p>
+      <p>No deployments found in this namespace.</p>
     </section>
 
     {{ else }}
@@ -61,5 +66,4 @@
 
   </details>
 </article>
-
-{{end}}{{/* end define "namespace" */}}
+{{end}}
