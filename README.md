@@ -59,7 +59,10 @@ First, make sure you satisfy the requirements above.
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+Helm v2:
 helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilocks
+Helm v3:
+helm install goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 ```
 
 ### Method 2 - Manifests
@@ -96,7 +99,7 @@ Then open your browser to [http://localhost:8080](http://localhost:8080)
 
 The CLI was originally developed to test the features of Goldilocks. While the CLI is still present and somewhat functional, we do not generally recommend using it. The CLI is scoped to a single namespace per run (meaning you would have to run it multiple times), and it will not automatically clean up any VPA objects that are created. The controller is a much better option, as it will monitor for changes and keep the list of VPA objects up-to-date. In addition, the controller will allow keeping multiple namespaces up to date.
 
-The CLI summary function shoul still be useful. It runs the same summary output that the dashboard uses, and can generate a JSON object that can be used elsewhere.
+The CLI summary function should still be useful. It runs the same summary output that the dashboard uses, and can generate a JSON object that can be used elsewhere.
 
 ```
 A tool for analysis of kubernetes deployment resource usage.
