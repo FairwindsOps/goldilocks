@@ -163,18 +163,31 @@ footer {
     text-align: center;
 }
 
+form[role="search"] {
+    display: flex;
+}
+
 form[role="search"] input[type="search"] {
     background: none;
     border: none;
     border-bottom: 1px solid var(--color-accent-3);
     color: var(--color-text-1);
+    flex: 1 1 30ch;
     margin: 0;
     padding: 0;
 }
 
 form[role="search"] button[type="submit"] {
     background: none;
-    border: none;
+    border: 1px solid var(--color-accent-3);
+    border-radius: var(--gap--2);
+    margin: 0 0 0 var(--gap-0);
+}
+
+form[role="search"] button[type="submit"]:active {
+    color: inherit;
+    transform: scale(var(--scale));
+}
 }
 
 h1,
