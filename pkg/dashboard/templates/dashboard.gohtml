@@ -55,8 +55,10 @@
       <h1>Namespace Details</h1>
 
       <div
-        {{ if gt (len .Data.Namespaces) 1 }}aria-live="off"{{ end }}
+        {{- if gt (len .Data.Namespaces) 1 -}}
+        aria-live="off"
         id="js-search-container"
+        {{- end -}}
       >
         {{ range $nsName, $nsSummary := .Data.Namespaces }}
           {{ template "namespace" $nsSummary }}
