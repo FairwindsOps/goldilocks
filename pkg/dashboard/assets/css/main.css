@@ -384,7 +384,7 @@ COMPONENTS
 
 .detailBadge.--deployment {
     background: var(--color-deployment);
-    color: var(--color-bg-1);
+    color: var(--color-text-2);
 }
 
 .detailBadge.--container {

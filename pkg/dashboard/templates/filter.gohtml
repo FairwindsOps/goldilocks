@@ -1,8 +1,14 @@
 {{define "filter"}}
 <form aria-controls="js-filter-container" id="js-filter-form" role="search">
-    <label class="visually-hidden" for="namespace-search">Filter namespaces</label>
+    <label class="visually-hidden" for="namespace-filter-input">Filter namespaces</label>
 
-    <input aria-controls="js-filter-container" name="q" placeholder="Filter Namespaces..." type="search" />
+    <input
+        aria-controls="js-filter-container"
+        id="namespace-filter-input"
+        name="q"
+        placeholder="Filter Namespaces..."
+        type="search"
+    />
 
     <button type="submit">
     <i aria-hidden="true" class="fas fa-fw fa-search"></i>
