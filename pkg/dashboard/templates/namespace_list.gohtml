@@ -17,10 +17,10 @@
       <p class="badge badge--1">{{len .Data}} namespaces found</p>
 
       {{ if gt (len .Data) 10 }}
-      <form aria-controls="js-search-container" class="stack__item--fullWidth" id="js-search-form" role="search">
-        <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+      <form aria-controls="js-filter-container" class="stack__item--fullWidth" id="js-filter-form" role="search">
+        <label class="visually-hidden" for="namespace-search">Filter namespaces</label>
 
-        <input aria-controls="js-search-container" name="q" placeholder="search namespaces..." type="search" />
+        <input aria-controls="js-filter-container" name="q" placeholder="Filter Namespaces..." type="search" />
 
         <button type="submit">
           <i aria-hidden="true" class="fas fa-search"></i>
@@ -48,9 +48,9 @@
       </article>
 
       {{ else }}
-      <ul aria-live="off" class="namespaceList__list" id="js-search-container">
+      <ul aria-live="off" class="namespaceList__list" id="js-filter-container">
         {{ range .Data }}
-        <li data-search="{{ .Name }}">
+        <li data-filter="{{ .Name }}">
           <a class="button button--1 buttonIcon" href="/dashboard/{{ .Name }}">
             {{ .Name }}
             <i aria-hidden="true" class="fas fa-chevron-right"></i>

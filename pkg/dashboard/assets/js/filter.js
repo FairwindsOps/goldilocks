@@ -1,46 +1,46 @@
 (function () {
-    const formId = "js-search-form";
-    const containerId = "js-search-container";
+    const formId = "js-filter-form";
+    const containerId = "js-filter-container";
 
     const form = document.getElementById(formId);
-    const searchInput = form?.querySelector("input[type='search']");
+    const filterInput = form?.querySelector("input[type='search']");
 
     const container = document.getElementById(containerId);
-    const potentialResults = container?.querySelectorAll("[data-search]");
+    const potentialResults = container?.querySelectorAll("[data-filter]");
     const numPotentialResults = potentialResults?.length;
 
-    function showSearchResult(result) {
+    function showFilterResult(result) {
         result.style.removeProperty("display");
     }
 
-    function hideSearchResult(result) {
+    function hideFilterResult(result) {
         result.style.display = "none";
     }
 
     function updateResults() {
-        let searchTerm = searchInput.value;
+        let filterTerm = filterInput.value;
 
-        if (searchTerm) {
-            let regex = new RegExp(`${ searchTerm.trim().replace(" ", "|") }`, "i");
+        if (filterTerm) {
+            let regex = new RegExp(`${ filterTerm.trim().replace(" ", "|") }`, "i");
 
             for (let i = 0; i < numPotentialResults; i++) {
                 let result = potentialResults[i];
-                let searchWithin = result.dataset.search;
+                let filterWithin = result.dataset.filter;
 
-                if (regex.test(searchWithin)) {
-                    showSearchResult(result);
+                if (regex.test(filterWithin)) {
+                    showFilterResult(result);
                 } else {
-                    hideSearchResult(result);
+                    hideFilterResult(result);
                 }
             }
         } else {
-            clearSearch();
+            clearFilter();
         }
     }
 
-    function clearSearch() {
+    function clearFilter() {
         for (let i = 0; i < numPotentialResults; i++) {
-            showSearchResult(potentialResults[i]);
+            showFilterResult(potentialResults[i]);
         }
     }
 
@@ -49,7 +49,7 @@
             form.style.display = "none";
             console.error("No filterable entries found, removed filter form");
         } else {
-            searchInput.addEventListener("input", updateResults);
+            filterInput.addEventListener("input", updateResults);
             
             form.addEventListener("submit", function(event) {
                 event.preventDefault();

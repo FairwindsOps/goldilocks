@@ -37,10 +37,10 @@
     </nav>
 
     {{ if gt (len .Data.Namespaces) 1 }}
-    <form aria-controls="js-search-container" id="js-search-form" role="search">
-      <label class="visually-hidden" for="namespace-search">Search namespaces</label>
+    <form aria-controls="js-filter-container" id="js-filter-form" role="search">
+      <label class="visually-hidden" for="namespace-search">Filter namespaces</label>
 
-      <input aria-controls="js-search-container" name="q" placeholder="search namespaces..." type="search" />
+      <input aria-controls="js-filter-container" name="q" placeholder="Filter Namespaces..." type="search" />
 
       <button type="submit">
         <i aria-hidden="true" class="fas fa-fw fa-search"></i>
@@ -57,8 +57,8 @@
       <div
         {{- if gt (len .Data.Namespaces) 1 -}}
         aria-live="off"
-        id="js-search-container"
         {{- end -}}
+        id="js-filter-container"
       >
         {{ range $nsName, $nsSummary := .Data.Namespaces }}
           {{ template "namespace" $nsSummary }}
