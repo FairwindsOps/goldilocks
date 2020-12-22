@@ -5,10 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// Functional options
+// Option is a Functional options
 type Option func(*Options)
 
-// internal options for getting and caching the Summarizer's VPAs
+// Options are options for getting and caching the Summarizer's VPAs
 type Options struct {
 	port               int
 	basePath           string
@@ -26,28 +26,21 @@ func defaultOptions() *Options {
 	}
 }
 
-// Option for running the dashboard on a different port
+// OnPort is an Option for running the dashboard on a different port
 func OnPort(port int) Option {
 	return func(opts *Options) {
 		opts.port = port
 	}
 }
 
-// Option for running the dashboard on a different base path
-func WithBasePath(basePath string) Option {
-	return func(opts *Options) {
-		opts.basePath = basePath
-	}
-}
-
-// Option for excluding containers in the dashboard summary
+// ExcludeContainers is an Option for excluding containers in the dashboard summary
 func ExcludeContainers(excludedContainers sets.String) Option {
 	return func(opts *Options) {
 		opts.excludedContainers = excludedContainers
 	}
 }
 
-// Option for limiting the dashboard to certain VPAs matching the labels
+// ForVPAsWithLabels Option for limiting the dashboard to certain VPAs matching the labels
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *Options) {
 		opts.vpaLabels = vpaLabels

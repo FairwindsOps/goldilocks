@@ -25,6 +25,7 @@ func NamespaceList(opts Options) http.Handler {
 		}
 
 		tmpl, err := getTemplate("namespace_list",
+			"filter",
 			"namespace_list",
 		)
 		if err != nil {

@@ -1,0 +1,112 @@
+/*
+-----
+UTOPIA
+Courtesy of https://utopia.fyi
+Some modifications made
+-----
+*/
+
+/* @link https://utopia.fyi/generator?c=320,16,1.2,1500,20,1.333,5,1, */
+
+:root {
+  --px-per-rem: 16;
+  --fluid-min-width: (320 / var(--px-per-rem));
+  --fluid-max-width: (
+      1500 / var(--px-per-rem)
+  ); /* if changed, don't forget media query */
+  --fluid-min-size: 1; /* in rem */
+  --fluid-max-size: 1; /* in rem */
+  --fluid-min-ratio: 1.2;
+  --fluid-max-ratio: 1.25;
+
+  --fluid-screen: 100vw;
+  --fluid-bp: calc(
+      (var(--fluid-screen) - (var(--fluid-min-width) * 1rem)) /
+          (var(--fluid-max-width) - var(--fluid-min-width))
+  );
+
+  --fluid-max-negative: (1 / var(--fluid-max-ratio) / var(--fluid-max-ratio));
+  --fluid-min-negative: (1 / var(--fluid-min-ratio) / var(--fluid-min-ratio));
+
+  --fluid-min-scale--1: var(--fluid-min-ratio) * var(--fluid-min-negative);
+  --fluid-max-scale--1: var(--fluid-max-ratio) * var(--fluid-max-negative);
+  --fluid-min-size--1: var(--fluid-min-size) * var(--fluid-min-scale--1);
+  --fluid-max-size--1: var(--fluid-max-size) * var(--fluid-max-scale--1);
+  --step--1: calc(
+      (var(--fluid-min-size--1) * 1rem) +
+          (var(--fluid-max-size--1) - var(--fluid-min-size--1)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-0: var(--fluid-min-ratio);
+  --fluid-max-scale-0: var(--fluid-max-ratio);
+  --fluid-min-size-0: var(--fluid-min-size);
+  --fluid-max-size-0: var(--fluid-max-size);
+  --step-0: calc(
+      (var(--fluid-min-size-0) * 1rem) +
+          (var(--fluid-max-size-0) - var(--fluid-min-size-0)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-1: var(--fluid-min-scale-0) * var(--fluid-min-ratio);
+  --fluid-max-scale-1: var(--fluid-max-scale-0) * var(--fluid-max-ratio);
+  --fluid-min-size-1: var(--fluid-min-size) * var(--fluid-min-scale-0);
+  --fluid-max-size-1: var(--fluid-max-size) * var(--fluid-max-scale-0);
+  --step-1: calc(
+      (var(--fluid-min-size-1) * 1rem) +
+          (var(--fluid-max-size-1) - var(--fluid-min-size-1)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-2: var(--fluid-min-scale-1) * var(--fluid-min-ratio);
+  --fluid-max-scale-2: var(--fluid-max-scale-1) * var(--fluid-max-ratio);
+  --fluid-min-size-2: var(--fluid-min-size) * var(--fluid-min-scale-1);
+  --fluid-max-size-2: var(--fluid-max-size) * var(--fluid-max-scale-1);
+  --step-2: calc(
+      (var(--fluid-min-size-2) * 1rem) +
+          (var(--fluid-max-size-2) - var(--fluid-min-size-2)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-3: var(--fluid-min-scale-2) * var(--fluid-min-ratio);
+  --fluid-max-scale-3: var(--fluid-max-scale-2) * var(--fluid-max-ratio);
+  --fluid-min-size-3: var(--fluid-min-size) * var(--fluid-min-scale-2);
+  --fluid-max-size-3: var(--fluid-max-size) * var(--fluid-max-scale-2);
+  --step-3: calc(
+      (var(--fluid-min-size-3) * 1rem) +
+          (var(--fluid-max-size-3) - var(--fluid-min-size-3)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-4: var(--fluid-min-scale-3) * var(--fluid-min-ratio);
+  --fluid-max-scale-4: var(--fluid-max-scale-3) * var(--fluid-max-ratio);
+  --fluid-min-size-4: var(--fluid-min-size) * var(--fluid-min-scale-3);
+  --fluid-max-size-4: var(--fluid-max-size) * var(--fluid-max-scale-3);
+  --step-4: calc(
+      (var(--fluid-min-size-4) * 1rem) +
+          (var(--fluid-max-size-4) - var(--fluid-min-size-4)) *
+          var(--fluid-bp)
+  );
+
+  --fluid-min-scale-5: var(--fluid-min-scale-4) * var(--fluid-min-ratio);
+  --fluid-max-scale-5: var(--fluid-max-scale-4) * var(--fluid-max-ratio);
+  --fluid-min-size-5: var(--fluid-min-size) * var(--fluid-min-scale-4);
+  --fluid-max-size-5: var(--fluid-max-size) * var(--fluid-max-scale-4);
+  --step-5: calc(
+      (var(--fluid-min-size-5) * 1rem) +
+          (var(--fluid-max-size-5) - var(--fluid-min-size-5)) *
+          var(--fluid-bp)
+  );
+
+  /*
+    to deal with Safari fluid scaling on window resize bug:
+    https://codepen.io/martinwolf/pen/yKgagE
+  */
+  min-height: 0vw;
+}
+
+@media screen and (min-width: 1500px) {
+  :root {
+      --fluid-screen: calc(var(--fluid-max-width) * 1rem);
+  }
+}

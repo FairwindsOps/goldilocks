@@ -1,49 +1,57 @@
-<!doctype html>
-<html>
-
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
-  <script>
-    window.data = {{ .JSON }};
-  </script>
   {{ template "head" . }}
-   <script type="text/javascript" src="static/js/namespace_list.js"></script>
 </head>
 
-<body>
-  {{ template "navbar" . }}
-  <div class="main-content">
-    {{ template "preamble" . }}
-    {{ if lt (len .Data) 1 }}
-      <div class="card namespace">
-        No namespaces are labelled for use by Goldilocks. Try labelling one with 'kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true'
-      </div>
-    {{ else }}
-    <div class="card namespace">
-      <h2><strong>All Namespaces ({{len .Data}})</strong></h2>
-      <a class="button" href="/dashboard">View All</a>
-    </div>
-    <hr>
-    {{ if gt (len .Data) 10 }}
-    <div class="search">
-      <label for="search">namespace search</label>
-      <input id="search"
-             name="namespace-search"
-             type="text"
-             class="search"
-             placeholder="Filter Namespaces..."
-      ></input>
-    </div>
-    {{end}}
-    <div id="namespaceCards">
-      {{ range .Data }}
-      <div id="namespaceCard-{{.Name}}" class="card namespace">
-        <h2>Namespace: <strong>{{.Name}}</strong></h2>
-        <a data-name="view" class="button" href="/dashboard/{{.Name}}">View</a>
-      </div>
+<body class="layoutSidebar">
+  <header class="layoutSidebar__sidebar">
+    {{ template "navbar" . }}
+
+    {{ if gt (len .Data) 1 }}
+    <nav>
+      <ul class="navList" role="list">
+        <li>
+          <a class="linkIcon" href="/dashboard">
+            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
+            Detail All Namespaces
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+      {{ template "filter" . }}
+    {{ end }}
+  </header>
+
+  <div class="layoutSidebar__main">
+    <main class="verticalRhythm">
+      <h1>Namespaces</h1>
+
+      {{ if lt (len .Data) 1 }}
+      <article>
+        <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
+      </article>
+
+      {{ else }}
+      <p class="summary">{{len .Data}} total namespaces found</p>
+
+      <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
+        {{ range .Data }}
+        <li data-filter="{{ .Name }}">
+          <a class="buttonLink --withIcon" href="/dashboard/{{ .Name }}">
+            {{ .Name }}
+            <i aria-hidden="true" class="fas fa-fw fa-chevron-right"></i>
+          </a>
+        </li>
+        {{ end }}
+      </ul>
       {{end}}
-    </div>
+    </main>
+
+    <footer>
+      {{ template "footer" . }}
+    </footer>
   </div>
-  {{end}}
-  {{ template "footer" . }}
 </body>
 </html>
