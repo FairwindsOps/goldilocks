@@ -9,7 +9,7 @@ repos:
      - id: detect-private-key
      - id: trailing-whitespace
      - id: check-added-large-files
-       args: ['--maxkb=150']
+       args: ['--maxkb=500']
      - id: check-byte-order-marker
      - id: check-merge-conflict
      - id: check-symlinks
