@@ -6,7 +6,7 @@ By using the kubernetes [vertical-pod-autoscaler](https://github.com/kubernetes/
 
 Once your VPAs are in place, you'll see recommendations appear in the Goldilocks dashboard:
 <div align="center">
-<img src="img/screenshot.png" alt="Goldilocks Screenshot" />
+<img src="/img/screenshot.png" alt="Goldilocks Screenshot" />
 </div>
 
 ## Requirements
