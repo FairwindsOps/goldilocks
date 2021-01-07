@@ -1,8 +1,7 @@
-<div align="center">
-    <img src="/pkg/dashboard/assets/images/goldilocks.svg" height="150" alt="Goldilocks" style="padding-bottom: 20px" />
-
+<div align="center" class="no-border">
+    <img src="/img/goldilocks.svg" height="150" alt="Goldilocks" style="padding-bottom: 20px" />
+    <br>
     <h3>Get your resource requests "Just Right"</h3>
-
     <a href="https://github.com/FairwindsOps/goldilocks/releases">
         <img src="https://img.shields.io/github/v/release/FairwindsOps/goldilocks">
     </a>
