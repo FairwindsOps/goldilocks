@@ -6,5 +6,33 @@ module.exports = {
   description: "Documentation for Fairwinds' goldilocks",
   themeConfig: {
     docsRepo: "FairwindsOps/goldilocks",
+    sidebar: [
+      {
+        title: "Pluto",
+        path: "/",
+        sidebarDepth: 0,
+      },
+      {
+        title: "Installation",
+        path: "/installation",
+      },
+      {
+        title: "Advanced Usage",
+        path: "/advanced",
+      },
+      {
+        title: "Contributing",
+        children: [
+          {
+            title: "Guide",
+            path: "contributing/guide"
+          },
+          {
+            title: "Code of Conduct",
+            path: "contributing/code-of-conduct"
+          }
+        ]
+      }
+    ]
   },
 }
