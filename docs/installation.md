@@ -49,9 +49,11 @@ helm install goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 
 ### Method 2 - Manifests
 
-The [hack/manifests](hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster.
+The [hack/manifests](https://github.com/FairwindsOps/goldilocks/tree/master/hack/manifests) directory contains collections of Kubernetes YAML definitions for installing the controller and dashboard components in cluster.
 
 ```
+git clone https://github.com/FairwindsOps/goldilocks.git
+cd goldilocks
 kubectl create namespace goldilocks
 kubectl -n goldilocks apply -f hack/manifests/controller
 kubectl -n goldilocks apply -f hack/manifests/dashboard

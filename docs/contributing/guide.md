@@ -4,7 +4,7 @@ Issues, whether bugs, tasks, or feature requests are essential for keeping goldi
 
 ## Code of Conduct
 
-This project adheres to a [code of conduct](CODE_OF_CONDUCT.md). Please review this document before contributing to this project.
+This project adheres to a [code of conduct](/contributing/code-of-conduct). Please review this document before contributing to this project.
 
 ## Sign the CLA
 Before you can contribute, you will need to sign the [Contributor License Agreement](https://cla-assistant.io/fairwindsops/goldilocks).
@@ -27,13 +27,13 @@ This repo contains a pre-commit file for use with [pre-commit](https://pre-commi
 
 Make sure you have the following installed:
 
-* [kind 0.4.0](https://github.com/kubernetes-sigs/kind/releases) or higher
+* [kind 0.9.0](https://github.com/kubernetes-sigs/kind/releases) or higher
 * [reckoner v1.4.0](https://github.com/FairwindsOps/reckoner/releases) or higher
 * [helm 2.13.1](https://github.com/helm/helm/releases) or higher
 * git
 * kubectl
 
-Go into the [/hack/kind](/hack/kind) directory and run `./setup.sh`
+Go into the [/hack/kind](https://github.com/FairwindsOps/goldilocks/tree/master/hack/kind) directory and run `./setup.sh`
 
 This will create a kind cluster, place a demo app, install VPA, and install the latest goldilocks. You can run your local development against this cluster.
 
@@ -61,7 +61,7 @@ The e2e tests run using [Venom](https://github.com/ovh/venom). You can run them 
 
 The tests are also run automatically by CI
 
-You can add tests in the [e2e/tests](e2e/tests) directory. See the Venom README for more info.
+You can add tests in the [e2e/tests](https://github.com/FairwindsOps/goldilocks/tree/master/e2e/tests) directory. See the Venom README for more info.
 
 ## Creating a New Issue
 

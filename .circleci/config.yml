@@ -51,6 +51,7 @@ jobs:
           command: |
             cd ./docs
             npm install
+            npm run check-links
             npm run build
       - run:
           name: Install AWS CLI
@@ -132,6 +133,6 @@ workflows:
       - publish_docs:
           filters:
             branches:
-              ignore: /.*/
+              only: sudermanjr/docs
             tags:
               only: /.*/
