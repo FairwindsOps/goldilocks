@@ -18,8 +18,6 @@
 
 Goldilocks is a utility that can help you identify a starting point for resource requests and limits.
 
-# Documentation
-Check out the [documentation at docs.fairwinds.com](goldilocks.docs.fairwinds.com)
 
 ## How can this help with my resource settings?
 

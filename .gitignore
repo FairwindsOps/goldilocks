@@ -11,3 +11,5 @@ debug
 hack/kind/autoscaler
 .vscode
 __debug_bin
+node_modules
+/dist
