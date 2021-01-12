@@ -8,7 +8,7 @@ module.exports = {
     docsRepo: "FairwindsOps/goldilocks",
     sidebar: [
       {
-        title: "Pluto",
+        title: "Goldilocks",
         path: "/",
         sidebarDepth: 0,
       },
