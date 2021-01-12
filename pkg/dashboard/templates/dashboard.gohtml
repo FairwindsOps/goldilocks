@@ -10,6 +10,28 @@
 
     <nav>
       <ul class="navList" role="list">
+        {{ if ge (len .Data.ClusterContext) 1 }}
+        <li>
+          <a class="linkIcon" href="/clusters">
+            <i aria-hidden="true" class="fas fa-fw fa-list-ul"></i>
+            List All Clusters
+          </a>
+        </li>
+        {{ end }}
+        {{ if .Data.CurrentCluster }}
+        <li>
+          <a class="linkIcon" href="/namespaces?cluster={{ .Data.CurrentCluster }}">
+            <i aria-hidden="true" class="fas fa-fw fa-list-ul"></i>
+            List All Namespaces for current cluster
+          </a>
+        </li>
+        <li>
+          <a class="linkIcon" href="/dashboard?cluster={{ .Data.CurrentCluster }}">
+            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
+            Detail All Namespaces for current cluster
+          </a>
+        </li>
+        {{ else }}
         <li>
           <a class="linkIcon" href="/">
             <i aria-hidden="true" class="fas fa-fw fa-list-ul"></i>
@@ -22,6 +44,7 @@
             Detail All Namespaces
           </a>
         </li>
+        {{ end }}
         <li>
           <a class="linkIcon" href="#glossary">
             <i aria-hidden="true" class="fas fa-fw fa-book"></i>
@@ -31,24 +54,28 @@
       </ul>
     </nav>
 
-    {{ if gt (len .Data.Namespaces) 1 }}
+    {{ if gt (len .Data.Summary.Namespaces) 1 }}
       {{ template "filter" . }}
     {{ end }}
   </header>
 
   <div class="layoutSidebar__main">
     <main class="verticalRhythm --rhythm-3">
+    {{ if .Data.ClusterContext }}
+      <h1>Namespace Details for Cluster {{.Data.CurrentCluster }}</h1>
+    {{else}}
       <h1>Namespace Details</h1>
+    {{end}}
 
       <div
         class="verticalRhythm --rhythm-3"
-        {{ if gt (len .Data.Namespaces) 1 }}
+        {{ if gt (len .Data.Summary.Namespaces) 1 }}
         aria-live="off"
         id="js-filter-container"
         {{ end }}
       >
-        {{ range $nsName, $nsSummary := .Data.Namespaces }}
-          {{ template "namespace" $nsSummary }}
+        {{ range $nsName, $nsSummary := .Data.Summary.Namespaces }}
+          {{ template "namespace" dict "nsSummary" $nsSummary "CurrentCluster" $.Data.CurrentCluster }}
         {{end}}
       </div>
 

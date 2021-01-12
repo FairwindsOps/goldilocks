@@ -60,6 +60,9 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.Handle("/namespaces", NamespaceList(*opts)).Queries("cluster", "{cluster}")
 	router.Handle("/namespaces", NamespaceList(*opts))
 
+	// cluster list
+	router.Handle("/clusters", ClusterList(*opts))
+
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// catch all other paths that weren't matched

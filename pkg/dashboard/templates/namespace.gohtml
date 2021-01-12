@@ -1,32 +1,39 @@
 {{define "namespace"}}
 {{ $foundFirstDeployment := false }}
 
-<article data-filter="{{ $.Namespace }}">
+<article data-filter="{{ .nsSummary.Namespace }}">
   <details class="detailInfo --namespace verticalRhythm" open>
     <summary class="--hideMarker">
       <h2>
         <span aria-label="Deployment:" class="badge detailBadge --namespace"
           >Namespace</span
         >
-        {{ $.Namespace }}
+        {{ .nsSummary.Namespace }}
         <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
         ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
       </h2>
       <p>
+      {{ if .CurrentCluster }}
         <a
           class="detailLink --namespace"
-          href="/dashboard/{{ $.Namespace }}"
+          href="/dashboard/{{ .nsSummary.Namespace }}?cluster={{ .CurrentCluster }}"
         >View only this namespace</a>
+      {{ else }}
+        <a
+          class="detailLink --namespace"
+          href="/dashboard/{{ .nsSummary.Namespace }}"
+        >View only this namespace</a>
+      {{ end }}
       </p>
     </summary>
 
-    {{ if lt (len $.Deployments) 1 }}
+    {{ if lt (len .nsSummary.Deployments) 1 }}
     <section class="detailInfo --empty">
       <p>No deployments found in this namespace.</p>
     </section>
 
     {{ else }}
-      {{ range $deployment := $.Deployments }}
+      {{ range $deployment := .nsSummary.Deployments }}
     <details class="detailInfo --deployment verticalRhythm"
         {{ if not $foundFirstDeployment }}
           {{ $foundFirstDeployment = true }} open
