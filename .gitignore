@@ -9,4 +9,5 @@ coverage.txt
 debug
 
 hack/kind/autoscaler
-.idea/
+.vscode
+__debug_bin

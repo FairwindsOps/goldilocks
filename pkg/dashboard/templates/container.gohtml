@@ -1,150 +1,198 @@
-{{define "container"}}{{/*template "container" $containerSummary*/}}
+{{ define "container" }}
 {{ $cpuRequest := (index $.Requests (resourceName "cpu")) }}
 {{ $cpuLimit := (index $.Limits (resourceName "cpu")) }}
 {{ $memRequest := (index $.Requests (resourceName "memory")) }}
 {{ $memLimit := (index $.Limits (resourceName "memory")) }}
+
 {{ $cpuLowerBound := (index $.LowerBound (resourceName "cpu")) }}
 {{ $cpuUpperBound := (index $.UpperBound (resourceName "cpu")) }}
 {{ $memLowerBound := (index $.LowerBound (resourceName "memory")) }}
 {{ $memUpperBound := (index $.UpperBound (resourceName "memory")) }}
+
 {{ $cpuTarget := (index $.Target (resourceName "cpu")) }}
 {{ $memTarget := (index $.Target (resourceName "memory")) }}
+
 {{ $icon := "icon"}}
 {{ $text := "text" }}
 {{ $uuid := getUUID }}
 
-<div class="result-messages expandable-content">
-  <h4>Container: {{ $.ContainerName }}</h4>
-  <input type="radio" name="{{$uuid}}" id="tabone-{{$uuid}}" checked>
-  <label for="tabone-{{$uuid}}">Guaranteed QoS</label>
-  <div class="tab-content"> {{/*Begin Guaranteed QoS Tab */}}
-    <table class="container-results">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Current</th>
-          <th></th>
-          <th>Guaranteed</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>CPU Request</td>
-          <td><span class="message">{{ printResource $cpuRequest}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatus $cpuRequest $cpuTarget $icon }}"></i>
-            <span class="sr-only">{{ getStatus $cpuRequest $cpuTarget $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $cpuTarget }}</span></td>
-        </tr>
-        <tr>
-          <td>CPU Limit</td>
-          <td><span class="message">{{ printResource $cpuLimit}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatus $cpuLimit $cpuTarget $icon }}"></i>
-            <span class="sr-only">{{ getStatus $cpuLimit $cpuTarget $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $cpuTarget }}</span></td>
-        </tr>
-        <tr>
-          <td>Mem Request</td>
-          <td><span class="message">{{ printResource $memRequest}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatus $memRequest $memTarget $icon }}"></i>
-            <span class="sr-only">{{ getStatus $memRequest $memTarget $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $memTarget }}</span></td>
-        </tr>
-        <tr>
-        <tr>
-          <td>Mem Limit</td>
-          <td><span class="message">{{ printResource $memLimit}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatus $memLimit $memTarget $icon }}"></i>
-            <span class="sr-only">{{ getStatus $memLimit $memTarget $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $memTarget }}</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="code-container">
-      <h6 class="code-title">Suggested Changes</h6>
-<pre class="fix-yaml"><code class="language-yaml">resources:
+<section class="detailInfo --qos verticalRhythm">
+  <h5>
+    <a href="#guaranteed-qos"
+      >Guaranteed <abbr title="Quality of Service">QoS</abbr></a
+    >
+  </h5>
+
+  <table class="compTable callout">
+    <caption class="visually-hidden">
+      Compare Current Config to Guaranteed QoS Recommendations
+    </caption>
+
+    <thead>
+      <tr>
+        <td></td>
+        <th scope="col">Current</th>
+        <td></td>
+        <th scope="col">Guaranteed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">CPU Request</th>
+        <td>{{ printResource $cpuRequest}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatus $cpuRequest $cpuTarget $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatus $cpuRequest $cpuTarget $text }}</span>
+        </td>
+        <td>{{ printResource $cpuTarget }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">CPU Limit</th>
+        <td>{{ printResource $cpuLimit}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatus $cpuLimit $cpuTarget $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatus $cpuLimit $cpuTarget $text }}</span>
+        </td>
+        <td>{{ printResource $cpuTarget }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Memory Request</th>
+        <td>{{ printResource $memRequest}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatus $memRequest $memTarget $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatus $memRequest $memTarget $text }}</span>
+        </td>
+        <td>{{ printResource $memTarget }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Memory Limit</th>
+        <td>{{ printResource $memLimit}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatus $memLimit $memTarget $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatus $memLimit $memTarget $text }}</span>
+        </td>
+        <td>{{ printResource $memTarget }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <details>
+    <summary>
+      <h6>Recommended Settings</h6>
+    </summary>
+
+    <pre class="fix-yaml"><code class="language-yaml">resources:
   requests:
     cpu: {{ printResource $cpuTarget }}
     memory: {{ printResource $memTarget }}
   limits:
     cpu: {{ printResource $cpuTarget}}
-    memory: {{ printResource $memTarget }}
-</code></pre>
-    </div>
+    memory: {{ printResource $memTarget }}</code></pre>
+  </details>
+</section>
 
-  </div> {{/* End Guaranteed Tab */}}
+<section class="detailInfo --qos verticalRhythm">
+  <h5>
+    <a href="#burstable-qos"
+      >Burstable <abbr title="Quality of Service">QoS</abbr></a
+    >
+  </h5>
 
-  <input type="radio" name="{{$uuid}}" id="tabtwo-{{$uuid}}">
-  <label for="tabtwo-{{$uuid}}">Burstable QoS</label>
-  <div class="tab-content"> {{/* Start Burstable Tab */}}
-    <table class="container-results">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Current</th>
-          <th></th>
-          <th>Burstable</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>CPU Request</td>
-          <td><span class="message">{{ printResource $cpuRequest}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $icon }}"></i>
-            <span class="sr-only">{{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $cpuLowerBound }}</span></td>
-        </tr>
-        <tr>
-          <td>CPU Limit</td>
-          <td><span class="message">{{ printResource $cpuLimit}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $icon }}"></i>
-            <span class="sr-only">{{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $cpuUpperBound }}</span></td>
-        </tr>
-        <tr>
-          <td>Mem Request</td>
-          <td><span class="message">{{ printResource $memRequest}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatusRange $memRequest $memLowerBound $memUpperBound $icon }}"></i>
-            <span class="sr-only">{{ getStatusRange $memRequest $memLowerBound $memUpperBound $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $memLowerBound }}</span></td>
-        </tr>
-        <tr>
-        <tr>
-          <td>Mem Limit</td>
-          <td><span class="message">{{ printResource $memLimit}}</span></td>
-          <td>
-            <i aria-hidden="true" class="message-icon fas {{ getStatusRange $memLimit $memLowerBound $memUpperBound $icon }}"></i>
-            <span class="sr-only">{{ getStatusRange $memLimit $memLowerBound $memUpperBound $text }}</span>
-          </td>
-          <td><span class="message">{{ printResource $memUpperBound }}</span></td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="code-container">
-      <h6 class="code-title">Suggested Changes</h6>
-<pre class="fix-yaml"><code class="language-yaml">resources:
+  <table class="compTable callout">
+    <caption class="visually-hidden">
+      Compare Current Config to Burstable QoS Recommendations
+    </caption>
+
+    <thead>
+      <tr>
+        <td></td>
+        <th scope="col">Current</th>
+        <td></td>
+        <th scope="col">Burstable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">CPU Request</th>
+        <td>{{ printResource $cpuRequest}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatusRange $cpuRequest $cpuLowerBound $cpuUpperBound $text }}</span>
+        </td>
+        <td>{{ printResource $cpuLowerBound }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">CPU Limit</th>
+        <td>{{ printResource $cpuLimit}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatusRange $cpuLimit $cpuLowerBound $cpuUpperBound $text }}</span>
+        </td>
+        <td>{{ printResource $cpuUpperBound }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Memory Request</th>
+        <td>{{ printResource $memRequest}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatusRange $memRequest $memLowerBound $memUpperBound $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatusRange $memRequest $memLowerBound $memUpperBound $text }}</span>
+        </td>
+        <td>{{ printResource $memLowerBound }}</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Memory Limit</th>
+        <td>{{ printResource $memLimit}}</td>
+        <td>
+          <i
+            aria-hidden="true"
+            class="compTable__compIcon fas {{ getStatusRange $memLimit $memLowerBound $memUpperBound $icon }}"
+          ></i>
+          <span class="visually-hidden">{{ getStatusRange $memLimit $memLowerBound $memUpperBound $text }}</span>
+        </td>
+        <td>{{ printResource $memUpperBound }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <details>
+    <summary>
+      <h6>Recommended Settings</h6>
+    </summary>
+
+    <pre class="fix-yaml"><code class="language-yaml">resources:
   requests:
     cpu: {{ printResource $cpuLowerBound }}
     memory: {{ printResource $memLowerBound }}
   limits:
     cpu: {{ printResource $cpuUpperBound}}
-    memory: {{ printResource $memUpperBound }}
-</code></pre>
-    </div>
-  </div> {{/* End Burstable Tab */}}
-  <label for="tabthree"><a class="link" target="_blank" href="https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/">?</a></label>
-</div>{{/* End expandable content */}}
-{{end}}
+    memory: {{ printResource $memUpperBound }}</code></pre>
+  </details>
+</section>
+{{ end }}

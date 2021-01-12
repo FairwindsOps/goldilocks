@@ -40,7 +40,7 @@ func GetRouter(setters ...Option) *mux.Router {
 		setter(opts)
 	}
 
-	router := mux.NewRouter()
+	router := mux.NewRouter().PathPrefix(opts.basePath).Subrouter()
 
 	// health
 	router.Handle("/health", Health("OK"))

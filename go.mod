@@ -3,7 +3,7 @@ module github.com/fairwindsops/goldilocks
 go 1.15
 
 require (
-	github.com/gobuffalo/packr/v2 v2.8.0
+	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/gorilla/mux v1.8.0
 	github.com/matryer/resync v0.0.0-20161211202428-d39c09a11215
 	github.com/mitchellh/go-homedir v1.1.0
