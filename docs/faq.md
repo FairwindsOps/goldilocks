@@ -51,3 +51,32 @@ We generate two different QoS classes of recommendation from this
 ## How Accurate is Goldilocks?
 
 This is entirely based on the underlying VPA project. However, in our experience Goldilocks has usually been a good _starting point_ for setting your resource requests and limits. Every environment will be different, and Goldilocks is not a replacement for tuning your applications for your specific use-case.
+
+## I don't see any VPA objects getting created, what gives?
+
+There's two main possibilities here:
+
+* You have not labelled any namespaces for use by goldilocks. Try `kubectl label ns <namespace-name> goldilocks.fairwinds.com/enabled=true`
+* VPA is not installed. The goldilocks logs will indicate if this is the case.
+
+## I am not getting any recommendations, what gives?
+
+The first thing to do is wait a few minutes. The VPA recommender takes some time to populate data.
+
+The next most common cause of this is that metrics server is not running, or the metrics api-service isn't working, so VPA cannot provide any recommendations. There are a couple of things you can check.
+
+### Check that the metrics apiservice is available:
+
+This indicates an issue:
+```
+▶ kubectl get apiservice v1beta1.metrics.k8s.io
+NAME                     SERVICE                         AVAILABLE                  AGE
+v1beta1.metrics.k8s.io   metrics-server/metrics-server   False (MissingEndpoints)   7s
+```
+
+This shows a healthy metrics service:
+```
+▶ kubectl get apiservice v1beta1.metrics.k8s.io
+NAME                     SERVICE                         AVAILABLE   AGE
+v1beta1.metrics.k8s.io   metrics-server/metrics-server   True        36s
+```
