@@ -17,6 +17,10 @@ module.exports = {
         path: "/installation",
       },
       {
+        title: "FAQ",
+        path: "/faq"
+      },
+      {
         title: "Advanced Usage",
         path: "/advanced",
       },
