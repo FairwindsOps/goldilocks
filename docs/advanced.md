@@ -7,7 +7,7 @@ The CLI was originally developed to test the features of Goldilocks. While the C
 The CLI summary function should still be useful. It runs the same summary output that the dashboard uses, and can generate a JSON object that can be used elsewhere.
 
 ```
-A tool for analysis of kubernetes deployment resource usage.
+A tool for analysis of kubernetes Deployment resource usage.
 
 Usage:
   goldilocks [flags]
