@@ -4,7 +4,7 @@
 
 * kubectl
 * [vertical-pod-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) configured in the cluster
-* some deployments with pods
+* some Deployments with pods (Goldilocks will not monitor any controllers except Deployments)
 * metrics-server (a requirement of vpa)
 * golang 1.11+
 
