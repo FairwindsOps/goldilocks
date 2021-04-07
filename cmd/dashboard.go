@@ -32,6 +32,7 @@ func init() {
 	rootCmd.AddCommand(dashboardCmd)
 	dashboardCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the dashboard on.")
 	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
+	dashboardCmd.PersistentFlags().BoolVar(&onByDefault, "on-by-default", false, "Display every namespace that isn't explicitly excluded.")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -42,6 +43,7 @@ var dashboardCmd = &cobra.Command{
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
+			dashboard.OnByDefault(onByDefault),
 		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
