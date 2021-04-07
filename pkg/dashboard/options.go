@@ -14,6 +14,7 @@ type Options struct {
 	basePath           string
 	vpaLabels          map[string]string
 	excludedContainers sets.String
+	onByDefault        bool
 }
 
 // default options for the dashboard
@@ -23,6 +24,7 @@ func defaultOptions() *Options {
 		basePath:           "/",
 		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),
+		onByDefault:        false,
 	}
 }
 
@@ -44,5 +46,12 @@ func ExcludeContainers(excludedContainers sets.String) Option {
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *Options) {
 		opts.vpaLabels = vpaLabels
+	}
+}
+
+// OnByDefault is an option for listing all namespaces in the dashboard unless explicitly excluded
+func OnByDefault(onByDefault bool) Option {
+	return func(opts *Options) {
+		opts.onByDefault = onByDefault
 	}
 }

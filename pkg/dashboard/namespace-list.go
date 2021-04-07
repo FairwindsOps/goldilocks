@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
@@ -14,11 +15,19 @@ import (
 // NamespaceList replies with the rendered namespace list of all goldilocks enabled namespaces
 func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(context.TODO(), v1.ListOptions{
-			LabelSelector: labels.Set(map[string]string{
-				utils.VpaEnabledLabel: "true",
-			}).String(),
-		})
+		var listOptions v1.ListOptions
+		if opts.onByDefault {
+			listOptions = v1.ListOptions{
+				LabelSelector: fmt.Sprintf("%s!=false", utils.VpaEnabledLabel),
+			}
+		} else {
+			listOptions = v1.ListOptions{
+				LabelSelector: labels.Set(map[string]string{
+					utils.VpaEnabledLabel: "true",
+				}).String(),
+			}
+		}
+		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(context.TODO(), listOptions)
 		if err != nil {
 			klog.Errorf("Error getting namespace list: %v", err)
 			http.Error(w, "Error getting namespace list", http.StatusInternalServerError)
