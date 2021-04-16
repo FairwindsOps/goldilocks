@@ -11,9 +11,6 @@
     <a href="https://circleci.com/gh/FairwindsOps/goldilocks.svg">
         <img src="https://circleci.com/gh/FairwindsOps/goldilocks.svg?style=svg">
     </a>
-    <a href="https://codecov.io/gh/FairwindsOps/goldilocks">
-        <img src="https://codecov.io/gh/FairwindsOps/goldilocks/branch/master/graph/badge.svg">
-    </a>
 </div>
 
 Goldilocks is a utility that can help you identify a starting point for resource requests and limits.

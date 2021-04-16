@@ -37,9 +37,6 @@ jobs:
       - run:
           name: Run Tests
           command: make test
-      - run:
-          name: codecov
-          command: bash <(curl -s https://codecov.io/bash)
 
   publish_docs:
     docker:
