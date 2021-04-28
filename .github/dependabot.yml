@@ -1,0 +1,36 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "11:00"
+  target-branch: master
+  labels:
+  - dependabot
+  ignore:
+  - dependency-name: sigs.k8s.io/controller-runtime
+    versions:
+    - 0.8.2
+  - dependency-name: k8s.io/api
+    versions:
+    - 0.20.4
+  - dependency-name: k8s.io/apimachinery
+    versions:
+    - 0.20.4
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "11:00"
+  target-branch: master
+  labels:
+  - dependabot
+  ignore:
+  - dependency-name: alpine
+    versions:
+    - 3.13.3
+  - dependency-name: golang
+    versions:
+    - 1.16.0
+    - 1.16.2
