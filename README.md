@@ -28,22 +28,6 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 </div>
 
 
-## Other Projects from Fairwinds
-
-Enjoying Goldilocks? Check out some of our other projects:
-* [Polaris](https://github.com/FairwindsOps/Polaris) - Audit, enforce, and build policies for Kubernetes resources, including over 20 built-in checks for best practices
-* [Pluto](https://github.com/FairwindsOps/Pluto) - Detect Kubernetes resources that have been deprecated or removed in future versions
-* [Nova](https://github.com/FairwindsOps/Nova) - Check to see if any of your Helm charts have updates available
-* [rbac-manager](https://github.com/FairwindsOps/rbac-manager) - Simplify the management of RBAC in your Kubernetes clusters
-
-## Fairwinds Insights
-
-If you're interested in running Goldilocks in multiple clusters,
-tracking the results over time, integrating with Slack, Datadog, and Jira,
-or unlocking other functionality, check out
-[Fairwinds Insights](https://www.fairwinds.com/goldilocks-users-insights?utm_source=goldilocks&utm_medium=goldilocks&utm_campaign=goldilocks), a platform for auditing and enforcing policy in Kubernetes clusters.
-
-
 ## Join the Fairwinds Open Source Community
 
 The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap, and network with fellow Kubernetes users. [Chat with us on Slack](https:\/\/join.slack.com\/t\/fairwindscommunity\/shared_invite\/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g) or [join the user group](https:\/\/www.fairwinds.com\/open-source-software-user-group) to get involved!
