@@ -28,6 +28,11 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 </div>
 
 
+## Join the Fairwinds Open Source Community
+
+The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap, and network with fellow Kubernetes users. [Chat with us on Slack](https:\/\/join.slack.com\/t\/fairwindscommunity\/shared_invite\/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g) or [join the user group](https:\/\/www.fairwinds.com\/open-source-software-user-group) to get involved!
+
+
 ## Other Projects from Fairwinds
 
 Enjoying Goldilocks? Check out some of our other projects:
