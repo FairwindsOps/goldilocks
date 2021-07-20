@@ -1,0 +1,18 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "11:00"
+  target-branch: master
+  labels:
+  - dependabot
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "11:00"
+  target-branch: master
+  labels:
+  - dependabot
