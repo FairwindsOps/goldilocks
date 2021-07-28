@@ -492,6 +492,10 @@ COMPONENTS
   padding-top: var(--gap-0);
 }
 
+.banner img {
+  width: 750px;
+}
+
 /*
 -----
 UTILITIES
