@@ -493,7 +493,9 @@ COMPONENTS
 }
 
 .banner img {
-  width: 750px;
+  max-width: 750px;
+  height: auto;
+  object-fit: contain;
 }
 
 /*
