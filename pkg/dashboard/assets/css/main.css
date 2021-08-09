@@ -453,7 +453,7 @@ COMPONENTS
 .layoutSidebar .layoutSidebar__sidebar {
   background: var(--color-bg-2);
   flex-grow: 1;
-  padding: 0 var(--gap-0);
+  padding: var(--gap-5) var(--gap-0);
 }
 
 .layoutSidebar .layoutSidebar__sidebar > *:last-child {
@@ -490,6 +490,12 @@ COMPONENTS
   margin-top: var(--gap-0);
   margin-bottom: var(--gap-0);
   padding-top: var(--gap-0);
+}
+
+.banner img {
+  max-width: 750px;
+  height: auto;
+  object-fit: contain;
 }
 
 /*
