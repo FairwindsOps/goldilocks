@@ -42,7 +42,7 @@ const baseConfig = {
   ],
   themeConfig: {
     docsRepo: "",
-    docsDir: 'docs',
+    docsDir: 'docs-md',
     editLinks: true,
     editLinkText: "Help us improve this page",
     logo: '/img/fairwinds-logo.svg',
@@ -55,7 +55,7 @@ const baseConfig = {
   plugins: {
     'vuepress-plugin-clean-urls': {
       normalSuffix: '/',
-      notFoundPath: '/404.html',
+      notFoundPath: '/error.html',
     },
     'check-md': {},
   },
