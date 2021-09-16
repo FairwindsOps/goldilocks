@@ -195,12 +195,13 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpa
 }
 
 func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
-	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name, vpaUpdateMode)
-
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(&deployment); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
 		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, *vpaUpdateMode)
 	}
+
+	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name, vpaUpdateMode)
+
 	if vpa == nil {
 		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
 		// no vpa exists, create one (use the same name as the deployment)
