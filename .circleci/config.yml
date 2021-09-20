@@ -31,8 +31,13 @@ jobs:
       - checkout
       - run:
           name: golangci-lint
+          environment:
+            GOLANGCI_LINT_VERSION: 1.41.1
+            GOLANGCI_LINT_CHECKSUM: 23e1078ab00a750afcde7e7eb5aab8e908ef18bee5486eeaa2d52ee57d178580
           command: |
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.6
+            curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
+            [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
+            tar xzf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint $(go env GOPATH)/bin/golangci-lint
             golangci-lint run -v
       - run:
           name: Run Tests
