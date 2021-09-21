@@ -38,6 +38,7 @@ jobs:
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
             tar xzf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint $(go env GOPATH)/bin/golangci-lint
+            go mod tidy
             golangci-lint run -v
       - run:
           name: Run Tests
