@@ -153,6 +153,58 @@ var testDeploymentWithReco = &appsv1.Deployment{
 	},
 }
 
+var testVPAWithUnmetReco = &vpav1.VerticalPodAutoscaler{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "test-vpa-with-unmet-reco",
+		Namespace: "testing",
+		Labels:    utils.VPALabels,
+	},
+	Spec: vpav1.VerticalPodAutoscalerSpec{
+		TargetRef: &autoscalingv1.CrossVersionObjectReference{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+			Name:       "test-vpa-with-unmet-reco",
+		},
+		UpdatePolicy: &vpav1.PodUpdatePolicy{
+			UpdateMode: &updateMode,
+		},
+	},
+	Status: vpav1.VerticalPodAutoscalerStatus{
+		Recommendation: &vpav1.RecommendedPodResources{
+			ContainerRecommendations: []vpav1.RecommendedContainerResources{
+				{
+					ContainerName: "container",
+					Target:        targetResources,
+					UpperBound:    upperBound,
+					LowerBound:    lowerBound,
+				},
+			},
+		},
+	},
+}
+
+var testDeploymentWithUnmetReco = &appsv1.Deployment{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "test-vpa-with-unmet-reco",
+		Namespace: "testing",
+	},
+	Spec: appsv1.DeploymentSpec{
+		Template: v1.PodTemplateSpec{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name: "container",
+						Resources: v1.ResourceRequirements{
+							Limits:   lowerBound,
+							Requests: lowerBound,
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
 // The summary of these objects
 
 var testSummary = Summary{
@@ -180,4 +232,48 @@ var testSummary = Summary{
 			},
 		},
 	},
+	Filter: "all",
+}
+
+var testAnySummary = Summary{
+	Namespaces: map[string]namespaceSummary{
+		"testing": {
+			Namespace: "testing",
+			Deployments: map[string]deploymentSummary{
+				"test-basic": {
+					DeploymentName: "test-basic",
+					Containers:     map[string]containerSummary{},
+				},
+			},
+		},
+	},
+	Filter: "any",
+}
+
+var testGuaranteedSummary = Summary{
+	Namespaces: map[string]namespaceSummary{
+		"testing": {
+			Namespace: "testing",
+			Deployments: map[string]deploymentSummary{
+				"test-basic": {
+					DeploymentName: "test-basic",
+					Containers:     map[string]containerSummary{},
+				},
+				"test-vpa-with-unmet-reco": {
+					DeploymentName: "test-vpa-with-unmet-reco",
+					Containers: map[string]containerSummary{
+						"container": {
+							ContainerName: "container",
+							LowerBound:    lowerBound,
+							UpperBound:    upperBound,
+							Target:        targetResources,
+							Limits:        lowerBound,
+							Requests:      lowerBound,
+						},
+					},
+				},
+			},
+		},
+	},
+	Filter: "guaranteed",
 }

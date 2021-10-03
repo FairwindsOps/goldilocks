@@ -47,3 +47,39 @@ func TestSummarizer(t *testing.T) {
 
 	assert.EqualValues(t, testSummary, got)
 }
+
+func TestMatchedRecommendations(t *testing.T) {
+	kubeClientVPA := kube.GetMockVPAClient()
+	kubeClient := kube.GetMockClient()
+
+	summarizer := NewSummarizer(
+		WithFilter("any"),
+	)
+	summarizer.kubeClient = kubeClient
+	summarizer.vpaClient = kubeClientVPA
+
+	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentBasic, metav1.CreateOptions{})
+	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPABasic, metav1.CreateOptions{})
+	assert.NoError(t, errOk)
+
+	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithUnmetReco, metav1.CreateOptions{})
+	_, errOk2 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPAWithUnmetReco, metav1.CreateOptions{})
+	assert.NoError(t, errOk2)
+
+	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithReco, metav1.CreateOptions{})
+	_, errOk4 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPAWithReco, metav1.CreateOptions{})
+	assert.NoError(t, errOk4)
+
+	got, err := summarizer.GetSummary()
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, testAnySummary, got)
+
+	summarizer.options.filter = "guaranteed"
+
+	got, err = summarizer.GetSummary()
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, testGuaranteedSummary, got)
+
+}

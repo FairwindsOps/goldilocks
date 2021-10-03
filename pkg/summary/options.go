@@ -15,6 +15,7 @@ type options struct {
 	namespace          string
 	vpaLabels          map[string]string
 	excludedContainers sets.String
+	filter             string
 }
 
 // defaultOptions for a Summarizer
@@ -25,6 +26,7 @@ func defaultOptions() *options {
 		namespace:          namespaceAllNamespaces,
 		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),
+		filter:             "all",
 	}
 }
 
@@ -46,5 +48,16 @@ func ExcludeContainers(excludedContainers sets.String) Option {
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *options) {
 		opts.vpaLabels = vpaLabels
+	}
+}
+
+// WithFilter is an Option for limiting the summary to VPAs with unmet recommendations
+func WithFilter(filter string) Option {
+	return func(opts *options) {
+		if filter == "" {
+			opts.filter = "all"
+		} else {
+			opts.filter = filter
+		}
 	}
 }

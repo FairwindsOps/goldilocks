@@ -27,6 +27,7 @@ import (
 func Dashboard(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+		filter := r.URL.Query().Get("filter")
 
 		var namespace string
 		if val, ok := vars["namespace"]; ok {
@@ -38,6 +39,7 @@ func Dashboard(opts Options) http.Handler {
 			summary.ForNamespace(namespace),
 			summary.ForVPAsWithLabels(opts.vpaLabels),
 			summary.ExcludeContainers(opts.excludedContainers),
+			summary.WithFilter(filter),
 		)
 
 		vpaData, err := summarizer.GetSummary()
@@ -50,7 +52,8 @@ func Dashboard(opts Options) http.Handler {
 		tmpl, err := getTemplate("dashboard",
 			"container",
 			"dashboard",
-			"filter",
+			"filter_ns",
+			"filter_reco",
 			"namespace",
 		)
 		if err != nil {

@@ -32,8 +32,9 @@
     </nav>
 
     {{ if gt (len .Data.Namespaces) 1 }}
-      {{ template "filter" . }}
+      {{ template "filter_ns" . }}
     {{ end }}
+    {{ template "filter_reco" . }}
   </header>
 
   <div class="layoutSidebar__main">

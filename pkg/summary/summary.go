@@ -26,6 +26,7 @@ import (
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog"
 
+	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
@@ -36,6 +37,7 @@ const (
 // Summary is for storing a summary of recommendation data by namespace/deployment/container
 type Summary struct {
 	Namespaces map[string]namespaceSummary
+	Filter     string
 }
 
 type namespaceSummary struct {
@@ -98,6 +100,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	// blank summary
 	summary := Summary{
 		Namespaces: map[string]namespaceSummary{},
+		Filter:     s.filter,
 	}
 
 	// if the summarizer is filtering for a single namespace,
@@ -189,15 +192,33 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						Limits:         utils.FormatResourceList(c.Resources.Limits),
 						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
+
+					if s.filter != "all" {
+						matchedReco := cSummary.getMatchedRecommendation()
+						// skip if filter is enabled and any recommendations have been met
+						if s.filter == "any" && matchedReco != "" {
+							continue CONTAINER_REC_LOOP
+						}
+						// skip if filter is enabled and the filtered recommendation have been met
+						if matchedReco == s.filter || matchedReco == "both" {
+							continue CONTAINER_REC_LOOP
+						}
+					}
+
 					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
 					dSummary.Containers[cSummary.ContainerName] = cSummary
 					continue CONTAINER_REC_LOOP
 				}
 			}
 		}
-		// update summary maps
-		nsSummary.Deployments[dSummary.DeploymentName] = dSummary
-		summary.Namespaces[nsSummary.Namespace] = nsSummary
+
+		if len(dSummary.Containers) > 0 {
+			// update summary maps
+			nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+		}
+		if len(nsSummary.Deployments) > 0 {
+			summary.Namespaces[nsSummary.Namespace] = nsSummary
+		}
 	}
 
 	return summary, nil
@@ -280,4 +301,27 @@ func (s Summarizer) listDeployments(listOptions metav1.ListOptions) ([]appsv1.De
 	}
 
 	return deployments.Items, nil
+}
+
+func (cs *containerSummary) getMatchedRecommendation() string {
+	reco := ""
+
+	if helpers.GetStatus(*cs.Limits.Cpu(), *cs.Target.Cpu(), "text") == "equal" &&
+		helpers.GetStatus(*cs.Limits.Memory(), *cs.Target.Memory(), "text") == "equal" &&
+		helpers.GetStatus(*cs.Requests.Cpu(), *cs.Target.Cpu(), "text") == "equal" &&
+		helpers.GetStatus(*cs.Requests.Memory(), *cs.Target.Memory(), "text") == "equal" {
+		reco = "guaranteed"
+	}
+
+	if helpers.GetStatusRange(*cs.Limits.Cpu(), *cs.LowerBound.Cpu(), *cs.UpperBound.Cpu(), "text") == "equal" &&
+		helpers.GetStatusRange(*cs.Limits.Memory(), *cs.LowerBound.Memory(), *cs.UpperBound.Memory(), "text") == "equal" &&
+		helpers.GetStatusRange(*cs.Requests.Cpu(), *cs.LowerBound.Cpu(), *cs.UpperBound.Cpu(), "text") == "equal" &&
+		helpers.GetStatusRange(*cs.Requests.Memory(), *cs.LowerBound.Memory(), *cs.UpperBound.Memory(), "text") == "equal" {
+		if reco != "" {
+			reco = "both"
+		} else {
+			reco = "burstable"
+		}
+	}
+	return reco
 }

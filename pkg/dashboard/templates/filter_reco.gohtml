@@ -1,0 +1,38 @@
+{{ define "selected-filter" }}
+  {{ if . }}
+    <i aria-hidden="true" class="fas fa-fw fa-check"></i>
+  {{ end }}
+{{ end }}
+
+{{ define "filter_reco" }}
+
+<div class="filters">
+  <span class="linkIcon"><i class="fas fa-fw fa-filter"></i> Filters:</span>
+  <ul role="list">
+    <li>
+      <a title="Show containers with or without recommendation" href="?filter=all">
+        All
+        {{ template "selected-filter" (eq .Data.Filter "all") }}
+      </a>
+    </li>
+    <li>
+      <a title="Show containers with a recommendation" href="?filter=any">
+        With Recommendation
+        {{ template "selected-filter" (eq .Data.Filter "any") }}
+      </a> 
+    </li>
+    <li>
+      <a title="Show containers with Guaranteed PoS recommendation, even if they match the Burstable" href="?filter=guaranteed">
+        With Guaranteed
+        {{ template "selected-filter" (eq .Data.Filter "guaranteed") }}
+      </a> 
+    </li>
+    <li>
+      <a title="Show containers with Burstable PoS recommendation, even if they match the Guaranteed" href="?filter=burstable">
+        With Burstable
+        {{ template "selected-filter" (eq .Data.Filter "burstable") }}
+      </a> 
+    </li>
+  </ul>
+</div>
+{{ end}}
