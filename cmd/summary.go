@@ -30,12 +30,21 @@ import (
 var excludeContainers string
 var outputFile string
 var namespace string
+var filter string
+
+const filterHelpText = `Filter results by recommendation.
+all: with or without recommendation
+any: with any type of recommendation
+guaranteed: with guaranteed recommendation
+burstable: with burstable recommendation
+`
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "f", "", "File to write output from audit.")
 	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "Limit the summary to only a single Namespace.")
+	summaryCmd.PersistentFlags().StringVar(&filter, "filter", "all", filterHelpText)
 }
 
 var summaryCmd = &cobra.Command{
@@ -46,6 +55,9 @@ By default the summary will be about all VPAs in all namespaces.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		var opts []summary.Option
+
+		// apply recommendation filter (defaults to all)
+		opts = append(opts, summary.WithFilter(filter))
 
 		// limit to a single namespace
 		if namespace != "" {
