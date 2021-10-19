@@ -34,19 +34,15 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore})
 	gvk := gvapps.WithKind("Deployment")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
-	gvk = gvapps.WithKind("DeploymentList")
+	gvk = gvapps.WithKind("DaemonSet")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
+	gvk = gvapps.WithKind("StatefulSet")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvapps.WithKind("ReplicaSet")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
-	gvk = gvapps.WithKind("ReplicaSetList")
-	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvcore.WithKind("Pod")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
-	gvk = gvcore.WithKind("PodList")
-	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvcore.WithKind("Namespace")
-	restMapper.Add(gvk, meta.RESTScopeRoot)
-	gvk = gvcore.WithKind("NamespaceList")
 	restMapper.Add(gvk, meta.RESTScopeRoot)
 	gvrToListKind := map[schema.GroupVersionResource]string{
 		schema.GroupVersionResource{
@@ -69,6 +65,16 @@ func GetMockDynamicClient() *DynamicClientInstance {
 			Version:  "v1",
 			Resource: "deployments",
 		}: "DeploymentList",
+		schema.GroupVersionResource{
+			Group:    "apps",
+			Version:  "v1",
+			Resource: "daemonsets",
+		}: "DaemonSetList",
+		schema.GroupVersionResource{
+			Group:    "apps",
+			Version:  "v1",
+			Resource: "statefulsets",
+		}: "StatefulSetList",
 	}
 	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), gvrToListKind)
 	kc := DynamicClientInstance{

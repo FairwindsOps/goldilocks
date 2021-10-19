@@ -613,3 +613,55 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	assert.Equal(t, 1, len(vpaList1.Items))
 	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeAuto)
 }
+
+func Test_ReconcileNamespaceDaemonset(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}).Namespace(nsName).Create(context.TODO(), testDaemonsetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDaemonsetPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should create a single VPA
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList.Items))
+	assert.Equal(t, "test-ds", vpaList.Items[0].ObjectMeta.Name)
+}
+
+func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}).Namespace(nsName).Create(context.TODO(), testStatefulsetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testStatefulsetPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should create a single VPA
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList.Items))
+	assert.Equal(t, "test-sts", vpaList.Items[0].ObjectMeta.Name)
+}

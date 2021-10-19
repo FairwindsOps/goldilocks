@@ -15,9 +15,7 @@
 package vpa
 
 import (
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -151,15 +149,6 @@ var testDeploymentUnstructured = &unstructured.Unstructured{
 	},
 }
 
-var testDeploymentExcluded = &appsv1.Deployment{
-	ObjectMeta: metav1.ObjectMeta{
-		Name: "test-deploy",
-		Annotations: map[string]string{
-			"goldilocks.fairwinds.com/vpa-update-mode": "off",
-		},
-	},
-}
-
 var testDeploymentExcludedUnstructured = &unstructured.Unstructured{
 	Object: map[string]interface{}{
 		"kind":       "Deployment",
@@ -171,5 +160,65 @@ var testDeploymentExcludedUnstructured = &unstructured.Unstructured{
 			},
 		},
 		"spec": map[string]interface{}{},
+	},
+}
+
+var testDaemonsetUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "DaemonSet",
+		"apiVersion": "apps/v1",
+		"metadata": map[string]interface{}{
+			"name": "test-ds",
+		},
+		"spec": map[string]interface{}{},
+	},
+}
+
+var testDaemonsetPodUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "Pod",
+		"apiVersion": "v1",
+		"metadata": map[string]interface{}{
+			"ownerReferences": []interface{}{
+				map[string]interface{}{
+					"apiVersion": "apps/v1",
+					"kind":       "DaemonSet",
+					"controller": true,
+					"name":       "test-ds",
+				},
+			},
+			"name": "test-ds-01234",
+			"spec": map[string]interface{}{},
+		},
+	},
+}
+
+var testStatefulsetUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "StatefulSet",
+		"apiVersion": "apps/v1",
+		"metadata": map[string]interface{}{
+			"name": "test-sts",
+		},
+		"spec": map[string]interface{}{},
+	},
+}
+
+var testStatefulsetPodUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "Pod",
+		"apiVersion": "v1",
+		"metadata": map[string]interface{}{
+			"ownerReferences": []interface{}{
+				map[string]interface{}{
+					"apiVersion": "apps/v1",
+					"kind":       "StatefulSet",
+					"controller": true,
+					"name":       "test-sts",
+				},
+			},
+			"name": "test-sts-01234",
+			"spec": map[string]interface{}{},
+		},
 	},
 }
