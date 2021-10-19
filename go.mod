@@ -3,6 +3,8 @@ module github.com/fairwindsops/goldilocks
 go 1.17
 
 require (
+	github.com/davecgh/go-spew v1.1.1
+	github.com/fairwindsops/controller-utils v0.1.0
 	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/gorilla/mux v1.8.0
 	github.com/satori/go.uuid v1.2.0
@@ -14,7 +16,7 @@ require (
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.9.2
 	k8s.io/client-go v0.22.2
 	k8s.io/klog v1.0.0
-	sigs.k8s.io/controller-runtime v0.10.1
+	sigs.k8s.io/controller-runtime v0.10.2
 )
 
 require (
@@ -25,7 +27,6 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/go-logr/logr v0.4.0 // indirect

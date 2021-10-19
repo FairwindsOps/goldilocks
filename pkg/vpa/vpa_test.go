@@ -22,25 +22,39 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
-	appsv1 "k8s.io/api/apps/v1"
-
 	corev1 "k8s.io/api/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
-func setupVPAForTests() {
+func setupVPAForTests(t *testing.T) {
 	kubeClient := kube.GetMockClient()
 	vpaClient := kube.GetMockVPAClient()
-	testVPAReconciler := SetInstance(kubeClient, vpaClient)
+	dynamicClient := kube.GetMockDynamicClient()
+	testVPAReconciler := SetInstance(kubeClient, vpaClient, dynamicClient)
 	testVPAReconciler.OnByDefault = false
 	testVPAReconciler.IncludeNamespaces = []string{}
 	testVPAReconciler.ExcludeNamespaces = []string{}
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUnstructured.Object, &nsLabeledTrue)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledFalseUnstructured.Object, &nsLabeledFalse)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsNotLabeledUnstructured.Object, &nsNotLabeled)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsTestingUnstructured.Object, &nsTesting)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeOffUnstructured.Object, &nsLabeledTrueUpdateModeOff)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeAutoUnstructured.Object, &nsLabeledTrueUpdateModeAuto)
+	assert.NoError(t, err)
 }
 
 func Test_vpaUpdateModeForNamespace(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 
 	tests := []struct {
 		name       string
@@ -50,31 +64,31 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 	}{
 		{
 			name:       "unlabeled (default)",
-			ns:         nsNotLabeled,
+			ns:         &nsNotLabeled,
 			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labeled: enabled=false",
-			ns:         nsLabeledFalse,
+			ns:         &nsLabeledFalse,
 			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true",
-			ns:         nsLabeledTrue,
+			ns:         &nsLabeledTrue,
 			explicit:   false,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=off",
-			ns:         nsLabeledTrueUpdateModeOff,
+			ns:         &nsLabeledTrueUpdateModeOff,
 			explicit:   true,
 			updateMode: vpav1.UpdateModeOff,
 		},
 		{
 			name:       "labled: enabled=true, vpa-update-mode=auto",
-			ns:         nsLabeledTrueUpdateModeAuto,
+			ns:         &nsLabeledTrueUpdateModeAuto,
 			explicit:   true,
 			updateMode: vpav1.UpdateModeAuto,
 		},
@@ -93,7 +107,7 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 }
 
 func Test_getVPAObject(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	rec := GetInstance()
 
 	tests := []struct {
@@ -101,12 +115,19 @@ func Test_getVPAObject(t *testing.T) {
 		ns         *corev1.Namespace
 		updateMode vpav1.UpdateMode
 		vpa        *vpav1.VerticalPodAutoscaler
+		controller Controller
 	}{
 		{
 			name:       "example-vpa",
-			ns:         nsLabeledTrueUpdateModeAuto,
+			ns:         &nsLabeledTrueUpdateModeAuto,
 			updateMode: vpav1.UpdateModeAuto,
 			vpa:        nil,
+			controller: Controller{
+				APIVersion:   "apps/v1",
+				Kind:         "Deployment",
+				Name:         "test-vpa",
+				Unstructured: nil,
+			},
 		},
 	}
 
@@ -116,7 +137,7 @@ func Test_getVPAObject(t *testing.T) {
 			t.Parallel()
 
 			mode, _ := vpaUpdateModeForResource(test.ns)
-			vpa := rec.getVPAObject(test.vpa, test.ns, "test-vpa", mode)
+			vpa := rec.getVPAObject(test.vpa, test.ns, test.controller, mode)
 
 			// expected ObjectMeta
 			assert.Equal(t, "test-vpa", vpa.Name)
@@ -133,15 +154,22 @@ func Test_getVPAObject(t *testing.T) {
 }
 
 func Test_createVPA(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
 	rec := GetInstance()
 	rec.DryRun = true
 
-	updateMode, _ := vpaUpdateModeForResource(nsTesting)
-	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa", updateMode)
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test-vpa",
+		Unstructured: nil,
+	}
+
+	updateMode, _ := vpaUpdateModeForResource(&nsTesting)
+	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode)
 
 	err := rec.createVPA(testVPA)
 	assert.NoError(t, err)
@@ -157,15 +185,21 @@ func Test_createVPA(t *testing.T) {
 }
 
 func Test_deleteVPA(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
 	rec := GetInstance()
 	rec.DryRun = true
 
-	updateMode, _ := vpaUpdateModeForResource(nsTesting)
-	testVPA := rec.getVPAObject(nil, nsTesting, "test-vpa", updateMode)
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test-vpa",
+		Unstructured: nil,
+	}
+	updateMode, _ := vpaUpdateModeForResource(&nsTesting)
+	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -183,7 +217,7 @@ func Test_deleteVPA(t *testing.T) {
 }
 
 func Test_updateVPA(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
 
 	// First test the dryrun
@@ -193,8 +227,14 @@ func Test_updateVPA(t *testing.T) {
 	testNS := nsTesting.DeepCopy()
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "off"
 
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test-vpa",
+		Unstructured: nil,
+	}
 	updateMode, _ := vpaUpdateModeForResource(testNS)
-	testVPA := rec.getVPAObject(nil, testNS, "test-vpa", updateMode)
+	testVPA := rec.getVPAObject(nil, testNS, controller, updateMode)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -215,7 +255,7 @@ func Test_updateVPA(t *testing.T) {
 	// change the update mode
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "auto"
 	updateMode, _ = vpaUpdateModeForResource(testNS)
-	newVPA := rec.getVPAObject(nil, testNS, "test-vpa", updateMode)
+	newVPA := rec.getVPAObject(nil, testNS, controller, updateMode)
 
 	errUpdate2 := rec.updateVPA(newVPA)
 	assert.NoError(t, errUpdate2)
@@ -227,7 +267,7 @@ func Test_updateVPA(t *testing.T) {
 }
 
 func Test_listVPA(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	rec := GetInstance()
 
 	// test namespaces
@@ -238,12 +278,30 @@ func Test_listVPA(t *testing.T) {
 	testNS2.Name = "ns2"
 	testNS2.Namespace = "ns2"
 
+	controller1 := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test1",
+		Unstructured: nil,
+	}
+	controller2 := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test2",
+		Unstructured: nil,
+	}
+	controller3 := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test3",
+		Unstructured: nil,
+	}
 	// test vpas
 	updateMode1, _ := vpaUpdateModeForResource(testNS1)
 	updateMode2, _ := vpaUpdateModeForResource(testNS2)
-	vpa1 := rec.getVPAObject(nil, testNS1, "test1", updateMode1)
-	vpa2 := rec.getVPAObject(nil, testNS1, "test2", updateMode1)
-	vpa3 := rec.getVPAObject(nil, testNS2, "test3", updateMode2)
+	vpa1 := rec.getVPAObject(nil, testNS1, controller1, updateMode1)
+	vpa2 := rec.getVPAObject(nil, testNS1, controller2, updateMode1)
+	vpa3 := rec.getVPAObject(nil, testNS2, controller3, updateMode2)
 
 	// create vpas
 	_ = rec.createVPA(vpa1)
@@ -279,17 +337,17 @@ func Test_namespaceIsManaged(t *testing.T) {
 	}{
 		{
 			name:      "Labeled correctly",
-			namespace: nsLabeledTrue,
+			namespace: &nsLabeledTrue,
 			want:      true,
 		},
 		{
 			name:      "Labeled Incorrectly",
-			namespace: nsLabeledFalse,
+			namespace: &nsLabeledFalse,
 			want:      false,
 		},
 		{
 			name:      "Not Labeled",
-			namespace: nsNotLabeled,
+			namespace: &nsNotLabeled,
 			want:      false,
 		},
 	}
@@ -302,116 +360,73 @@ func Test_namespaceIsManaged(t *testing.T) {
 }
 
 func Test_checkNamespaceLists(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	vpaReconciler := GetInstance()
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got := vpaReconciler.namespaceIsManaged(nsNotLabeled)
+	got := vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
-	got = vpaReconciler.namespaceIsManaged(nsNotLabeled)
+	got = vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, false, got)
 
 	// Labels take precedence over CLI options
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.namespaceIsManaged(nsLabeledFalse)
+	got = vpaReconciler.namespaceIsManaged(&nsLabeledFalse)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{nsLabeledFalse.ObjectMeta.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
-	got = vpaReconciler.namespaceIsManaged(nsLabeledFalse)
+	got = vpaReconciler.namespaceIsManaged(&nsLabeledFalse)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{}
 	vpaReconciler.ExcludeNamespaces = []string{nsLabeledTrue.ObjectMeta.Name}
-	got = vpaReconciler.namespaceIsManaged(nsLabeledTrue)
+	got = vpaReconciler.namespaceIsManaged(&nsLabeledTrue)
 	assert.Equal(t, true, got)
 }
 
-func Test_checkDeploymentLabels(t *testing.T) {
-	tests := []struct {
-		name       string
-		deployment *appsv1.Deployment
-		want       bool
-		wantErr    bool
-		err        string
-	}{
-		{
-			name: "Labeled correctly",
-			deployment: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "labeled-true",
-					Labels: map[string]string{
-						"goldilocks.fairwinds.com/enabled": "True",
-					},
-				},
-			},
-			want:    true,
-			wantErr: false,
-			err:     "",
-		},
-		{
-			name: "Labeled Incorrectly",
-			deployment: &appsv1.Deployment{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "labeled-false",
-					Labels: map[string]string{
-						"goldilocks.fairwinds.com/enabled": "false",
-					},
-				},
-			},
-			want:    false,
-			wantErr: false,
-			err:     "",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetInstance().checkDeploymentLabels(tt.deployment)
-			if tt.wantErr {
-				assert.EqualError(t, err, tt.err)
-			} else {
-				assert.Equal(t, got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_ReconcileNamespaceNoLabels(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledFalse, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledFalse.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledFalseUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// False labels should generate 0 vpa objects
-	err = GetInstance().ReconcileNamespace(nsLabeledFalse)
+	err = GetInstance().ReconcileNamespace(&nsLabeledFalse)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
@@ -421,19 +436,25 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceWithLabels(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// This should create a single VPA
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
@@ -443,22 +464,34 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
-	// Create deploy, reconcile, delete deploy, reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = KubeClient.Client.AppsV1().Deployments(nsName).Delete(context.TODO(), testDeployment.ObjectMeta.Name, metav1.DeleteOptions{})
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	// Delete all deployment objects (deployment, replicaset, and pod)
+	err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Delete(context.TODO(), testDeploymentUnstructured.GetName(), metav1.DeleteOptions{})
+	assert.NoError(t, err)
+	err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Delete(context.TODO(), testDeploymentReplicaSetUnstructured.GetName(), metav1.DeleteOptions{})
+	assert.NoError(t, err)
+	err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Delete(context.TODO(), testDeploymentPodUnstructured.GetName(), metav1.DeleteOptions{})
+	assert.NoError(t, err)
+
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// No VPA objects left after deleted deployment
@@ -470,33 +503,43 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 }
 
 func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
-
-	// Create a deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// Update the namespace labels to be false and reconcile
-	updatedNS := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: nsName,
-			Labels: map[string]string{
-				"goldilocks.fairwinds.com/enabled": "false",
+	updatedNS := &unstructured.Unstructured{
+		Object: map[string]interface{}{
+			"kind": "Namespace",
+			"metadata": map[string]interface{}{
+				"name": "labeled-true",
+				"labels": map[string]interface{}{
+					"goldilocks.fairwinds.com/enabled": "false",
+				},
 			},
 		},
 	}
-	_, err = KubeClient.Client.CoreV1().Namespaces().Update(context.TODO(), updatedNS, metav1.UpdateOptions{})
+	var updatedNSConverted corev1.Namespace
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Update(context.TODO(), updatedNS, metav1.UpdateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(updatedNS)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(updatedNS.Object, &updatedNSConverted)
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&updatedNSConverted)
 	assert.NoError(t, err)
 
 	// There should be zero vpa objects
@@ -507,19 +550,23 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 }
 
 func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrueUpdateModeAuto, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
-
-	// Create an excluded deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeploymentExcluded, metav1.CreateOptions{})
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+
+	// Create all deployment objects (deployment, replicaset, and pod)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentExcludedUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with UpdateModeOff
@@ -530,19 +577,23 @@ func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
 }
 
 func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
-	setupVPAForTests()
+	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
-	KubeClient := GetInstance().KubeClient
+	DynamicClient := GetInstance().DynamicClient.Client
 
-	// Create a properly labeled namespace
-	_, err := KubeClient.Client.CoreV1().Namespaces().Create(context.TODO(), nsLabeledTrue, metav1.CreateOptions{})
-	assert.NoError(t, err)
+	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 
 	// Create a deployment in the namespace and reconcile
-	_, err = KubeClient.Client.AppsV1().Deployments(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(nsLabeledTrue)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with updatemode "off"
@@ -551,19 +602,9 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	assert.Equal(t, 1, len(vpaList.Items))
 	assert.EqualValues(t, *vpaList.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeOff)
 
-	// Update the namespace labels to be be vpa-update-mode=auto and reconcile
-	updatedNS := &corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: nsName,
-			Labels: map[string]string{
-				"goldilocks.fairwinds.com/enabled":         "True",
-				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
-			},
-		},
-	}
-	_, err = KubeClient.Client.CoreV1().Namespaces().Update(context.TODO(), updatedNS, metav1.UpdateOptions{})
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Update(context.TODO(), nsLabeledTrueUpdateModeAutoUnstructured, metav1.UpdateOptions{})
 	assert.NoError(t, err)
-	err = GetInstance().ReconcileNamespace(updatedNS)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrueUpdateModeAuto)
 	assert.NoError(t, err)
 
 	// There should be one vpa object with updatemode "auto"

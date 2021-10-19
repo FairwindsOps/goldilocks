@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"strings"
 
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/client-go/util/retry"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -27,9 +26,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
+	"github.com/fairwindsops/controller-utils/pkg/controller"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -40,10 +41,18 @@ import (
 type Reconciler struct {
 	KubeClient        *kube.ClientInstance
 	VPAClient         *kube.VPAClientInstance
+	DynamicClient     *kube.DynamicClientInstance
 	OnByDefault       bool
 	DryRun            bool
 	IncludeNamespaces []string
 	ExcludeNamespaces []string
+}
+
+type Controller struct {
+	APIVersion   string
+	Kind         string
+	Name         string
+	Unstructured *unstructured.Unstructured
 }
 
 var singleton *Reconciler
@@ -52,24 +61,25 @@ var singleton *Reconciler
 func GetInstance() *Reconciler {
 	if singleton == nil {
 		singleton = &Reconciler{
-			KubeClient: kube.GetInstance(),
-			VPAClient:  kube.GetVPAInstance(),
+			KubeClient:    kube.GetInstance(),
+			VPAClient:     kube.GetVPAInstance(),
+			DynamicClient: kube.GetDynamicInstance(),
 		}
 	}
 	return singleton
 }
 
 // SetInstance sets the singleton using preconstructed k8s and vpa clients. Used for testing.
-func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance) *Reconciler {
+func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic *kube.DynamicClientInstance) *Reconciler {
 	singleton = &Reconciler{
-		KubeClient: k8s,
-		VPAClient:  vpa,
+		KubeClient:    k8s,
+		VPAClient:     vpa,
+		DynamicClient: dynamic,
 	}
 	return singleton
 }
 
-// ReconcileNamespace makes a vpa for every deployment in the namespace.
-// Check if deployment has label for false before applying vpa.
+// ReconcileNamespace makes a vpa for every pod controller type in the namespace.
 func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	nsName := namespace.ObjectMeta.Name
 	vpas, err := r.listVPAs(nsName)
@@ -79,19 +89,19 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	}
 
 	if !r.namespaceIsManaged(namespace) {
-		klog.V(2).Infof("Namespace/%s is not managed, cleaning up VPAs...", namespace.Name)
+		klog.V(2).Infof("Namespace/%s is not managed, cleaning up VPAs if they exist...", namespace.Name)
 		// Namespaced used to be managed, but isn't anymore. Delete all of the
 		// VPAs that we control.
 		return r.cleanUpManagedVPAsInNamespace(nsName, vpas)
 	}
 
-	deployments, err := r.listDeployments(nsName)
+	controllers, err := r.listControllers(nsName)
 	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
 
-	return r.reconcileDeploymentsAndVPAs(namespace, vpas, deployments)
+	return r.reconcileControllersAndVPAs(namespace, vpas, controllers)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
@@ -107,20 +117,6 @@ func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1
 		}
 	}
 	return nil
-}
-
-// NOTE: This is not used right now.  Deployments have been scrapped.
-// Keeping this here for future development.
-func (r Reconciler) checkDeploymentLabels(deployment *appsv1.Deployment) (bool, error) {
-	if len(deployment.ObjectMeta.Labels) > 0 {
-		for k, v := range deployment.ObjectMeta.Labels {
-			klog.V(7).Infof("Deployment Label - %s: %s", k, v)
-			if strings.ToLower(k) == utils.VpaEnabledLabel {
-				return strconv.ParseBool(v)
-			}
-		}
-	}
-	return false, nil
 }
 
 func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
@@ -152,37 +148,37 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, deployments []appsv1.Deployment) error {
+func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
-	// these keys will eventually contain the leftover vpas that do not have a matching deployment associated
-	vpaHasAssociatedDeployment := map[string]bool{}
-	for _, deployment := range deployments {
-		var dvpa *vpav1.VerticalPodAutoscaler
+	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
+	vpaHasAssociatedController := map[string]bool{}
+	for _, controller := range controllers {
+		var cvpa *vpav1.VerticalPodAutoscaler
 		// search for the matching vpa (will have the same name)
 		for idx, vpa := range vpas {
-			if deployment.Name == vpa.Name {
-				// found the vpa associated with this deployment
-				dvpa = &vpas[idx]
-				vpaHasAssociatedDeployment[dvpa.Name] = true
+			if controller.Name == vpa.Name {
+				// found the vpa associated with this controller
+				cvpa = &vpas[idx]
+				vpaHasAssociatedController[cvpa.Name] = true
 				break
 			}
 		}
 
 		// for logging
 		vpaName := "none"
-		if dvpa != nil {
-			vpaName = dvpa.Name
+		if cvpa != nil {
+			vpaName = cvpa.Name
 		}
-		klog.V(2).Infof("Reconciling Namespace/%s for Deployment/%s with VPA/%s", ns.Name, deployment.Name, vpaName)
-		err := r.reconcileDeploymentAndVPA(ns, deployment, dvpa, defaultUpdateMode)
+		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
+		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, vpa := range vpas {
-		if !vpaHasAssociatedDeployment[vpa.Name] {
-			// these vpas do not have a matching deployment, delete them
+		if !vpaHasAssociatedController[vpa.Name] {
+			// these vpas do not have a matching controller, delete them
 			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, ns.Name)
 			err := r.deleteVPA(vpa)
 			if err != nil {
@@ -194,24 +190,25 @@ func (r Reconciler) reconcileDeploymentsAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment appsv1.Deployment, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
-	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(&deployment); explicit {
+func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
+	controllerObj := controller.Unstructured.DeepCopyObject()
+	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
-		klog.V(5).Infof("Deployment/%s has custom vpa-update-mode=%s", deployment.Name, *vpaUpdateMode)
+		klog.V(5).Infof("%s/%s has custom vpa-update-mode=%s", controller.Kind, controller.Name, *vpaUpdateMode)
 	}
 
-	desiredVPA := r.getVPAObject(vpa, ns, deployment.Name, vpaUpdateMode)
+	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode)
 
 	if vpa == nil {
-		klog.V(5).Infof("Deployment/%s does not have a VPA currently, creating VPA/%s", deployment.Name, deployment.Name)
-		// no vpa exists, create one (use the same name as the deployment)
+		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", controller.Kind, controller.Name, controller.Name)
+		// no vpa exists, create one (use the same name as the controller)
 		err := r.createVPA(desiredVPA)
 		if err != nil {
 			return err
 		}
 	} else {
 		// vpa exists
-		klog.V(5).Infof("Deployment/%s has a VPA currently, updating VPA/%s", deployment.Name, deployment.Name)
+		klog.V(5).Infof("%s/%s has a VPA currently, updating VPA/%s", controller.Kind, controller.Name, controller.Name)
 		err := r.updateVPA(desiredVPA)
 		if err != nil {
 			return err
@@ -221,20 +218,27 @@ func (r Reconciler) reconcileDeploymentAndVPA(ns *corev1.Namespace, deployment a
 	return nil
 }
 
-func (r Reconciler) listDeployments(namespace string) ([]appsv1.Deployment, error) {
-	deployments, err := r.KubeClient.Client.AppsV1().Deployments(namespace).List(context.TODO(), metav1.ListOptions{})
+func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
+	controllers := []Controller{}
+	allTopControllers, err := controller.GetAllTopControllers(context.TODO(), r.DynamicClient.Client, r.DynamicClient.RESTMapper, namespace)
 	if err != nil {
 		return nil, err
 	}
-
-	klog.V(2).Infof("There are %d deployments in Namespace/%s", len(deployments.Items), namespace)
-	if klog.V(9) {
-		for _, d := range deployments.Items {
-			klog.V(9).Infof("Found Deployment/%s in Namespace/%s", d.Name, namespace)
+	for _, controller := range allTopControllers {
+		c := controller.TopController
+		if c.GetKind() == "" || c.GetKind() == "Pod" || c.GetAPIVersion() == "" {
+			klog.V(5).Infof("No toplevel controller found for pod %s/%s", namespace, c.GetName())
+			continue
 		}
+		controllers = append(controllers, Controller{
+			APIVersion:   c.GetAPIVersion(),
+			Kind:         c.GetKind(),
+			Name:         c.GetName(),
+			Unstructured: &c,
+		})
 	}
 
-	return deployments.Items, nil
+	return controllers, nil
 }
 
 func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, error) {
@@ -309,14 +313,14 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, vpaName string, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
+func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
 	if existingVPA == nil {
 		desiredVPA = vpav1.VerticalPodAutoscaler{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      vpaName,
+				Name:      controller.Name,
 				Namespace: ns.Name,
 			},
 		}
@@ -331,9 +335,9 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	// update the spec on the VPA
 	desiredVPA.Spec = vpav1.VerticalPodAutoscalerSpec{
 		TargetRef: &autoscaling.CrossVersionObjectReference{
-			APIVersion: "apps/v1",
-			Kind:       "Deployment",
-			Name:       vpaName,
+			APIVersion: controller.APIVersion,
+			Kind:       controller.Kind,
+			Name:       controller.Name,
 		},
 		UpdatePolicy: &vpav1.PodUpdatePolicy{
 			UpdateMode: updateMode,
