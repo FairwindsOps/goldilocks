@@ -26,3 +26,23 @@ testcases:
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo"
+- name: Setup redis in statefulset-demo namespace
+  steps:
+  - script: |
+      kubectl create ns statefulset-demo
+      helm install redis bitnami/redis --namespace statefulset-demo --version=15.4.1 --set architecture=replication
+- name: No VPA in statefulset-demo namespace Before Labels
+  steps:
+  - script: kubectl get vpa -n statefulset-demo
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual ""
+    - result.systemerr ShouldContainSubstring "No resources found"
+- name: VPA in statefulset-demo namespace
+  steps:
+  - script: kubectl label ns statefulset-demo goldilocks.fairwinds.com/enabled=true --overwrite
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n statefulset-demo redis-replicas -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/redis-replicas"

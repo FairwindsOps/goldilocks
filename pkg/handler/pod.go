@@ -17,31 +17,32 @@ package handler
 import (
 	"strings"
 
-	"github.com/fairwindsops/goldilocks/pkg/utils"
-	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/klog"
-
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/fairwindsops/goldilocks/pkg/vpa"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 )
 
-// OnDeploymentChanged is a handler that should be called when a deployment chanages.
-func OnDeploymentChanged(deployment *appsv1.Deployment, event utils.Event) {
+func OnPodChanged(pod *corev1.Pod, event utils.Event) {
 	kubeClient := kube.GetInstance()
 	namespace, err := kube.GetNamespace(kubeClient, event.Namespace)
 	if err != nil {
-		klog.Error("Handler got error retrieving namespace object. Breaking.")
+		klog.Error("handler got error retrieving namespace object. breaking.")
+		klog.V(5).Info("dumping out event struct")
+		klog.V(5).Info(spew.Sdump(event))
 		return
 	}
 	switch strings.ToLower(event.EventType) {
 	case "delete":
-		klog.V(3).Infof("Deployment %s deleted. Deleting the VPA for it if it had one.", deployment.ObjectMeta.Name)
+		klog.V(3).Infof("Pod %s deleted. Deleting the VPA for it if it had one.", pod.ObjectMeta.Name)
 		err := vpa.GetInstance().ReconcileNamespace(namespace)
 		if err != nil {
 			klog.Errorf("Error reconciling: %v", err)
 		}
 	case "create", "update":
-		klog.V(3).Infof("Deployment %s updated. Reconcile", deployment.ObjectMeta.Name)
+		klog.V(3).Infof("Pod %s updated. Reconcile", pod.ObjectMeta.Name)
 		err := vpa.GetInstance().ReconcileNamespace(namespace)
 		if err != nil {
 			klog.Errorf("Error reconciling: %v", err)

@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/klog"
 
-	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -119,25 +118,25 @@ func NewController(stop <-chan bool) {
 	klog.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
 
-	klog.Infof("Creating watcher for Deployments.")
-	DeploymentInformer := cache.NewSharedIndexInformer(
+	klog.Infof("Creating watcher for Pods.")
+	PodInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.AppsV1().Deployments("").List(context.TODO(), metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.AppsV1().Deployments("").Watch(context.TODO(), metav1.ListOptions{})
+				return kubeClient.Client.CoreV1().Pods("").Watch(context.TODO(), metav1.ListOptions{})
 			},
 		},
-		&v1.Deployment{},
+		&corev1.Pod{},
 		0,
 		cache.Indexers{},
 	)
 
-	DeployWatcher := createController(kubeClient.Client, DeploymentInformer, "deployment")
-	dTerm := make(chan struct{})
-	defer close(dTerm)
-	go DeployWatcher.Watch(dTerm)
+	PodWatcher := createController(kubeClient.Client, PodInformer, "pod")
+	pTerm := make(chan struct{})
+	defer close(pTerm)
+	go PodWatcher.Watch(pTerm)
 
 	klog.Infof("Creating watcher for Namespaces.")
 	NSInformer := cache.NewSharedIndexInformer(
@@ -228,7 +227,7 @@ func objectMeta(obj interface{}) metav1.ObjectMeta {
 	switch object := obj.(type) {
 	case *corev1.Namespace:
 		meta = object.ObjectMeta
-	case *v1.Deployment:
+	case *corev1.Pod:
 		meta = object.ObjectMeta
 	}
 	return meta

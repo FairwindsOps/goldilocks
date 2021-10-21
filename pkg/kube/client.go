@@ -20,11 +20,14 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
+	"k8s.io/client-go/dynamic"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 )
@@ -39,10 +42,18 @@ type VPAClientInstance struct {
 	Client autoscalingv1beta2.Interface
 }
 
+// DynamicClientInstance is a wrapper around the dynamic interface for testing purposes
+type DynamicClientInstance struct {
+	Client     dynamic.Interface
+	RESTMapper meta.RESTMapper
+}
+
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
+var dynamicClient *DynamicClientInstance
 var clientOnce sync.Once
 var clientOnceVPA sync.Once
+var clientOnceDynamic sync.Once
 
 // GetInstance returns a Kubernetes interface based on the current configuration
 func GetInstance() *ClientInstance {
@@ -68,6 +79,18 @@ func GetVPAInstance() *VPAClientInstance {
 	return kubeClientVPA
 }
 
+func GetDynamicInstance() *DynamicClientInstance {
+	clientOnceDynamic.Do(func() {
+		if dynamicClient == nil {
+			dynamicClient = &DynamicClientInstance{
+				Client:     getKubeClientDynamic(),
+				RESTMapper: getRESTMapper(),
+			}
+		}
+	})
+	return dynamicClient
+}
+
 func getKubeClient() kubernetes.Interface {
 	kubeConf, err := config.GetConfig()
 	if err != nil {
@@ -90,6 +113,30 @@ func getKubeClientVPA() autoscalingv1beta2.Interface {
 		klog.Fatalf("Error creating kubernetes client: %v", err)
 	}
 	return clientset
+}
+
+func getKubeClientDynamic() dynamic.Interface {
+	kubeConf, err := config.GetConfig()
+	if err != nil {
+		klog.Fatalf("Error getting kubeconfig: %v", err)
+	}
+	clientset, err := dynamic.NewForConfig(kubeConf)
+	if err != nil {
+		klog.Fatalf("Error creating dynamic kubernetes client: %v", err)
+	}
+	return clientset
+}
+
+func getRESTMapper() meta.RESTMapper {
+	kubeConf, err := config.GetConfig()
+	if err != nil {
+		klog.Fatalf("Error getting kubeconfig: %v", err)
+	}
+	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf)
+	if err != nil {
+		klog.Fatalf("Error creating REST Mapper: %v", err)
+	}
+	return restmapper
 }
 
 // GetNamespace returns a namespace object when given a name.

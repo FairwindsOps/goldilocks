@@ -17,7 +17,6 @@ package handler
 import (
 	"strings"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
@@ -29,15 +28,13 @@ import (
 // event is the Event metadata representing the update.
 func OnUpdate(obj interface{}, event utils.Event) {
 	klog.V(10).Infof("Handler got an OnUpdate event of type %s", event.EventType)
-
 	if event.EventType == "delete" {
 		onDelete(event)
 		return
 	}
-
 	switch t := obj.(type) {
-	case *appsv1.Deployment:
-		OnDeploymentChanged(obj.(*appsv1.Deployment), event)
+	case *corev1.Pod:
+		OnPodChanged(obj.(*corev1.Pod), event)
 	case *corev1.Namespace:
 		OnNamespaceChanged(obj.(*corev1.Namespace), event)
 	default:
@@ -50,8 +47,8 @@ func onDelete(event utils.Event) {
 	switch strings.ToLower(event.ResourceType) {
 	case "namespace":
 		OnNamespaceChanged(&corev1.Namespace{}, event)
-	case "deployment":
-		OnDeploymentChanged(&appsv1.Deployment{}, event)
+	case "pod":
+		OnPodChanged(&corev1.Pod{}, event)
 	default:
 		klog.Errorf("object has unknown resource type %s", event.ResourceType)
 	}
