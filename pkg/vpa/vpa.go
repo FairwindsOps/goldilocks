@@ -15,7 +15,9 @@
 package vpa
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -319,6 +321,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 }
 
 func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
+	resourcePolicy := vpaResourcePolicyForResource(ns)
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
@@ -347,6 +350,7 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 		UpdatePolicy: &vpav1.PodUpdatePolicy{
 			UpdateMode: updateMode,
 		},
+		ResourcePolicy: resourcePolicy,
 	}
 
 	return desiredVPA
@@ -372,4 +376,27 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 	}
 
 	return &requestedVPAMode, explicit
+}
+
+// vpaResourcePolicyForResource get the resource's annotation for the vpa pod resource policy
+// key/value and the value is the json definition of the pod resource policy
+func vpaResourcePolicyForResource(obj runtime.Object) *vpav1.PodResourcePolicy {
+	resourcePolicyStr := ""
+	accessor, _ := meta.Accessor(obj)
+	if val, ok := accessor.GetAnnotations()[utils.VpaResourcePolicyAnnotation]; ok {
+		resourcePolicyStr = val
+	}
+
+	if resourcePolicyStr == "" {
+		return nil
+	}
+
+	resourcePol := vpav1.PodResourcePolicy{}
+	err := json.NewDecoder(bytes.NewReader([]byte(resourcePolicyStr))).Decode(&resourcePol)
+	if err != nil {
+		klog.Error(err.Error())
+		return nil
+	}
+
+	return &resourcePol
 }

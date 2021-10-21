@@ -21,13 +21,15 @@ import (
 
 var (
 	// LabelBase is the string that will be used for labels on namespaces
-	LabelBase = "goldilocks.fairwinds.com"
+	LabelOrAnnotationBase = "goldilocks.fairwinds.com"
 	// VpaEnabledLabel is the label used to indicate that Goldilocks is enabled.
-	VpaEnabledLabel = LabelBase + "/" + "enabled"
+	VpaEnabledLabel = LabelOrAnnotationBase + "/" + "enabled"
 	// VpaUpdateModeKey is the label used to indicate the vpa update mode.
-	VpaUpdateModeKey = LabelBase + "/" + "vpa-update-mode"
+	VpaUpdateModeKey = LabelOrAnnotationBase + "/" + "vpa-update-mode"
 	// DeploymentExcludeContainersAnnotation is the label used to exclude container names from being reported.
-	DeploymentExcludeContainersAnnotation = LabelBase + "/" + "exclude-containers"
+	DeploymentExcludeContainersAnnotation = LabelOrAnnotationBase + "/" + "exclude-containers"
+	// VpaResourcePolicyAnnotation is the annotation use to define the json configuration of PodResourcePolicy section of a vpa
+	VpaResourcePolicyAnnotation = LabelOrAnnotationBase + "/" + "vpa-resource-policy"
 )
 
 // VPALabels is a set of default labels that get placed on every VPA.
