@@ -51,6 +51,8 @@ func setupVPAForTests(t *testing.T) {
 	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeAutoUnstructured.Object, &nsLabeledTrueUpdateModeAuto)
 	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledResourcePolicyUnstructured.Object, &nsLabeledResourcePolicy)
+	assert.NoError(t, err)
 }
 
 func Test_vpaUpdateModeForNamespace(t *testing.T) {
@@ -182,6 +184,31 @@ func Test_createVPA(t *testing.T) {
 	newVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
 	assert.NoError(t, errCreate)
 	assert.EqualValues(t, &testVPA, newVPA)
+}
+
+func Test_createVPAWithResourcePolicy(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test-vpa",
+		Unstructured: nil,
+	}
+
+	// First test the dryrun
+	rec := GetInstance()
+	rec.DryRun = false
+
+	updateMode, _ := vpaUpdateModeForResource(&nsLabeledResourcePolicy)
+	testVPA := rec.getVPAObject(nil, &nsLabeledResourcePolicy, controller, updateMode)
+
+	errCreate := rec.createVPA(testVPA)
+	newVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsLabeledResourcePolicy.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
+	assert.NoError(t, errCreate)
+	assert.EqualValues(t, &testVPA, newVPA)
+	assert.NotNil(t, newVPA.Spec.ResourcePolicy)
 }
 
 func Test_deleteVPA(t *testing.T) {
