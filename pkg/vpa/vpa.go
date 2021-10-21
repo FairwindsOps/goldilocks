@@ -27,7 +27,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	"github.com/fairwindsops/controller-utils/pkg/controller"
+	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	controllerLog "github.com/fairwindsops/controller-utils/pkg/log"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -156,11 +156,11 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
-	for _, ctrlr := range controllers {
+	for _, controller := range controllers {
 		var cvpa *vpav1.VerticalPodAutoscaler
 		// search for the matching vpa (will have the same name)
 		for idx, vpa := range vpas {
-			if ctrlr.Name == vpa.Name {
+			if controller.Name == vpa.Name {
 				// found the vpa associated with this controller
 				cvpa = &vpas[idx]
 				vpaHasAssociatedController[cvpa.Name] = true
@@ -173,8 +173,8 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 		if cvpa != nil {
 			vpaName = cvpa.Name
 		}
-		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, ctrlr.Kind, ctrlr.Name, vpaName)
-		err := r.reconcileControllerAndVPA(ns, ctrlr, cvpa, defaultUpdateMode)
+		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
+		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode)
 		if err != nil {
 			return err
 		}
@@ -194,17 +194,17 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, ctrlr Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
-	controllerObj := ctrlr.Unstructured.DeepCopyObject()
+func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
+	controllerObj := controller.Unstructured.DeepCopyObject()
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
-		klog.V(5).Infof("%s/%s has custom vpa-update-mode=%s", ctrlr.Kind, ctrlr.Name, *vpaUpdateMode)
+		klog.V(5).Infof("%s/%s has custom vpa-update-mode=%s", controller.Kind, controller.Name, *vpaUpdateMode)
 	}
 
-	desiredVPA := r.getVPAObject(vpa, ns, ctrlr, vpaUpdateMode)
+	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode)
 
 	if vpa == nil {
-		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", ctrlr.Kind, ctrlr.Name, ctrlr.Name)
+		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", controller.Kind, controller.Name, controller.Name)
 		// no vpa exists, create one (use the same name as the controller)
 		err := r.createVPA(desiredVPA)
 		if err != nil {
@@ -212,7 +212,7 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, ctrlr Contro
 		}
 	} else {
 		// vpa exists
-		klog.V(5).Infof("%s/%s has a VPA currently, updating VPA/%s", ctrlr.Kind, ctrlr.Name, ctrlr.Name)
+		klog.V(5).Infof("%s/%s has a VPA currently, updating VPA/%s", controller.Kind, controller.Name, controller.Name)
 		err := r.updateVPA(desiredVPA)
 		if err != nil {
 			return err
@@ -224,7 +224,7 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, ctrlr Contro
 
 func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 	controllers := []Controller{}
-	allTopControllers, err := controller.GetAllTopControllers(context.TODO(), r.DynamicClient.Client, r.DynamicClient.RESTMapper, namespace)
+	allTopControllers, err := controllerUtils.GetAllTopControllers(context.TODO(), r.DynamicClient.Client, r.DynamicClient.RESTMapper, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -318,14 +318,14 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, ctrlr Controller, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
+func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
 	if existingVPA == nil {
 		desiredVPA = vpav1.VerticalPodAutoscaler{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      ctrlr.Name,
+				Name:      controller.Name,
 				Namespace: ns.Name,
 			},
 		}
@@ -340,9 +340,9 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	// update the spec on the VPA
 	desiredVPA.Spec = vpav1.VerticalPodAutoscalerSpec{
 		TargetRef: &autoscaling.CrossVersionObjectReference{
-			APIVersion: ctrlr.APIVersion,
-			Kind:       ctrlr.Kind,
-			Name:       ctrlr.Name,
+			APIVersion: controller.APIVersion,
+			Kind:       controller.Kind,
+			Name:       controller.Name,
 		},
 		UpdatePolicy: &vpav1.PodUpdatePolicy{
 			UpdateMode: updateMode,
