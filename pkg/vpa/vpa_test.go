@@ -139,7 +139,8 @@ func Test_getVPAObject(t *testing.T) {
 			t.Parallel()
 
 			mode, _ := vpaUpdateModeForResource(test.ns)
-			vpa := rec.getVPAObject(test.vpa, test.ns, test.controller, mode)
+			resoucePolicy, _ := vpaResourcePolicyForResource(test.ns)
+			vpa := rec.getVPAObject(test.vpa, test.ns, test.controller, mode, resoucePolicy)
 
 			// expected ObjectMeta
 			assert.Equal(t, "test-vpa", vpa.Name)
@@ -171,7 +172,8 @@ func Test_createVPA(t *testing.T) {
 	}
 
 	updateMode, _ := vpaUpdateModeForResource(&nsTesting)
-	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode)
+	resoucePolicy, _ := vpaResourcePolicyForResource(&nsTesting)
+	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode, resoucePolicy)
 
 	err := rec.createVPA(testVPA)
 	assert.NoError(t, err)
@@ -202,7 +204,8 @@ func Test_createVPAWithResourcePolicy(t *testing.T) {
 	rec.DryRun = false
 
 	updateMode, _ := vpaUpdateModeForResource(&nsLabeledResourcePolicy)
-	testVPA := rec.getVPAObject(nil, &nsLabeledResourcePolicy, controller, updateMode)
+	resoucePolicy, _ := vpaResourcePolicyForResource(&nsLabeledResourcePolicy)
+	testVPA := rec.getVPAObject(nil, &nsLabeledResourcePolicy, controller, updateMode, resoucePolicy)
 
 	errCreate := rec.createVPA(testVPA)
 	newVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsLabeledResourcePolicy.Name).Get(context.TODO(), "test-vpa", metav1.GetOptions{})
@@ -226,7 +229,8 @@ func Test_deleteVPA(t *testing.T) {
 		Unstructured: nil,
 	}
 	updateMode, _ := vpaUpdateModeForResource(&nsTesting)
-	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode)
+	resoucePolicy, _ := vpaResourcePolicyForResource(&nsTesting)
+	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode, resoucePolicy)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsTesting.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -261,7 +265,8 @@ func Test_updateVPA(t *testing.T) {
 		Unstructured: nil,
 	}
 	updateMode, _ := vpaUpdateModeForResource(testNS)
-	testVPA := rec.getVPAObject(nil, testNS, controller, updateMode)
+	resoucePolicy, _ := vpaResourcePolicyForResource(testNS)
+	testVPA := rec.getVPAObject(nil, testNS, controller, updateMode, resoucePolicy)
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -282,7 +287,8 @@ func Test_updateVPA(t *testing.T) {
 	// change the update mode
 	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "auto"
 	updateMode, _ = vpaUpdateModeForResource(testNS)
-	newVPA := rec.getVPAObject(nil, testNS, controller, updateMode)
+	resoucePolicy, _ = vpaResourcePolicyForResource(testNS)
+	newVPA := rec.getVPAObject(nil, testNS, controller, updateMode, resoucePolicy)
 
 	errUpdate2 := rec.updateVPA(newVPA)
 	assert.NoError(t, errUpdate2)
@@ -326,9 +332,12 @@ func Test_listVPA(t *testing.T) {
 	// test vpas
 	updateMode1, _ := vpaUpdateModeForResource(testNS1)
 	updateMode2, _ := vpaUpdateModeForResource(testNS2)
-	vpa1 := rec.getVPAObject(nil, testNS1, controller1, updateMode1)
-	vpa2 := rec.getVPAObject(nil, testNS1, controller2, updateMode1)
-	vpa3 := rec.getVPAObject(nil, testNS2, controller3, updateMode2)
+	resoucePolicy1, _ := vpaResourcePolicyForResource(testNS1)
+	resoucePolicy2, _ := vpaResourcePolicyForResource(testNS2)
+
+	vpa1 := rec.getVPAObject(nil, testNS1, controller1, updateMode1, resoucePolicy1)
+	vpa2 := rec.getVPAObject(nil, testNS1, controller2, updateMode1, resoucePolicy1)
+	vpa3 := rec.getVPAObject(nil, testNS2, controller3, updateMode2, resoucePolicy2)
 
 	// create vpas
 	_ = rec.createVPA(vpa1)
