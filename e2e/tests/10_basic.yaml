@@ -46,3 +46,20 @@ testcases:
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/redis-replicas"
+- name: Setup demo-resource-policy namespace
+  steps:
+  - script: |
+      kubectl create ns demo-resource-policy
+      helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
+      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo-resource-policy --version=0.4.0
+      kubectl -n demo-resource-policy wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo  
+- name: VPA with Resource Policy in demo-resource-policy namespace
+  steps:
+  - script: |
+      kubectl annotate ns demo-resource-policy goldilocks.fairwinds.com/vpa-resource-policy='{ "containerPolicies": [ { "containerName": "nginx", "minAllowed": { "cpu": "250m", "memory": "100Mi" } } ] }' --overwrite  
+  - script: kubectl label ns demo-resource-policy goldilocks.fairwinds.com/enabled=true --overwrite
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-resource-policy basic-demo -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo"
