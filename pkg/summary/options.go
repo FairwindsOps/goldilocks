@@ -12,6 +12,7 @@ type Option func(*options)
 type options struct {
 	kubeClient         *kube.ClientInstance
 	vpaClient          *kube.VPAClientInstance
+	dynamicClient      *kube.DynamicClientInstance
 	namespace          string
 	vpaLabels          map[string]string
 	excludedContainers sets.String
@@ -22,6 +23,7 @@ func defaultOptions() *options {
 	return &options{
 		kubeClient:         kube.GetInstance(),
 		vpaClient:          kube.GetVPAInstance(),
+		dynamicClient:      kube.GetDynamicInstance(),
 		namespace:          namespaceAllNamespaces,
 		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),

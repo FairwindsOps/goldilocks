@@ -27,7 +27,7 @@ var (
 	// VpaUpdateModeKey is the label used to indicate the vpa update mode.
 	VpaUpdateModeKey = LabelOrAnnotationBase + "/" + "vpa-update-mode"
 	// DeploymentExcludeContainersAnnotation is the label used to exclude container names from being reported.
-	DeploymentExcludeContainersAnnotation = LabelOrAnnotationBase + "/" + "exclude-containers"
+	WorkloadExcludeContainersAnnotation = LabelOrAnnotationBase + "/" + "exclude-containers"
 	// VpaResourcePolicyAnnotation is the annotation use to define the json configuration of PodResourcePolicy section of a vpa
 	VpaResourcePolicyAnnotation = LabelOrAnnotationBase + "/" + "vpa-resource-policy"
 )

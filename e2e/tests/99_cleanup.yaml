@@ -10,3 +10,4 @@ testcases:
       kubectl delete ns metrics-server
       helm -n vpa delete vpa
       kubectl delete ns vpa
+      kubectl delete ns statefulset-demo
