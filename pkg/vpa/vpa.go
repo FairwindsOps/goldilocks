@@ -15,7 +15,9 @@
 package vpa
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -154,6 +156,8 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 
 func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
+	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
+
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
@@ -174,7 +178,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 			vpaName = cvpa.Name
 		}
 		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
-		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode)
+		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy)
 		if err != nil {
 			return err
 		}
@@ -194,14 +198,19 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode) error {
+func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy) error {
 	controllerObj := controller.Unstructured.DeepCopyObject()
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
 		klog.V(5).Infof("%s/%s has custom vpa-update-mode=%s", controller.Kind, controller.Name, *vpaUpdateMode)
 	}
 
-	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode)
+	if vpaResourcePolicyOverride, explicit := vpaResourcePolicyForResource(controllerObj); explicit {
+		vpaResourcePolicy = vpaResourcePolicyOverride
+		klog.V(5).Infof("%s/%s has custom vpa-resource-policy", controller.Kind, controller.Name)
+	}
+
+	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode, vpaResourcePolicy)
 
 	if vpa == nil {
 		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", controller.Kind, controller.Name, controller.Name)
@@ -318,7 +327,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode) vpav1.VerticalPodAutoscaler {
+func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode, resourcePolicy *vpav1.PodResourcePolicy) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
@@ -347,6 +356,7 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 		UpdatePolicy: &vpav1.PodUpdatePolicy{
 			UpdateMode: updateMode,
 		},
+		ResourcePolicy: resourcePolicy,
 	}
 
 	return desiredVPA
@@ -372,4 +382,30 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 	}
 
 	return &requestedVPAMode, explicit
+}
+
+// vpaResourcePolicyForResource get the resource's annotation for the vpa pod resource policy
+// key/value and the value is the json definition of the pod resource policy
+func vpaResourcePolicyForResource(obj runtime.Object) (*vpav1.PodResourcePolicy, bool) {
+	explicit := false
+
+	resourcePolicyStr := ""
+	accessor, _ := meta.Accessor(obj)
+	if val, ok := accessor.GetAnnotations()[utils.VpaResourcePolicyAnnotation]; ok {
+		resourcePolicyStr = val
+	}
+
+	if resourcePolicyStr == "" {
+		return nil, explicit
+	}
+
+	explicit = true
+	resourcePol := vpav1.PodResourcePolicy{}
+	err := json.NewDecoder(bytes.NewReader([]byte(resourcePolicyStr))).Decode(&resourcePol)
+	if err != nil {
+		klog.Error(err.Error())
+		return nil, explicit
+	}
+
+	return &resourcePol, explicit
 }

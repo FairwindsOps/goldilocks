@@ -74,6 +74,52 @@ The update mode can be changed for a namespace by labels as well, for example:
 kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="auto"
 ```
 
+#### VPA Resource Policy
+
+> Note: This feature is for advanced usage only and is not recommended nor the default!
+
+The `resourcePolicy` section of a VPA allows detailed specifications per container.  This provides the ability to configure `minAllowed` and `maxAllowed` `cpu` and `memory` values, override the `updateMode` by specifying the `mode` and setting `controlledValues` with can be either `RequestsAndLimits` (default) or `RequestsOnly` which allows the VPA to only adjust Requests and/or Limits depending on the this setting.
+
+Example of a `resourcePolicy` section
+
+```
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: nginx-vpa
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind:       Deployment
+    name:       nginx
+  updatePolicy:
+    updateMode: "On"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: "nginx"
+      minAllowed:
+        cpu: "250m"
+        memory: "100Mi"
+      maxAllowed:
+        cpu: "2000m"
+        memory: "2048Mi"
+    - containerName: "istio-proxy"
+      mode: "Off"
+```
+
+The `resourcePolicy` section can be defined by using the following annotation on a namespace `goldilocks.fairwinds.com/vpa-update-mode=vpa-resource-policy=<json formatted section>`
+
+Example of an annotation
+
+```
+  annotations:
+    goldilocks.fairwinds.com/vpa-resource-policy: >
+      { "containerPolicies": [ { "containerName": "nginx", "minAllowed": {
+      "cpu": "250m", "memory": "100Mi" }, "maxAllowed": { "cpu": "2000m",
+      "memory": "2048Mi" } }, { "containerName": "istio-proxy", "mode": "Off" }
+      ] }
+```
+
 #### Deployment Specifications
 
 If you want a specific Deployment to have a VPA in a specific update mode,
