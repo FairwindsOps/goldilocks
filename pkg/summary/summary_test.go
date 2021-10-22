@@ -21,24 +21,38 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func TestSummarizer(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
-	kubeClient := kube.GetMockClient()
+	// kubeClient := kube.GetMockClient()
+	dynamicClient := kube.GetMockDynamicClient()
 
 	summarizer := NewSummarizer()
-	summarizer.kubeClient = kubeClient
+	// summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
+	summarizer.dynamicClient = dynamicClient
 
-	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentBasic, metav1.CreateOptions{})
+	// _, _ = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	_, err := dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPABasic, metav1.CreateOptions{})
 	assert.NoError(t, errOk)
 
 	_, errOk2 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPANoLabels, metav1.CreateOptions{})
 	assert.NoError(t, errOk2)
 
-	_, _ = kubeClient.Client.AppsV1().Deployments("testing").Create(context.TODO(), testDeploymentWithReco, metav1.CreateOptions{})
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("testing").Create(context.TODO(), testDeploymentWithRecoUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace("testing").Create(context.TODO(), testDeploymentWithRecoReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace("testing").Create(context.TODO(), testDeploymentWithRecoPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
 	_, errOk3 := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPAWithReco, metav1.CreateOptions{})
 	assert.NoError(t, errOk3)
 

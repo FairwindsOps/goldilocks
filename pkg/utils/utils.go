@@ -26,8 +26,8 @@ var (
 	VpaEnabledLabel = LabelBase + "/" + "enabled"
 	// VpaUpdateModeKey is the label used to indicate the vpa update mode.
 	VpaUpdateModeKey = LabelBase + "/" + "vpa-update-mode"
-	// DeploymentExcludeContainersAnnotation is the label used to exclude container names from being reported.
-	DeploymentExcludeContainersAnnotation = LabelBase + "/" + "exclude-containers"
+	// WorkloadExcludeContainersAnnotation is the label used to exclude container names from being reported.
+	WorkloadExcludeContainersAnnotation = LabelBase + "/" + "exclude-containers"
 )
 
 // VPALabels is a set of default labels that get placed on every VPA.

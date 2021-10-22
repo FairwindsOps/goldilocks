@@ -1,11 +1,11 @@
 {{define "namespace"}}
-{{ $foundFirstDeployment := false }}
+{{ $foundFirstWorkload := false }}
 
 <article data-filter="{{ $.Namespace }}">
   <details class="detailInfo --namespace verticalRhythm" open>
     <summary class="--hideMarker">
       <h2>
-        <span aria-label="Deployment:" class="badge detailBadge --namespace"
+        <span aria-label="Namespace:" class="badge detailBadge --namespace"
           >Namespace</span
         >
         {{ $.Namespace }}
@@ -20,29 +20,29 @@
       </p>
     </summary>
 
-    {{ if lt (len $.Deployments) 1 }}
+    {{ if lt (len $.Workloads) 1 }}
     <section class="detailInfo --empty">
-      <p>No deployments found in this namespace.</p>
+      <p>No workloads found in this namespace.</p>
     </section>
 
     {{ else }}
-      {{ range $deployment := $.Deployments }}
+      {{ range $workload := $.Workloads }}
     <details class="detailInfo --deployment verticalRhythm"
-        {{ if not $foundFirstDeployment }}
-          {{ $foundFirstDeployment = true }} open
+        {{ if not $foundFirstWorkload }}
+          {{ $foundFirstWorkload = true }} open
         {{ end }}>
       <summary class="--hideMarker">
         <h3>
-          <span aria-label="Deployment:" class="badge detailBadge --deployment"
-            >Deployment</span
+          <span aria-label="Workload:" class="badge detailBadge --deployment"
+            >{{ $workload.ControllerType }}</span
           >
-          {{ $deployment.DeploymentName }}
+          {{ $workload.ControllerName }}
           <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
           ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
         </h3>
       </summary>
 
-      {{ range $cName, $cSummary := $deployment.Containers }}
+      {{ range $cName, $cSummary := $workload.Containers }}
       <details class="detailInfo --container verticalRhythm" open>
         <summary class="--hideMarker">
           <h4>

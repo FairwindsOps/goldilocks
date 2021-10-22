@@ -18,10 +18,12 @@ import (
 	"context"
 	"strings"
 
-	appsv1 "k8s.io/api/apps/v1"
+	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog"
@@ -33,18 +35,19 @@ const (
 	namespaceAllNamespaces = ""
 )
 
-// Summary is for storing a summary of recommendation data by namespace/deployment/container
+// Summary is for storing a summary of recommendation data by namespace/controller type/container
 type Summary struct {
 	Namespaces map[string]namespaceSummary
 }
 
 type namespaceSummary struct {
-	Namespace   string                       `json:"namespace"`
-	Deployments map[string]deploymentSummary `json:"deployments"`
+	Namespace string                     `json:"namespace"`
+	Workloads map[string]workloadSummary `json:"workloads"`
 }
 
-type deploymentSummary struct {
-	DeploymentName string                      `json:"deploymentName"`
+type workloadSummary struct {
+	ControllerName string                      `json:"controllerName"`
+	ControllerType string                      `json:"controllerType"`
 	Containers     map[string]containerSummary `json:"containers"`
 }
 
@@ -67,8 +70,8 @@ type Summarizer struct {
 	// cached list of vpas
 	vpas []vpav1.VerticalPodAutoscaler
 
-	// cached map of deploy/vpa name -> deployment
-	deploymentForVPANamed map[string]*appsv1.Deployment
+	// cached map of vpa name -> workload
+	workloadForVPANamed map[string]*controllerUtils.Workload
 }
 
 // NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
@@ -104,13 +107,13 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	// then add that namespace by default to the blank summary
 	if s.namespace != namespaceAllNamespaces {
 		summary.Namespaces[s.namespace] = namespaceSummary{
-			Namespace:   s.namespace,
-			Deployments: map[string]deploymentSummary{},
+			Namespace: s.namespace,
+			Workloads: map[string]workloadSummary{},
 		}
 	}
 
-	// cached vpas and deployments
-	if s.vpas == nil || s.deploymentForVPANamed == nil {
+	// cached vpas and workloads
+	if s.vpas == nil || s.workloadForVPANamed == nil {
 		err := s.Update()
 		if err != nil {
 			return summary, err
@@ -132,53 +135,70 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			nsSummary = val
 		} else {
 			nsSummary = namespaceSummary{
-				Namespace:   namespace,
-				Deployments: map[string]deploymentSummary{},
+				Namespace: namespace,
+				Workloads: map[string]workloadSummary{},
 			}
 			summary.Namespaces[namespace] = nsSummary
 		}
 
-		// VPA.Name := Deployment.Name, as that's how goldilocks works
-		dSummary := deploymentSummary{
-			DeploymentName: vpa.Name,
+		dSummary := workloadSummary{
+			ControllerName: vpa.Name,
+			ControllerType: vpa.Spec.TargetRef.Kind,
 			Containers:     map[string]containerSummary{},
 		}
 
-		deployment, ok := s.deploymentForVPANamed[vpa.Name]
+		workload, ok := s.workloadForVPANamed[vpa.Name]
 		if !ok {
-			klog.Errorf("no matching Deployment found for VPA/%s", vpa.Name)
+			klog.Errorf("no matching Workloads found for VPA/%s", vpa.Name)
 			continue
 		}
 
 		if vpa.Status.Recommendation == nil {
-			klog.V(2).Infof("Empty status on %v", dSummary.DeploymentName)
-			nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+			klog.V(2).Infof("Empty status on %v", dSummary.ControllerName)
+			nsSummary.Workloads[dSummary.ControllerName] = dSummary
 			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No container recommendations found in the %v vpa.", dSummary.DeploymentName)
-			nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+			klog.V(2).Infof("No container recommendations found in the %v vpa.", dSummary.ControllerName)
+			nsSummary.Workloads[dSummary.ControllerName] = dSummary
 			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
 
-		// get the full set of excluded containers for this Deployment
+		// get the full set of excluded containers for this workload
 		excludedContainers := sets.NewString().Union(s.excludedContainers)
-		if val, exists := deployment.GetAnnotations()[utils.DeploymentExcludeContainersAnnotation]; exists {
+		if val, exists := workload.TopController.GetAnnotations()[utils.WorkloadExcludeContainersAnnotation]; exists {
 			excludedContainers.Insert(strings.Split(val, ",")...)
 		}
 
 	CONTAINER_REC_LOOP:
 		for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
 			if excludedContainers.Has(containerRecommendation.ContainerName) {
-				klog.V(2).Infof("Excluding container Deployment/%s/%s", dSummary.DeploymentName, containerRecommendation.ContainerName)
+				klog.V(2).Infof("Excluding container %s/%s/%s", dSummary.ControllerType, dSummary.ControllerName, containerRecommendation.ContainerName)
 				continue CONTAINER_REC_LOOP
 			}
 
 			var cSummary containerSummary
-			for _, c := range deployment.Spec.Template.Spec.Containers {
-				// find the matching container on the deployment
+			workloadPodSpecUnstructured, workloadPodSpecFound, err := unstructured.NestedMap(workload.TopController.UnstructuredContent(), "spec", "template", "spec")
+			if err != nil {
+				klog.Errorf("unable to parse spec.template.spec from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+				continue CONTAINER_REC_LOOP
+			}
+			if !workloadPodSpecFound {
+				klog.Errorf("no spec.template.spec field from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+				continue CONTAINER_REC_LOOP
+			}
+
+			var workloadPodSpec corev1.PodSpec
+			err = runtime.DefaultUnstructuredConverter.FromUnstructured(workloadPodSpecUnstructured, &workloadPodSpec)
+			if err != nil {
+				klog.Errorf("unable to convert unstructured pod spec to PodSpec struct. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+				continue CONTAINER_REC_LOOP
+			}
+
+			for _, c := range workloadPodSpec.Containers {
+				// find the matching container on the workload
 				if c.Name == containerRecommendation.ContainerName {
 					cSummary = containerSummary{
 						ContainerName:  containerRecommendation.ContainerName,
@@ -189,21 +209,21 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						Limits:         utils.FormatResourceList(c.Resources.Limits),
 						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
-					klog.V(6).Infof("Resources for Deployment/%s/%s: Requests: %v Limits: %v", dSummary.DeploymentName, c.Name, cSummary.Requests, cSummary.Limits)
+					klog.V(6).Infof("Resources for %s/%s/%s: Requests: %v Limits: %v", dSummary.ControllerType, dSummary.ControllerName, c.Name, cSummary.Requests, cSummary.Limits)
 					dSummary.Containers[cSummary.ContainerName] = cSummary
 					continue CONTAINER_REC_LOOP
 				}
 			}
 		}
 		// update summary maps
-		nsSummary.Deployments[dSummary.DeploymentName] = dSummary
+		nsSummary.Workloads[dSummary.ControllerName] = dSummary
 		summary.Namespaces[nsSummary.Namespace] = nsSummary
 	}
 
 	return summary, nil
 }
 
-// Update the set of VPAs and Deployments that the Summarizer uses for creating a summary
+// Update the set of VPAs and Workloads that the Summarizer uses for creating a summary
 func (s *Summarizer) Update() error {
 	err := s.updateVPAs()
 	if err != nil {
@@ -211,7 +231,7 @@ func (s *Summarizer) Update() error {
 		return err
 	}
 
-	err = s.updateDeployments()
+	err = s.updateWorkloads()
 	if err != nil {
 		klog.Error(err.Error())
 		return err
@@ -251,33 +271,33 @@ func getVPAListOptionsForLabels(vpaLabels map[string]string) metav1.ListOptions 
 	}
 }
 
-func (s *Summarizer) updateDeployments() error {
+func (s *Summarizer) updateWorkloads() error {
 	nsLog := s.namespace
 	if s.namespace == namespaceAllNamespaces {
 		nsLog = "all namespaces"
 	}
-	klog.V(3).Infof("Looking for Deployments in %s", nsLog)
-	deployments, err := s.listDeployments(metav1.ListOptions{})
+	klog.V(3).Infof("Looking for Workloads in %s", nsLog)
+	workloads, err := s.listWorkloads()
 	if err != nil {
 		return err
 	}
-	klog.V(10).Infof("Found deployments: %v", deployments)
+	klog.V(10).Infof("Found workloads in namespace '%s': %v", s.namespace, workloads)
 
-	// map the deployment.name -> &deployment for easy vpa lookup (since vpa.Name == deployment.Name for matching vpas/deployments)
-	s.deploymentForVPANamed = map[string]*appsv1.Deployment{}
-	for _, d := range deployments {
-		d := d
-		s.deploymentForVPANamed[d.Name] = &d
+	// map the workload.name -> &controllerUtils.Workload{} for easy vpa lookup (since vpa.Name == workload.Name)
+	s.workloadForVPANamed = map[string]*controllerUtils.Workload{}
+	for _, w := range workloads {
+		w := w
+		s.workloadForVPANamed[w.TopController.GetName()] = &w
 	}
 
 	return nil
 }
 
-func (s Summarizer) listDeployments(listOptions metav1.ListOptions) ([]appsv1.Deployment, error) {
-	deployments, err := s.kubeClient.Client.AppsV1().Deployments(s.namespace).List(context.TODO(), listOptions)
+func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
+	workloads, err := controllerUtils.GetAllTopControllers(context.TODO(), s.dynamicClient.Client, s.dynamicClient.RESTMapper, s.namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	return deployments.Items, nil
+	return workloads, nil
 }
