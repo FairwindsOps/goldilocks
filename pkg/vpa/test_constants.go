@@ -98,6 +98,38 @@ var nsLabeledTrueUpdateModeAutoUnstructured = &unstructured.Unstructured{
 	},
 }
 
+var nsLabeledResourcePolicy corev1.Namespace
+var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind": "Namespace",
+		"metadata": map[string]interface{}{
+			"name": "labeled-true",
+			"labels": map[string]interface{}{
+				"goldilocks.fairwinds.com/enabled":         "True",
+				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
+			},
+			"annotations": map[string]interface{}{
+				"goldilocks.fairwinds.com/vpa-resource-policy": `
+                {
+					"containerPolicies":
+					[ 
+						{ 
+						  "containerName": "nginx",
+					      "minAllowed": { "cpu": "250m", "memory": "100Mi" },
+					      "maxAllowed": {	"cpu": "2000m", "memory": "2048Mi" }
+					    },
+					    {
+						  "containerName": "istio-proxy",
+						  "mode": "Off"
+					    }
+				    ]
+			    }
+			`,
+			},
+		},
+	},
+}
+
 var updateModeAuto = vpav1.UpdateModeAuto
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
