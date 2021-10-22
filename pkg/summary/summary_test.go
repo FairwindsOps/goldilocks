@@ -26,11 +26,11 @@ import (
 
 func Test_Summarizer(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
-	// kubeClient := kube.GetMockClient()
+	kubeClient := kube.GetMockClient()
 	dynamicClient := kube.GetMockDynamicClient()
 
 	summarizer := NewSummarizer()
-	// summarizer.kubeClient = kubeClient
+	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 	summarizer.dynamicClient = dynamicClient
 
@@ -64,11 +64,11 @@ func Test_Summarizer(t *testing.T) {
 
 func Test_Summarizer_Daemonset(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
-	// kubeClient := kube.GetMockClient()
+	kubeClient := kube.GetMockClient()
 	dynamicClient := kube.GetMockDynamicClient()
 
 	summarizer := NewSummarizer()
-	// summarizer.kubeClient = kubeClient
+	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 	summarizer.dynamicClient = dynamicClient
 
