@@ -59,7 +59,7 @@ testcases:
       kubectl annotate ns demo-resource-policy goldilocks.fairwinds.com/vpa-resource-policy='{ "containerPolicies": [ { "containerName": "nginx", "minAllowed": { "cpu": "250m", "memory": "100Mi" } } ] }' --overwrite  
   - script: kubectl label ns demo-resource-policy goldilocks.fairwinds.com/enabled=true --overwrite
   - script: sleep {{.vpa-wait}}
-  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-resource-policy basic-demo -oname
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-resource-policy basic-demo -o=jsonpath='{.spec.resourcePolicy.containerPolicies[]}'
     assertions:
     - result.code ShouldEqual 0
-    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo"
+    - result.systemout ShouldEqual '{"containerName":"nginx","minAllowed":{"cpu":"250m","memory":"100Mi"}}'
