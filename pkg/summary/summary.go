@@ -141,7 +141,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			summary.Namespaces[namespace] = nsSummary
 		}
 
-		dSummary := workloadSummary{
+		wSummary := workloadSummary{
 			ControllerName: vpa.Name,
 			ControllerType: vpa.Spec.TargetRef.Kind,
 			Containers:     map[string]containerSummary{},
@@ -154,14 +154,14 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		}
 
 		if vpa.Status.Recommendation == nil {
-			klog.V(2).Infof("Empty status on %v", dSummary.ControllerName)
-			nsSummary.Workloads[dSummary.ControllerName] = dSummary
+			klog.V(2).Infof("Empty status on %v", wSummary.ControllerName)
+			nsSummary.Workloads[wSummary.ControllerName] = wSummary
 			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
 		if len(vpa.Status.Recommendation.ContainerRecommendations) <= 0 {
-			klog.V(2).Infof("No container recommendations found in the %v vpa.", dSummary.ControllerName)
-			nsSummary.Workloads[dSummary.ControllerName] = dSummary
+			klog.V(2).Infof("No container recommendations found in the %v vpa.", wSummary.ControllerName)
+			nsSummary.Workloads[wSummary.ControllerName] = wSummary
 			summary.Namespaces[nsSummary.Namespace] = nsSummary
 			continue
 		}
@@ -175,7 +175,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	CONTAINER_REC_LOOP:
 		for _, containerRecommendation := range vpa.Status.Recommendation.ContainerRecommendations {
 			if excludedContainers.Has(containerRecommendation.ContainerName) {
-				klog.V(2).Infof("Excluding container %s/%s/%s", dSummary.ControllerType, dSummary.ControllerName, containerRecommendation.ContainerName)
+				klog.V(2).Infof("Excluding container %s/%s/%s", wSummary.ControllerType, wSummary.ControllerName, containerRecommendation.ContainerName)
 				continue CONTAINER_REC_LOOP
 			}
 
@@ -209,14 +209,14 @@ func (s Summarizer) GetSummary() (Summary, error) {
 						Limits:         utils.FormatResourceList(c.Resources.Limits),
 						Requests:       utils.FormatResourceList(c.Resources.Requests),
 					}
-					klog.V(6).Infof("Resources for %s/%s/%s: Requests: %v Limits: %v", dSummary.ControllerType, dSummary.ControllerName, c.Name, cSummary.Requests, cSummary.Limits)
-					dSummary.Containers[cSummary.ContainerName] = cSummary
+					klog.V(6).Infof("Resources for %s/%s/%s: Requests: %v Limits: %v", wSummary.ControllerType, wSummary.ControllerName, c.Name, cSummary.Requests, cSummary.Limits)
+					wSummary.Containers[cSummary.ContainerName] = cSummary
 					continue CONTAINER_REC_LOOP
 				}
 			}
 		}
 		// update summary maps
-		nsSummary.Workloads[dSummary.ControllerName] = dSummary
+		nsSummary.Workloads[wSummary.ControllerName] = wSummary
 		summary.Namespaces[nsSummary.Namespace] = nsSummary
 	}
 
