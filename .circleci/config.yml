@@ -26,6 +26,7 @@ references:
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
+    resource_class: large
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
@@ -142,10 +143,6 @@ workflows:
           context: org-global
           requires:
             - test
-      - rok8s-scripts/insights:
-          requires:
-            - test
-            - snapshot
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.19.11"
           kind_node_image: "kindest/node:v1.19.11@sha256:558780c13d9736d9ba55fa695a5bb8f403a53e42b95bea54fbdc4712181f5e3f"
