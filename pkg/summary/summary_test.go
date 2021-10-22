@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func TestSummarizer(t *testing.T) {
+func Test_Summarizer(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
 	// kubeClient := kube.GetMockClient()
 	dynamicClient := kube.GetMockDynamicClient()
@@ -60,4 +60,28 @@ func TestSummarizer(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.EqualValues(t, testSummary, got)
+}
+
+func Test_Summarizer_Daemonset(t *testing.T) {
+	kubeClientVPA := kube.GetMockVPAClient()
+	// kubeClient := kube.GetMockClient()
+	dynamicClient := kube.GetMockDynamicClient()
+
+	summarizer := NewSummarizer()
+	// summarizer.kubeClient = kubeClient
+	summarizer.vpaClient = kubeClientVPA
+	summarizer.dynamicClient = dynamicClient
+
+	// _, _ = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	_, err := dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}).Namespace("testing-daemonset").Create(context.TODO(), testDaemonSettWithRecoUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace("testing-daemonset").Create(context.TODO(), testDaemonSetWithRecoPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, errOk := kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing-daemonset").Create(context.TODO(), testDaemonSetVPAWithReco, metav1.CreateOptions{})
+	assert.NoError(t, errOk)
+
+	got, err := summarizer.GetSummary()
+	assert.NoError(t, err)
+
+	assert.EqualValues(t, testSummaryDaemonSet, got)
 }

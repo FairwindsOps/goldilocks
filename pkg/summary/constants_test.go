@@ -79,8 +79,8 @@ var testDeploymentBasicUnstructured = &unstructured.Unstructured{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
 		"metadata": map[string]interface{}{
-			"name": "test-basic",
-			// "namespace": "testing",
+			"name":      "test-basic",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{},
 	},
@@ -99,7 +99,8 @@ var testDeploymentBasicReplicaSetUnstructured = &unstructured.Unstructured{
 					"name":       "test-basic",
 				},
 			},
-			"name": "test-basic-0123456789",
+			"name":      "test-basic-0123456789",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{},
 	},
@@ -118,7 +119,8 @@ var testDeploymentBasicPodUnstructured = &unstructured.Unstructured{
 					"name":       "test-basic-0123456789",
 				},
 			},
-			"name": "test-basic-0123456789-01234",
+			"name":      "test-basic-0123456789-01234",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{},
 	},
@@ -180,8 +182,8 @@ var testDeploymentWithRecoUnstructured = &unstructured.Unstructured{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
 		"metadata": map[string]interface{}{
-			"name": "test-vpa-with-reco",
-			// "namespace": "testing",
+			"name":      "test-vpa-with-reco",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{
 			"template": map[string]interface{}{
@@ -220,7 +222,8 @@ var testDeploymentWithRecoReplicaSetUnstructured = &unstructured.Unstructured{
 					"name":       "test-vpa-with-reco",
 				},
 			},
-			"name": "test-vpa-with-reco-0123456789",
+			"name":      "test-vpa-with-reco-0123456789",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{},
 	},
@@ -239,33 +242,12 @@ var testDeploymentWithRecoPodUnstructured = &unstructured.Unstructured{
 					"name":       "test-vpa-with-reco-0123456789",
 				},
 			},
-			"name": "test-vpa-with-reco-0123456789-01234",
+			"name":      "test-vpa-with-reco-0123456789-01234",
+			"namespace": "testing",
 		},
 		"spec": map[string]interface{}{},
 	},
 }
-
-// var testDeploymentWithReco = &appsv1.Deployment{
-// 	ObjectMeta: metav1.ObjectMeta{
-// 		Name:      "test-vpa-with-reco",
-// 		Namespace: "testing",
-// 	},
-// 	Spec: appsv1.DeploymentSpec{
-// 		Template: v1.PodTemplateSpec{
-// 			Spec: v1.PodSpec{
-// 				Containers: []v1.Container{
-// 					{
-// 						Name: "container",
-// 						Resources: v1.ResourceRequirements{
-// 							Limits:   targetResources,
-// 							Requests: targetResources,
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	},
-// }
 
 // The summary of these objects
 
@@ -282,6 +264,116 @@ var testSummary = Summary{
 				"test-vpa-with-reco": {
 					ControllerName: "test-vpa-with-reco",
 					ControllerType: "Deployment",
+					Containers: map[string]containerSummary{
+						"container": {
+							ContainerName: "container",
+							LowerBound:    lowerBound,
+							UpperBound:    upperBound,
+							Target:        targetResources,
+							Limits:        targetResources,
+							Requests:      targetResources,
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+// DaemonSet test and VPA
+
+var testDaemonSettWithRecoUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "DaemonSet",
+		"apiVersion": "apps/v1",
+		"metadata": map[string]interface{}{
+			"name":      "test-ds-with-reco",
+			"namespace": "testing-daemonset",
+		},
+		"spec": map[string]interface{}{
+			"template": map[string]interface{}{
+				"spec": map[string]interface{}{
+					"containers": []interface{}{
+						map[string]interface{}{
+							"name": "container",
+							"resources": map[string]interface{}{
+								"limits": map[string]interface{}{
+									"cpu":    "100m",
+									"memory": "100Mi",
+								},
+								"requests": map[string]interface{}{
+									"cpu":    "100m",
+									"memory": "100Mi",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}
+
+var testDaemonSetWithRecoPodUnstructured = &unstructured.Unstructured{
+	Object: map[string]interface{}{
+		"kind":       "Pod",
+		"apiVersion": "v1",
+		"metadata": map[string]interface{}{
+			"ownerReferences": []interface{}{
+				map[string]interface{}{
+					"apiVersion": "apps/v1",
+					"kind":       "DaemonSet",
+					"controller": true,
+					"name":       "test-ds-with-reco",
+				},
+			},
+			"name":      "test-ds-with-reco-01234",
+			"namespace": "testing-daemonset",
+		},
+		"spec": map[string]interface{}{},
+	},
+}
+
+var testDaemonSetVPAWithReco = &vpav1.VerticalPodAutoscaler{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "test-ds-with-reco",
+		Namespace: "testing-daemonset",
+		Labels:    utils.VPALabels,
+	},
+	Spec: vpav1.VerticalPodAutoscalerSpec{
+		TargetRef: &autoscalingv1.CrossVersionObjectReference{
+			APIVersion: "apps/v1",
+			Kind:       "DaemonSet",
+			Name:       "test-ds-with-reco",
+		},
+		UpdatePolicy: &vpav1.PodUpdatePolicy{
+			UpdateMode: &updateMode,
+		},
+	},
+	Status: vpav1.VerticalPodAutoscalerStatus{
+		Recommendation: &vpav1.RecommendedPodResources{
+			ContainerRecommendations: []vpav1.RecommendedContainerResources{
+				{
+					ContainerName: "container",
+					Target:        targetResources,
+					UpperBound:    upperBound,
+					LowerBound:    lowerBound,
+				},
+			},
+		},
+	},
+}
+
+// The summary of the daemonset
+
+var testSummaryDaemonSet = Summary{
+	Namespaces: map[string]namespaceSummary{
+		"testing-daemonset": {
+			Namespace: "testing-daemonset",
+			Workloads: map[string]workloadSummary{
+				"test-ds-with-reco": {
+					ControllerName: "test-ds-with-reco",
+					ControllerType: "DaemonSet",
 					Containers: map[string]containerSummary{
 						"container": {
 							ContainerName: "container",
