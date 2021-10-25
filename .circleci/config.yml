@@ -143,12 +143,12 @@ workflows:
           requires:
             - test
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.19.11"
-          kind_node_image: "kindest/node:v1.19.11@sha256:558780c13d9736d9ba55fa695a5bb8f403a53e42b95bea54fbdc4712181f5e3f"
+          name: "End-To-End Kubernetes 1.19.7"
+          kind_node_image: "kindest/node:v1.19.7@sha256:a70639454e97a4b733f9d9b67e12c01f6b0297449d5b9cbbef87473458e26dca"
           <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.20.7"
-          kind_node_image: "kindest/node:v1.20.7@sha256:4c68efafa97d278a75a5b4677fb27e4986b03301739f1f87575af32202da9cfe"
+          name: "End-To-End Kubernetes 1.20.2"
+          kind_node_image: "kindest/node:v1.20.2@sha256:15d3b5c4f521a84896ed1ead1b14e4774d02202d5c65ab68f30eeaf310a3b1a7"
           <<: *e2e_configuration
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.21.1"

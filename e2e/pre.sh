@@ -35,8 +35,8 @@ printf "\n\n"
 
 yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
 yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
-yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
-yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
+yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1-amd64"
+yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1-amd64"
 
 cat hack/manifests/dashboard/deployment.yaml
 cat hack/manifests/controller/deployment.yaml
