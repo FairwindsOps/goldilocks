@@ -2,7 +2,6 @@ release:
   prerelease: auto
 before:
   hooks:
-    - go mod tidy
     - go install github.com/gobuffalo/packr/v2/packr2
     - packr2
 builds:
