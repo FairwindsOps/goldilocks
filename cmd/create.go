@@ -36,7 +36,7 @@ func init() {
 var createCmd = &cobra.Command{
 	Use:   "create-vpas",
 	Short: "Create VPAs",
-	Long:  `Create a VPA for every Deployment in the specified namespace.`,
+	Long:  `Create a VPA for every workload in the specified namespace.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		klog.V(4).Infof("Starting to create the VPA objects in namespace: %s", nsName)
 		kubeClient := kube.GetInstance()

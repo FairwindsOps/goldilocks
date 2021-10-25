@@ -7,7 +7,7 @@ The CLI was originally developed to test the features of Goldilocks. While the C
 The CLI summary function should still be useful. It runs the same summary output that the dashboard uses, and can generate a JSON object that can be used elsewhere.
 
 ```
-A tool for analysis of kubernetes Deployment resource usage.
+A tool for analysis of kubernetes workload resource usage.
 
 Usage:
   goldilocks [flags]
@@ -64,7 +64,7 @@ kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
 
 > Note: This feature is for advanced usage only and is not recommended nor the default!
 
-VPAs created for Deployments in a Namespace have an update mode of "off" by
+VPAs created for workloads in a Namespace have an update mode of "off" by
 default, meaning the VPAs only report recommendations and do not actually
 auto-scale the Pods.
 
@@ -120,17 +120,17 @@ Example of an annotation
       ] }
 ```
 
-#### Deployment Specifications
+#### Workload Specifications
 
-If you want a specific Deployment to have a VPA in a specific update mode,
-then you can annotate the Deployment with `goldilocks.fairwinds.com/vpa-update-mode=<mode>`
-to control the update mode for a specific Deployment in a Namespace (regardless of labeling on the Namespace).
+If you want a specific workload to have a VPA in a specific update mode,
+then you can annotate the workload with `goldilocks.fairwinds.com/vpa-update-mode=<mode>`
+to control the update mode for a specific workload in a Namespace (regardless of labeling on the Namespace).
 
 ### create-vpas
 
 `goldilocks create-vpas -n some-namespace`
 
-This will search for any deployments in the given namespace and generate a VPA for each of them.  Each vpa will be labelled for use by this tool.
+This will search for any workloads in the given namespace and generate a VPA for each of them.  Each vpa will be labelled for use by this tool.
 
 ### delete-vpas
 
@@ -152,7 +152,7 @@ Queries all the VPA objects that are labelled for this tool across all namespace
 
 The `dashboard` and `summary` commands can exclude recommendations for a list of comma separated container names using the `--exclude-containers` argument. This option can be useful for hiding recommendations for sidecar containers for things like Linkerd and Istio.
 
-Containers can be excluded for individual deployments by applying a label to any deployment. The label value should be a list of comma separated container names. The label value will be combined with any values provided through the `--exclude-containers` argument.
+Containers can be excluded for individual workloads by applying a label to any of the workload controller resources (`Deployment`, `StatefulSet`, `DaemonSet`, etc). The label value should be a list of comma separated container names. The label value will be combined with any values provided through the `--exclude-containers` argument.
 
 Example label:
 
