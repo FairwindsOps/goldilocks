@@ -1,20 +1,69 @@
+release:
+  prerelease: auto
 builds:
   - id: goldilocks
-    env:
-      - CGO_ENABLED=0
-      - GO111MODULE=on
+    ldflags:
+      - -X main.version=$(VERSION) -X main.commit=$(COMMIT) -s -w
     goarch:
       - amd64
       - arm
       - arm64
+    env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    goos:
+      - linux
+      - darwin
     goarm:
       - 6
       - 7
-checksum:
-  name_template: 'checksums.txt'
 changelog:
   sort: asc
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+dockers:
+- image_templates:
+  - "quay.io/fairwinds/goldilocks:{{ .FullCommit }}-amd64"
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-amd64"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-amd64"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
+  use: buildx
+  dockerfile: Dockerfile
+  build_flag_templates:
+  - "--platform=linux/amd64"
+- image_templates:
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-arm64v8"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-arm64v8"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  use: buildx
+  goarch: arm64
+  dockerfile: Dockerfile
+  build_flag_templates:
+  - "--platform=linux/arm64/v8"
+- image_templates:
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-armv7"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-armv7"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"
+  use: buildx
+  goarch: arm64
+  dockerfile: Dockerfile
+  build_flag_templates:
+  - "--platform=linux/arm/v7"
+docker_manifests:
+- name_template: quay.io/fairwinds/goldilocks:{{ .Tag }}
+  image_templates:
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-amd64"
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-arm64v8"
+  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-armv7"
+- name_template: quay.io/fairwinds/goldilocks:v{{ .Major }}
+  image_templates:
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-amd64"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-arm64v8"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-armv7"
+- name_template: quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}
+  image_templates:
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"

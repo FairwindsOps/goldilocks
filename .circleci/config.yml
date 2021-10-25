@@ -4,20 +4,42 @@ orbs:
   rok8s-scripts: fairwinds/rok8s-scripts@11
 
 references:
+  enable_experimental_features: &enable_experimental_docker_features
+    run:
+      name: enable experimental features
+      command: |
+        set -ex
+        apk --update add openssh
+        ssh remote-docker \<<EOF
+          sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+          sudo systemctl restart docker
+        EOF
+  install_vault: &install_vault
+    run:
+      name: install hashicorp vault
+      command: |
+        cd /tmp
+        curl -LO https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_linux_amd64.zip
+        unzip vault_1.8.1_linux_amd64.zip
+        mv vault /usr/bin/vault
+        apk --update add yq
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
-    kind_version: 0.9.0
+    attach-workspace: true
+    kind_version: 0.11.1
     requires:
-      - build-container
+      - test
+      - snapshot
     filters:
       branches:
         only: /.*/
       tags:
         ignore: /v.*/
+
 jobs:
   test:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
@@ -26,7 +48,6 @@ jobs:
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
-          GO111MODULE: "on"
     steps:
       - checkout
       - run:
@@ -44,6 +65,47 @@ jobs:
           name: Run Tests
           command: make test
 
+  build_and_release:
+    working_directory: /go/src/github.com/fairwindsops/goldilocks
+    resource_class: large
+    shell: /bin/bash
+    docker:
+      - image: goreleaser/goreleaser:v0.174.2
+        environment:
+          GO111MODULE: "on"
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.6
+      - *enable_experimental_docker_features
+      - *install_vault
+      - rok8s-scripts/get_vault_env:
+          vault_path: repo/global/env
+      - rok8s-scripts/docker_login:
+          registry: "quay.io"
+          username: $FAIRWINDS_QUAY_USER
+          password-variable: FAIRWINDS_QUAY_TOKEN
+      - run: goreleaser
+  snapshot:
+    working_directory: /go/src/github.com/fairwindsops/goldilocks
+    resource_class: large
+    docker:
+      - image: goreleaser/goreleaser:v0.174.2
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.6
+      - *enable_experimental_docker_features
+      - run: goreleaser --snapshot
+      - run: mkdir -p /tmp/workspace/docker_save/
+      - run: docker save quay.io/fairwinds/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
+      - persist_to_workspace:
+          root: /tmp/workspace/
+          paths:
+          - docker_save
+      - store_artifacts:
+          path: dist
+          destination: snapshot
   publish_docs:
     docker:
       - image: cimg/node:15.5.1
@@ -52,6 +114,7 @@ jobs:
       - run:
           name: Build Docs Site
           command: |
+            set -e
             cd ./docs
             npm install
             npm run check-links
@@ -67,75 +130,41 @@ jobs:
           command: |
             cd ./dist
             aws s3 sync ./ s3://goldilocks.docs.fairwinds.com --delete
+
 workflows:
   version: 2
-  build:
+  tests:
     jobs:
-      - test:
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              only: /v.*/
-      - rok8s-scripts/docker_build_and_push:
-          name: build-container
-          docker-push: false
-          enable_docker_layer_caching: true
-          config_file: deploy/build.config
-          docker-login: false
-          password-variable: "foo"
-          requires:
-            - test
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              ignore: /.*/
-      - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.16.15"
-          kind_node_image: "kindest/node:v1.16.15@sha256:a89c771f7de234e6547d43695c7ab047809ffc71a0c3b65aa54eda051c45ed20"
-          <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.17.11"
-          kind_node_image: "kindest/node:v1.17.11@sha256:5240a7a2c34bf241afb54ac05669f8a46661912eab05705d660971eeb12f6555"
-          <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.18.8"
-          kind_node_image: "kindest/node:v1.18.8@sha256:f4bcc97a0ad6e7abaf3f643d890add7efe6ee4ab90baeb374b4f41a4c95567eb"
-          <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.19.1"
-          kind_node_image: "kindest/node:v1.19.1@sha256:98cf5288864662e37115e362b23e4369c8c4a408f99cbc06e58ac30ddc721600"
-          <<: *e2e_configuration
-      - rok8s-scripts/docker_build_and_push:
-          name: build-and-push-container
-          docker-push: true
-          enable_docker_layer_caching: true
-          config_file: deploy/build.config
+      - test
+      - snapshot:
           context: org-global
-          docker-login: true
-          password-variable: "fairwinds_quay_token"
-          registry: quay.io
-          username: fairwinds+circleci
           requires:
             - test
-          filters:
-            branches:
-              only: /master/
-            tags:
-              only: /v.*/
-      - rok8s-scripts/github_release:
-          requires:
-            - test
-            - build-and-push-container
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.19.7"
+          kind_node_image: "kindest/node:v1.19.7@sha256:a70639454e97a4b733f9d9b67e12c01f6b0297449d5b9cbbef87473458e26dca"
+          <<: *e2e_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.20.2"
+          kind_node_image: "kindest/node:v1.20.2@sha256:15d3b5c4f521a84896ed1ead1b14e4774d02202d5c65ab68f30eeaf310a3b1a7"
+          <<: *e2e_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.21.1"
+          kind_node_image: "kindest/node:v1.21.2@sha256:9d07ff05e4afefbba983fac311807b3c17a5f36e7061f6cb7e2ba756255b2be4"
+          <<: *e2e_configuration
+  release:
+    jobs:
+      - build_and_release:
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /v.*/
       - publish_docs:
+          requires:
+            - build_and_release
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /.*/
+              only: /v.*/

@@ -19,16 +19,24 @@ else
     echo "CI_SHA1: $CI_SHA1"
 fi
 
-docker-build -f deploy/build.config
-docker images
-docker tag "quay.io/fairwinds/goldilocks:latest" "quay.io/fairwinds/goldilocks:$CI_SHA1"
-docker images
-kind load docker-image "quay.io/fairwinds/goldilocks:$CI_SHA1" --name "e2e"
+printf "\n\n"
+echo "********************************************************************"
+echo "** LOADING IMAGES TO DOCKER AND KIND **"
+echo "********************************************************************"
+printf "\n\n"
+docker load --input /tmp/workspace/docker_save/goldilocks_${CI_SHA1}-amd64.tar
+export PATH=$(pwd)/bin-kind:$PATH
+kind load docker-image --name e2e quay.io/fairwinds/goldilocks:${CI_SHA1}-amd64
+printf "\n\n"
+echo "********************************************************************"
+echo "** END LOADING IMAGE **"
+echo "********************************************************************"
+printf "\n\n"
 
 yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
 yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].imagePullPolicy "Never"
-yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
-yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1"
+yq w -i hack/manifests/dashboard/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1-amd64"
+yq w -i hack/manifests/controller/deployment.yaml spec.template.spec.containers[0].image "quay.io/fairwinds/goldilocks:$CI_SHA1-amd64"
 
 cat hack/manifests/dashboard/deployment.yaml
 cat hack/manifests/controller/deployment.yaml
