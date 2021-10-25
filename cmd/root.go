@@ -59,7 +59,7 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "goldilocks",
 	Short: "goldilocks",
-	Long:  `A tool for analysis of kubernetes Deployment resource usage.`,
+	Long:  `A tool for analysis of kubernetes workload resource usage.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		klog.Error("You must specify a sub-command.")
 		err := cmd.Help()
