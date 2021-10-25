@@ -6,7 +6,7 @@ orbs:
 executors:
   large:
     docker:
-      - image: quay.io/reactiveops/ci-images:v11
+      - image: quay.io/reactiveops/ci-images:v11-stretch
     resource_class: large
 
 references:
