@@ -3,12 +3,6 @@ version: 2.1
 orbs:
   rok8s-scripts: fairwinds/rok8s-scripts@11
 
-executors:
-  large:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v11-stretch
-    resource_class: large
-
 references:
   enable_experimental_features: &enable_experimental_docker_features
     run:
@@ -32,12 +26,11 @@ references:
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
-    executor: large
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     attach-workspace: true
-    kind_version: 0.9.0
+    kind_version: 0.11.1
     requires:
       - test
       - snapshot
