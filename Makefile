@@ -1,5 +1,5 @@
 # Go parameters
-GOCMD=GO111MODULE=on go
+GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
@@ -31,5 +31,7 @@ clean:
 # Cross compilation
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_NAME) -ldflags "-X main.VERSION=$(VERSION)" -v
+build-docker: build-linux
+	docker build -t goldilocks:dev .
 e2e-test:
 	venom run e2e/tests/* --output-dir e2e/results --log info --strict

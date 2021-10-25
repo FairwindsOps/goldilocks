@@ -48,7 +48,6 @@ jobs:
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
-          GO111MODULE: "on"
     steps:
       - checkout
       - run:
@@ -100,7 +99,6 @@ jobs:
       - run: goreleaser --snapshot
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save quay.io/fairwinds/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
-      - run: pwd; ls -la *
       - persist_to_workspace:
           root: /tmp/workspace/
           paths:
