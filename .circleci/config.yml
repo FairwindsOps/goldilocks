@@ -85,6 +85,7 @@ jobs:
           registry: "quay.io"
           username: $FAIRWINDS_QUAY_USER
           password-variable: FAIRWINDS_QUAY_TOKEN
+      - run: echo 'export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"' >> $BASH_ENV
       - run: goreleaser
   snapshot:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
