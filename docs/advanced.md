@@ -14,32 +14,33 @@ Usage:
   goldilocks [command]
 
 Available Commands:
+  completion  generate the autocompletion script for the specified shell
   controller  Run goldilocks as a controller inside a kubernetes cluster.
   create-vpas Create VPAs
   dashboard   Run the goldilocks dashboard that will show recommendations.
   delete-vpas Delete VPAs
   help        Help about any command
-  summary     Genarate a summary of the vpa recommendations in a namespace.
+  summary     Generate a summary of vpa recommendations.
   version     Prints the current version of the tool.
 
 Flags:
-      --alsologtostderr                  log to standard error as well as files
-  -h, --help                             help for goldilocks
-      --kubeconfig string                Kubeconfig location. [KUBECONFIG] (default "$HOME/.kube/config")
-      --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
-      --log_dir string                   If non-empty, write log files in this directory
-      --log_file string                  If non-empty, use this log file
-      --log_file_max_size uint           Defines the maximum size a log file can grow to. Unit is megabytes. If the value is 0, the maximum file size is unlimited. (default 1800)
-      --logtostderr                      log to standard error instead of files (default true)
-      --master string                    The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.
-      --skip_headers                     If true, avoid header prefixes in the log messages
-      --skip_log_headers                 If true, avoid headers when opening log files
-      --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
-  -v, --v Level                          number for the log level verbosity
-      --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
+  -h, --help                help for goldilocks
+      --kubeconfig string   Kubeconfig location. [KUBECONFIG] (default "$HOME/.kube/config")
+  -v, --v Level             number for the log level verbosity
 
 Use "goldilocks [command] --help" for more information about a command.
 ```
+
+### Installation
+
+Visit the [releases page](https://github.com/FairwindsOps/goldilocks/releases) to find the release
+that's right for your environment. For example, on Linux:
+```
+curl -L "https://github.com/FairwindsOps/goldilocks/releases/download/v4.0.0/goldilocks_4.0.0_linux_amd64.tar.gz" > goldilocks.tar.gz
+tar -xvf goldilocks.tar.gz
+sudo mv goldilocks /usr/local/bin/
+```
+
 ### controller
 
 This starts the goldilocks controller. Used by the Docker container, it will create vpas for properly labelled namespaces.
