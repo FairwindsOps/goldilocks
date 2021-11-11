@@ -28,7 +28,7 @@ The full VPA install includes the updater and the admission webhook for VPA. Gol
 Google has provided the vertical pod autoscaler as a beta feature in GKE. You can see the docs [here](https://cloud.google.com/kubernetes-engine/docs/how-to/vertical-pod-autoscaling), or just enable it like so:
 
 ```
-gcloud beta container clusters update [CLUSTER-NAME] --enable-vertical-pod-autoscaling
+gcloud container clusters update [CLUSTER-NAME] --enable-vertical-pod-autoscaling
 ```
 
 NOTE: This does not support using prometheus as a data backend.
