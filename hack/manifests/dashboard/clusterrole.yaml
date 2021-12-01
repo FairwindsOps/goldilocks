@@ -27,3 +27,10 @@ rules:
     verbs:
       - 'get'
       - 'list'
+  - apiGroups:
+      - 'argoproj.io'
+    resources:
+      - 'rollouts'
+    verbs:
+      - 'get'
+      - 'list'
