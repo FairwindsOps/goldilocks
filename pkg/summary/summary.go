@@ -16,6 +16,7 @@ package summary
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
@@ -142,7 +143,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		}
 
 		wSummary := workloadSummary{
-			ControllerName: vpa.Name,
+			ControllerName: strings.Replace(vpa.Name, "goldilocks-", "", 1),
 			ControllerType: vpa.Spec.TargetRef.Kind,
 			Containers:     map[string]containerSummary{},
 		}
@@ -283,11 +284,13 @@ func (s *Summarizer) updateWorkloads() error {
 	}
 	klog.V(10).Infof("Found workloads in namespace '%s': %v", s.namespace, workloads)
 
-	// map the workload.name -> &controllerUtils.Workload{} for easy vpa lookup (since vpa.Name == workload.Name)
+	// map goldilocks-workload.name -> &controllerUtils.Workload{} for easy vpa lookup.
 	s.workloadForVPANamed = map[string]*controllerUtils.Workload{}
 	for _, w := range workloads {
 		w := w
-		s.workloadForVPANamed[w.TopController.GetName()] = &w
+		controllerName := w.TopController.GetName()
+		vpaName := fmt.Sprintf("goldilocks-%s", controllerName)
+		s.workloadForVPANamed[vpaName] = &w
 	}
 
 	return nil

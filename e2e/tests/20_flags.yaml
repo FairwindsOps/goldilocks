@@ -24,19 +24,19 @@ testcases:
   - script: yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--on-by-default' | kubectl -n goldilocks apply -f -
   - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
   - script: sleep {{.vpa-wait}}
-  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label basic-demo-no-label -oname
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label goldilocks-basic-demo-no-label -oname
     assertions:
     - result.code ShouldEqual 0
-    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo-no-label"
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-no-label"
 - name: Include Namespaces
   steps:
   - script: yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--include-namespaces=demo-included' | kubectl -n goldilocks apply -f -
   - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
   - script: sleep {{.vpa-wait}}
-  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-included basic-demo-included -oname
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-included goldilocks-basic-demo-included -oname
     assertions:
     - result.code ShouldEqual 0
-    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/basic-demo-included"
+    - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-included"
 - name: Exclude Namespaces
   steps:
   - script: |
