@@ -7,23 +7,26 @@ metadata:
     app: goldilocks
 rules:
   - apiGroups:
+      - 'apps'
+    resources:
+      - '*'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
+      - ''
+    resources:
+      - 'namespaces'
+      - 'pods'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
       - 'autoscaling.k8s.io'
     resources:
       - 'verticalpodautoscalers'
-    verbs:
-      - 'get'
-      - 'list'
-  - apiGroups:
-      - 'apps'
-    resources:
-      - 'deployments'
-    verbs:
-      - 'get'
-      - 'list'
-  - apiGroups:
-      - '' # core
-    resources:
-      - 'namespaces'
     verbs:
       - 'get'
       - 'list'
@@ -34,3 +37,4 @@ rules:
     verbs:
       - 'get'
       - 'list'
+      - 'watch'
