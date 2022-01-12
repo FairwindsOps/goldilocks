@@ -51,7 +51,7 @@ var targetResources = v1.ResourceList{
 
 var testVPABasic = &vpav1.VerticalPodAutoscaler{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:      "test-basic",
+		Name:      "goldilocks-test-basic",
 		Labels:    utils.VPALabels,
 		Namespace: "testing",
 	},
@@ -149,7 +149,7 @@ var testVPANoLabels = &vpav1.VerticalPodAutoscaler{
 
 var testVPAWithReco = &vpav1.VerticalPodAutoscaler{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:      "test-vpa-with-reco",
+		Name:      "goldilocks-test-vpa-with-reco",
 		Namespace: "testing",
 		Labels:    utils.VPALabels,
 	},
@@ -336,7 +336,7 @@ var testDaemonSetWithRecoPodUnstructured = &unstructured.Unstructured{
 
 var testDaemonSetVPAWithReco = &vpav1.VerticalPodAutoscaler{
 	ObjectMeta: metav1.ObjectMeta{
-		Name:      "test-ds-with-reco",
+		Name:      "goldilocks-test-ds-with-reco",
 		Namespace: "testing-daemonset",
 		Labels:    utils.VPALabels,
 	},
