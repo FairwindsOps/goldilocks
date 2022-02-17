@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@11
+  rok8s: fairwinds/rok8s-scripts@11
 
 references:
   enable_experimental_features: &enable_experimental_docker_features
@@ -18,11 +18,11 @@ references:
     run:
       name: install hashicorp vault
       command: |
+        apk --update add curl yq
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_linux_amd64.zip
-        unzip vault_1.8.1_linux_amd64.zip
+        curl -LO https://releases.hashicorp.com/vault/1.9.2/vault_1.9.2_linux_amd64.zip
+        unzip vault_1.9.2_linux_amd64.zip
         mv vault /usr/bin/vault
-        apk --update add yq
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
@@ -79,9 +79,9 @@ jobs:
           version: 20.10.6
       - *enable_experimental_docker_features
       - *install_vault
-      - rok8s-scripts/get_vault_env:
+      - rok8s/get_vault_env:
           vault_path: repo/global/env
-      - rok8s-scripts/docker_login:
+      - rok8s/docker_login:
           registry: "quay.io"
           username: $FAIRWINDS_QUAY_USER
           password-variable: FAIRWINDS_QUAY_TOKEN
@@ -121,11 +121,29 @@ jobs:
             npm run check-links
             npm run build
       - run:
-          name: Install AWS CLI
+          name: Install Tools
           command: |
+            cd /tmp
+            echo "Installing AWS CLI"
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+
+            echo "Installing Hashicorp Vault"
+            curl -LO https://releases.hashicorp.com/vault/1.9.2/vault_1.9.2_linux_amd64.zip
+            unzip vault_1.9.2_linux_amd64.zip
+            sudo mv vault /usr/bin/vault
+            sudo chmod +x /usr/bin/vault
+            vault --version
+
+            echo "Installing yq"
+            curl -LO https://github.com/mikefarah/yq/releases/download/v4.16.2/yq_linux_amd64.tar.gz
+            tar -zxvf yq_linux_amd64.tar.gz
+            sudo mv yq_linux_amd64 /usr/bin/yq
+            sudo chmod +x /usr/bin/yq
+            yq --version
+      - rok8s/get_vault_env:
+          vault_path: repo/goldilocks/env
       - run:
           name: Publish Docs Site to S3
           command: |
@@ -141,15 +159,15 @@ workflows:
           context: org-global
           requires:
             - test
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.19.7"
           kind_node_image: "kindest/node:v1.19.7@sha256:a70639454e97a4b733f9d9b67e12c01f6b0297449d5b9cbbef87473458e26dca"
           <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.20.2"
           kind_node_image: "kindest/node:v1.20.2@sha256:15d3b5c4f521a84896ed1ead1b14e4774d02202d5c65ab68f30eeaf310a3b1a7"
           <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.21.1"
           kind_node_image: "kindest/node:v1.21.2@sha256:9d07ff05e4afefbba983fac311807b3c17a5f36e7061f6cb7e2ba756255b2be4"
           <<: *e2e_configuration
