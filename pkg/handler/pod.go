@@ -22,7 +22,7 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/fairwindsops/goldilocks/pkg/vpa"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func OnPodChanged(pod *corev1.Pod, event utils.Event) {

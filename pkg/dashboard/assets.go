@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gobuffalo/packr/v2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var assetBox = (*packr.Box)(nil)

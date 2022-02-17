@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/client-go/util/retry"
-	"k8s.io/klog/klogr"
+	"k8s.io/klog/v2/klogr"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -39,7 +39,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -266,7 +266,7 @@ func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, e
 	}
 
 	klog.V(2).Infof("There are %d vpas in Namespace/%s", len(existingVPAs.Items), namespace)
-	if klog.V(9) {
+	if klog.V(9).Enabled() {
 		for _, vpa := range existingVPAs.Items {
 			klog.V(9).Infof("Found VPA/%s in Namespace/%s", vpa.Name, namespace)
 		}
