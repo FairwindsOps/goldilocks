@@ -20,7 +20,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/fairwindsops/goldilocks/pkg/controller"
 	"github.com/fairwindsops/goldilocks/pkg/vpa"

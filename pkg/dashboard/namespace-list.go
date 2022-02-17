@@ -9,7 +9,7 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // NamespaceList replies with the rendered namespace list of all goldilocks enabled namespaces

@@ -9,7 +9,7 @@ import (
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"github.com/gobuffalo/packr/v2"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var templateBox = (*packr.Box)(nil)

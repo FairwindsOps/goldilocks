@@ -3,7 +3,7 @@ package dashboard
 import (
 	"net/http"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 // Health replies with the status messages given for healthy
