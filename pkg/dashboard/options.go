@@ -15,6 +15,7 @@ type Options struct {
 	vpaLabels          map[string]string
 	excludedContainers sets.String
 	onByDefault        bool
+	showAllVPAs        bool
 }
 
 // default options for the dashboard
@@ -25,6 +26,7 @@ func defaultOptions() *Options {
 		vpaLabels:          utils.VPALabels,
 		excludedContainers: sets.NewString(),
 		onByDefault:        false,
+		showAllVPAs:        false,
 	}
 }
 
@@ -53,5 +55,11 @@ func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 func OnByDefault(onByDefault bool) Option {
 	return func(opts *Options) {
 		opts.onByDefault = onByDefault
+	}
+}
+
+func ShowAllVPAs(showAllVPAs bool) Option {
+	return func(opts *Options) {
+		opts.showAllVPAs = showAllVPAs
 	}
 }

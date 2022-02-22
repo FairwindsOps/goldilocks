@@ -26,13 +26,17 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/dashboard"
 )
 
-var serverPort int
+var (
+	serverPort  int
+	showAllVPAs bool
+)
 
 func init() {
 	rootCmd.AddCommand(dashboardCmd)
 	dashboardCmd.PersistentFlags().IntVarP(&serverPort, "port", "p", 8080, "The port to serve the dashboard on.")
 	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	dashboardCmd.PersistentFlags().BoolVar(&onByDefault, "on-by-default", false, "Display every namespace that isn't explicitly excluded.")
+	dashboardCmd.PersistentFlags().BoolVar(&showAllVPAs, "show-all", false, "Display every VPA, even if it isn't managed by Goldilocks")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -44,6 +48,7 @@ var dashboardCmd = &cobra.Command{
 			dashboard.OnPort(serverPort),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 			dashboard.OnByDefault(onByDefault),
+			dashboard.ShowAllVPAs(showAllVPAs),
 		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)

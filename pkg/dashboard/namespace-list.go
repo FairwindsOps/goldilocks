@@ -16,7 +16,7 @@ import (
 func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var listOptions v1.ListOptions
-		if opts.onByDefault {
+		if opts.onByDefault || opts.showAllVPAs {
 			listOptions = v1.ListOptions{
 				LabelSelector: fmt.Sprintf("%s!=false", utils.VpaEnabledLabel),
 			}

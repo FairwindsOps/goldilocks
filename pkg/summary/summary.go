@@ -16,7 +16,6 @@ package summary
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
@@ -143,7 +142,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		}
 
 		wSummary := workloadSummary{
-			ControllerName: strings.Replace(vpa.Name, "goldilocks-", "", 1),
+			ControllerName: vpa.Spec.TargetRef.Name,
 			ControllerType: vpa.Spec.TargetRef.Kind,
 			Containers:     map[string]containerSummary{},
 		}
@@ -287,13 +286,32 @@ func (s *Summarizer) updateWorkloads() error {
 	// map goldilocks-workload.name -> &controllerUtils.Workload{} for easy vpa lookup.
 	s.workloadForVPANamed = map[string]*controllerUtils.Workload{}
 	for _, w := range workloads {
-		w := w
-		controllerName := w.TopController.GetName()
-		vpaName := fmt.Sprintf("goldilocks-%s", controllerName)
-		s.workloadForVPANamed[vpaName] = &w
+		for _, v := range s.vpas {
+			w := w
+			v := v
+			if vpaMatchesWorkload(v, w) {
+				vpaName := v.Name
+				s.workloadForVPANamed[vpaName] = &w
+			}
+		}
 	}
 
 	return nil
+}
+
+// vpaMatchesWorkload returns true if the VPA's target matches the workload
+func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workload) bool {
+	// check if the VPA's target matches the workload's target
+	if v.Spec.TargetRef.Kind != w.TopController.GetKind() {
+		return false
+	}
+	if v.Spec.TargetRef.Name != w.TopController.GetName() {
+		return false
+	}
+	if v.Spec.TargetRef.APIVersion != w.TopController.GetAPIVersion() {
+		return false
+	}
+	return true
 }
 
 func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
