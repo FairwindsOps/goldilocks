@@ -33,10 +33,15 @@ func Dashboard(opts Options) http.Handler {
 			namespace = val
 		}
 
+		filterLabels := make(map[string]string)
+		if !opts.showAllVPAs {
+			filterLabels = opts.vpaLabels
+		}
+
 		// TODO [hkatz] add caching or refresh button support
 		summarizer := summary.NewSummarizer(
 			summary.ForNamespace(namespace),
-			summary.ForVPAsWithLabels(opts.vpaLabels),
+			summary.ForVPAsWithLabels(filterLabels),
 			summary.ExcludeContainers(opts.excludedContainers),
 		)
 
