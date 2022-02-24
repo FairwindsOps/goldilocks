@@ -288,7 +288,6 @@ func (s *Summarizer) updateWorkloads() error {
 	for _, w := range workloads {
 		for _, v := range s.vpas {
 			w := w
-			v := v
 			if vpaMatchesWorkload(v, w) {
 				vpaName := v.Name
 				s.workloadForVPANamed[vpaName] = &w
