@@ -28,47 +28,67 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  prerelease: auto
+  footer: |
+    You can verify the signatures of both the checksums.txt file and the published docker images using [cosign](https://github.com/sigstore/cosign).
+
+    ```
+    cosign verify-blob checksums.txt --signature=checksums.txt.sig  --key https://artifacts.fairwinds.com/cosign.pub
+    ```
+
+    ```
+    cosign verify us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v4 --key https://artifacts.fairwinds.com/cosign.pub
+    ```
+signs:
+- cmd: cosign
+  args: ["sign-blob", "--key=hashivault://cosign", "-output-signature=${signature}", "${artifact}"]
+  artifacts: checksum
+
+docker_signs:
+- artifacts: all
+  args: ["sign", "--key=hashivault://cosign", "${artifact}", "-r"]
 dockers:
 - image_templates:
-  - "quay.io/fairwinds/goldilocks:{{ .FullCommit }}-amd64"
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-amd64"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-amd64"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .FullCommit }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
   use: buildx
   dockerfile: Dockerfile
   build_flag_templates:
   - "--platform=linux/amd64"
 - image_templates:
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-arm64v8"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-arm64v8"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
   use: buildx
   goarch: arm64
   dockerfile: Dockerfile
   build_flag_templates:
   - "--platform=linux/arm64/v8"
 - image_templates:
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-armv7"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-armv7"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-armv7"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-armv7"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"
   use: buildx
   goarch: arm64
   dockerfile: Dockerfile
   build_flag_templates:
   - "--platform=linux/arm/v7"
 docker_manifests:
-- name_template: quay.io/fairwinds/goldilocks:{{ .Tag }}
+- name_template: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}
   image_templates:
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-amd64"
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-arm64v8"
-  - "quay.io/fairwinds/goldilocks:{{ .Tag }}-armv7"
-- name_template: quay.io/fairwinds/goldilocks:v{{ .Major }}
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:{{ .Tag }}-armv7"
+- name_template: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}
   image_templates:
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-amd64"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-arm64v8"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}-armv7"
-- name_template: quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}-armv7"
+- name_template: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}
   image_templates:
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
-  - "quay.io/fairwinds/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-amd64"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-arm64v8"
+  - "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v{{ .Major }}.{{ .Minor }}-armv7"
