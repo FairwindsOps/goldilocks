@@ -98,7 +98,7 @@ jobs:
       - *enable_experimental_docker_features
       - run: goreleaser --snapshot --skip-sign
       - run: mkdir -p /tmp/workspace/docker_save/
-      - run: docker save quay.io/fairwinds/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
+      - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
           root: /tmp/workspace/
           paths:
