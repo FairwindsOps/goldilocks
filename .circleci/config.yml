@@ -30,7 +30,6 @@ references:
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     attach-workspace: true
-    kind_version: 0.11.1
     requires:
       - test
       - snapshot
@@ -70,7 +69,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v0.183.0
+      - image: goreleaser/goreleaser:v1.5.0
         environment:
           GO111MODULE: "on"
     steps:
@@ -81,25 +80,25 @@ jobs:
       - *install_vault
       - rok8s/get_vault_env:
           vault_path: repo/global/env
-      - rok8s/docker_login:
-          registry: "quay.io"
-          username: $FAIRWINDS_QUAY_USER
-          password-variable: FAIRWINDS_QUAY_TOKEN
+      - run:
+          name: docker login
+          command: |
+            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - run: echo 'export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"' >> $BASH_ENV
       - run: goreleaser
   snapshot:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v0.183.0
+      - image: goreleaser/goreleaser:v1.5.0
     steps:
       - checkout
       - setup_remote_docker:
           version: 20.10.6
       - *enable_experimental_docker_features
-      - run: goreleaser --snapshot
+      - run: goreleaser --snapshot --skip-sign
       - run: mkdir -p /tmp/workspace/docker_save/
-      - run: docker save quay.io/fairwinds/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
+      - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
           root: /tmp/workspace/
           paths:
@@ -159,10 +158,6 @@ workflows:
           context: org-global
           requires:
             - test
-      - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.19.7"
-          kind_node_image: "kindest/node:v1.19.7@sha256:a70639454e97a4b733f9d9b67e12c01f6b0297449d5b9cbbef87473458e26dca"
-          <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.20.2"
           kind_node_image: "kindest/node:v1.20.2@sha256:15d3b5c4f521a84896ed1ead1b14e4774d02202d5c65ab68f30eeaf310a3b1a7"

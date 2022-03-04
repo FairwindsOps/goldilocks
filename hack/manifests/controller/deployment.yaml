@@ -21,7 +21,7 @@ spec:
       serviceAccountName: goldilocks-controller
       containers:
         - name: goldilocks
-          image: "quay.io/fairwinds/goldilocks:master"
+          image: "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:master"
           imagePullPolicy: Always
           command:
             - /goldilocks
