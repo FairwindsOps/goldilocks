@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/fairwindsops/controller-utils v0.1.1
+	github.com/fairwindsops/controller-utils v0.1.2
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/gorilla/mux v1.8.0
 	github.com/satori/go.uuid v1.2.0
