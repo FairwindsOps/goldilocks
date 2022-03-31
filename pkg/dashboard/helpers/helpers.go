@@ -15,7 +15,7 @@
 package helpers
 
 import (
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -124,5 +124,5 @@ func ResourceName(name string) corev1.ResourceName {
 }
 
 func GetUUID() string {
-	return uuid.NewV4().String()
+	return uuid.New().String()
 }
