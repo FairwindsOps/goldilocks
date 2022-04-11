@@ -17,7 +17,7 @@ There are multiple ways to install VPA for use with Goldilocks:
 
 #### Important Note about VPA
 
-The full VPA install includes the updater and the admission webhook for VPA. Goldilocks only requires the recommender. An admission webhook can introduce unexpected results in a cluster if not planned for properly. We recommend installing using the chart v2.0.0 or higher, which will only install the parts of VPA necessary for Goldilocks to function.
+The full VPA install includes the updater and the admission webhook for VPA. Goldilocks only requires the recommender. An admission webhook can introduce unexpected results in a cluster if not planned for properly. If installing VPA using the goldilocks chart and the vpa sub-chart, only the VPA recommender will be installed. See the [vpa chart](https://github.com/FairwindsOps/charts/tree/master/stable/vpa) and the Goldilocks [values.yaml](https://github.com/FairwindsOps/charts/blob/master/stable/goldilocks/values.yaml) for more information.
 
 ### Prometheus (optional)
 
