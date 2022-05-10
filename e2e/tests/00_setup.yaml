@@ -10,7 +10,7 @@ testcases:
   - script: |
       helm repo add bitnami https://charts.bitnami.com/bitnami
       helm repo update
-      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs.kubelet-insecure-tls=true --create-namespace
+      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs[0]='--kubelet-insecure-tls=true' --create-namespace
 - name: Install VPA Recommender
   steps:
   - script: |
