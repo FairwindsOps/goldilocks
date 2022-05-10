@@ -6,7 +6,7 @@ before:
 builds:
   - id: goldilocks
     ldflags:
-      - -X main.version=$(VERSION) -X main.commit=$(COMMIT) -s -w
+      - -X main.version={{.Version}} -X main.commit={{.Commit}} -s -w
     goarch:
       - amd64
       - arm
