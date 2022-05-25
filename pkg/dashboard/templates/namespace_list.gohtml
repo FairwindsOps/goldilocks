@@ -12,7 +12,7 @@
     <nav>
       <ul class="navList" role="list">
         <li>
-          <a class="linkIcon" href="/dashboard">
+          <a class="linkIcon" href="{{ $.BasePath }}dashboard">
             <i aria-hidden="true" class="far fa-fw fa-eye"></i>
             Detail All Namespaces
           </a>
@@ -28,7 +28,7 @@
     <main class="verticalRhythm">
       <aside class="banner">
         <a href="https://www.fairwinds.com/kubernetes-config-benchmark-ui" target="_blank" rel="noreferrer">
-          <img src="/static/images/benchmark.png" alt="Apply K8s right sizing and best practices across multiple clusters and teams with Fairwinds Insights. Try Demo. (Opens in new window.)">
+          <img src="static/images/benchmark.png" alt="Apply K8s right sizing and best practices across multiple clusters and teams with Fairwinds Insights. Try Demo. (Opens in new window.)">
         </a>
       </aside>
       <h1>Namespaces</h1>
@@ -44,7 +44,7 @@
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
         <li data-filter="{{ .Name }}">
-          <a class="buttonLink --withIcon" href="/dashboard/{{ .Name }}">
+          <a class="buttonLink --withIcon" href="{{ $.BasePath }}dashboard/{{ .Name }}">
             {{ .Name }}
             <i aria-hidden="true" class="fas fa-fw fa-chevron-right"></i>
           </a>
