@@ -46,15 +46,27 @@ var dashboardCmd = &cobra.Command{
 	Short: "Run the goldilocks dashboard that will show recommendations.",
 	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var validBasePath = validateBasePath(basePath)
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
-			dashboard.BasePath(basePath),
+			dashboard.BasePath(validBasePath),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 			dashboard.OnByDefault(onByDefault),
 			dashboard.ShowAllVPAs(showAllVPAs),
 		)
 		http.Handle("/", router)
-		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v",serverPort, basePath)
+		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v",serverPort, validBasePath)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
 	},
+}
+
+func validateBasePath(path string) string {
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+	return path
 }
