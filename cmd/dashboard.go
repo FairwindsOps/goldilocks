@@ -29,7 +29,7 @@ import (
 var (
 	serverPort  int
 	showAllVPAs bool
-	basePath string
+	basePath    string
 )
 
 func init() {
@@ -55,18 +55,19 @@ var dashboardCmd = &cobra.Command{
 			dashboard.ShowAllVPAs(showAllVPAs),
 		)
 		http.Handle("/", router)
-		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v",serverPort, validBasePath)
+		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v", serverPort, validBasePath)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
 	},
 }
 
 func validateBasePath(path string) string {
+	if path == "" || path == "/" {
+		return "/"
+	}
+
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
 
-	if !strings.HasSuffix(path, "/") {
-		path = path + "/"
-	}
-	return path
+	return strings.TrimSuffix(path, "/")
 }

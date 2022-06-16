@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"github.com/gobuffalo/packr/v2"
@@ -99,7 +100,7 @@ func writeTemplate(tmpl *template.Template, opts Options, data interface{}, w ht
 		return
 	}
 	err = tmpl.Execute(buf, baseTemplateData{
-		BasePath: opts.basePath,
+		BasePath: validateBasePath(opts.basePath),
 		Data:     data,
 		JSON:     template.JS(jsonData),
 	})
@@ -112,4 +113,16 @@ func writeTemplate(tmpl *template.Template, opts Options, data interface{}, w ht
 	if err != nil {
 		klog.Errorf("Error writing template: %v", err)
 	}
+}
+
+func validateBasePath(path string) string {
+	if path == "/" {
+		return path
+	}
+
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+
+	return path
 }

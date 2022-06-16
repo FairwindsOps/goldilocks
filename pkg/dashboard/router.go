@@ -17,6 +17,7 @@ package dashboard
 import (
 	"net/http"
 	"path"
+	"k8s.io/klog/v2"
 
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
@@ -69,11 +70,13 @@ func GetRouter(setters ...Option) *mux.Router {
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// catch all other paths that weren't matched
-		if r.URL.Path != "/" && r.URL.Path != opts.basePath {
+		if r.URL.Path != "/" && r.URL.Path != opts.basePath && r.URL.Path != opts.basePath + "/" {
+			klog.Infof("404: %s", r.URL.Path)
 			http.NotFound(w, r)
 			return
 		}
 
+		klog.Infof("redirecting to %v",path.Join(opts.basePath, "/namespaces"))
 		// default redirect on root path
 		http.Redirect(w, r, path.Join(opts.basePath, "/namespaces"), http.StatusMovedPermanently)
 	})
