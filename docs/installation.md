@@ -41,6 +41,7 @@ First, make sure you satisfy the requirements above.
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+kubectl create namespace goldilocks
 Helm v2:
 helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 Helm v3:
