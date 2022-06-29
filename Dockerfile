@@ -1,4 +1,4 @@
-FROM alpine:3.15.4
+FROM alpine:3.16
 
 LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.vendor="FairwindsOps, Inc." \

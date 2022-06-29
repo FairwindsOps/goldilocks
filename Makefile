@@ -25,7 +25,7 @@ clean:
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
 	packr2 clean
-	rm -rf e2e/resutls/*
+	rm -rf e2e/results/*
 	rm *-report*
 	rm coverage.txt
 # Cross compilation

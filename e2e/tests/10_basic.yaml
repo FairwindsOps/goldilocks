@@ -30,7 +30,7 @@ testcases:
   steps:
   - script: |
       kubectl create ns statefulset-demo
-      helm install redis bitnami/redis --namespace statefulset-demo --version=15.4.1 --set architecture=replication
+      helm install redis bitnami/redis --namespace statefulset-demo --version=16.12.1 --set architecture=replication
 - name: No VPA in statefulset-demo namespace Before Labels
   steps:
   - script: kubectl get vpa -n statefulset-demo
