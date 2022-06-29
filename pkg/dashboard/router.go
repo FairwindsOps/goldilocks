@@ -16,6 +16,8 @@ package dashboard
 
 import (
 	"net/http"
+	"path"
+	"k8s.io/klog/v2"
 
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
@@ -33,6 +35,13 @@ func GetMarkdownBox() *packr.Box {
 	return markdownBox
 }
 
+func GetAssetBox() *packr.Box {
+	if assetBox == (*packr.Box)(nil) {
+		assetBox = packr.New("Assets", "assets")
+	}
+	return assetBox
+}
+
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(setters ...Option) *mux.Router {
 	opts := defaultOptions()
@@ -48,7 +57,8 @@ func GetRouter(setters ...Option) *mux.Router {
 
 	// assets
 	router.Handle("/favicon.ico", Asset("/images/favicon-32x32.png"))
-	router.PathPrefix("/static/").Handler(StaticAssets("/static/"))
+	fileServer := http.FileServer(GetAssetBox())
+	router.PathPrefix("/static/").Handler(http.StripPrefix(path.Join(opts.basePath, "/static/"), fileServer))
 
 	// dashboard
 	router.Handle("/dashboard", Dashboard(*opts))
@@ -60,13 +70,15 @@ func GetRouter(setters ...Option) *mux.Router {
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// catch all other paths that weren't matched
-		if r.URL.Path != "/" {
+		if r.URL.Path != "/" && r.URL.Path != opts.basePath && r.URL.Path != opts.basePath + "/" {
+			klog.Infof("404: %s", r.URL.Path)
 			http.NotFound(w, r)
 			return
 		}
 
+		klog.Infof("redirecting to %v",path.Join(opts.basePath, "/namespaces"))
 		// default redirect on root path
-		http.Redirect(w, r, "/namespaces", http.StatusMovedPermanently)
+		http.Redirect(w, r, path.Join(opts.basePath, "/namespaces"), http.StatusMovedPermanently)
 	})
 
 	return router

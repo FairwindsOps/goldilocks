@@ -63,3 +63,9 @@ func ShowAllVPAs(showAllVPAs bool) Option {
 		opts.showAllVPAs = showAllVPAs
 	}
 }
+
+func BasePath(basePath string) Option {
+	return func(opts *Options) {
+		opts.basePath = basePath
+	}
+}

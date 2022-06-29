@@ -29,6 +29,7 @@ import (
 var (
 	serverPort  int
 	showAllVPAs bool
+	basePath    string
 )
 
 func init() {
@@ -37,6 +38,7 @@ func init() {
 	dashboardCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	dashboardCmd.PersistentFlags().BoolVar(&onByDefault, "on-by-default", false, "Display every namespace that isn't explicitly excluded.")
 	dashboardCmd.PersistentFlags().BoolVar(&showAllVPAs, "show-all", false, "Display every VPA, even if it isn't managed by Goldilocks")
+	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served.")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -44,14 +46,28 @@ var dashboardCmd = &cobra.Command{
 	Short: "Run the goldilocks dashboard that will show recommendations.",
 	Long:  `Run the goldilocks dashboard that will show recommendations.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		var validBasePath = validateBasePath(basePath)
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
+			dashboard.BasePath(validBasePath),
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 			dashboard.OnByDefault(onByDefault),
 			dashboard.ShowAllVPAs(showAllVPAs),
 		)
 		http.Handle("/", router)
-		klog.Infof("Starting goldilocks dashboard server on port %d", serverPort)
+		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v", serverPort, validBasePath)
 		klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", serverPort), nil))
 	},
+}
+
+func validateBasePath(path string) string {
+	if path == "" || path == "/" {
+		return "/"
+	}
+
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
+	return strings.TrimSuffix(path, "/")
 }
