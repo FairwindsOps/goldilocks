@@ -133,11 +133,11 @@ workflows:
               ignore: /.*/
             tags:
               only: /v.*/
-       - oss-docs/publish-docs:
-           repository: goldilocks
-           filters:
-             branches:
-               #ignore: /.*/
-               only: sudermanjr/docs-orb
-             tags:
-               only: /^.*/
+      - oss-docs/publish-docs:
+          repository: goldilocks
+          filters:
+            branches:
+              #ignore: /.*/
+              only: sudermanjr/docs-orb
+            tags:
+              only: /^.*/
