@@ -137,7 +137,6 @@ workflows:
           repository: goldilocks
           filters:
             branches:
-              #ignore: /.*/
-              only: sudermanjr/docs-orb
+              ignore: /.*/
             tags:
               only: /^.*/
