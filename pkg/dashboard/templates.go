@@ -24,6 +24,7 @@ const (
 	HeadTemplateName      = "head.gohtml"
 	NamespaceTemplateName = "namespace.gohtml"
 	NavbarTemplateName    = "navbar.gohtml"
+	EmailTemplateName     = "email.gohtml"
 )
 
 var (

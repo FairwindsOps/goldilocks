@@ -1,0 +1,26 @@
+{{ define "email" }}
+<div class="email-box">
+  <details class="" open>
+    <summary class="--hideMarker">
+      <h2 class="email-box__toggle-title">
+        Add cost estimates to your Goldilocks dashboard!
+        <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+        ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+      </h2>
+    </summary>
+
+    <section class="email-box__content">
+      <p>Enter your email to get a free estimate of the cost impact of applying Goldilocks’ recommendations.</p>
+      <input class="email-box__email-input" type="email" placeholder="Email" />
+      <div>
+        <label class="email-box__checkbox-container">
+          <input type="checkbox">
+          <span class="email-box__checkmark"></span>
+          <span class="email-box__checkbox-content">By entering your email address, you acknowledge that we may use it as our Privacy Policy describes.</span>
+        </label>
+      </div>
+      <button class="email-box__submit-btn">Submit</button>
+    </section>
+  </details>
+</div>
+{{ end }}
