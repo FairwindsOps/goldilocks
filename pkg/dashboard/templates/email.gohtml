@@ -1,5 +1,5 @@
 {{ define "email" }}
-<div class="email-box">
+<div class="email-box" id="email-box">
   <details class="" open>
     <summary class="--hideMarker">
       <h2 class="email-box__toggle-title">
@@ -11,15 +11,15 @@
 
     <section class="email-box__content">
       <p>Enter your email to get a free estimate of the cost impact of applying Goldilocks’ recommendations.</p>
-      <input class="email-box__email-input" type="email" placeholder="Email" />
+      <input id="email-box__email-input" class="email-box__email-input" type="email" placeholder="Email" />
       <div>
         <label class="email-box__checkbox-container">
-          <input type="checkbox">
+          <input type="checkbox" id="emailbox__checkbox">
           <span class="email-box__checkmark"></span>
           <span class="email-box__checkbox-content">By entering your email address, you acknowledge that we may use it as our Privacy Policy describes.</span>
         </label>
       </div>
-      <button class="email-box__submit-btn">Submit</button>
+      <button class="email-box__submit-btn" id="email-box__submit-btn">Submit</button>
     </section>
   </details>
 </div>
