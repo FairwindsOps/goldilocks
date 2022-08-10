@@ -570,7 +570,6 @@ UTILITIES
   color: #fff;
 }
 
-/* Hide the browser's default checkbox */
 .email-box__checkbox-container input {
   position: absolute;
   opacity: 0;
@@ -579,7 +578,6 @@ UTILITIES
   width: 0;
 }
 
-/* Create a custom checkbox */
 .email-box__checkmark {
   position: absolute;
   top: 2px;
@@ -591,30 +589,25 @@ UTILITIES
   border-radius: 0.25rem;
 }
 
-/* On mouse-over, add a grey background color */
 .email-box__checkbox-container:hover input ~ .email-box__checkmark {
   background-color: #fff;
 }
 
-/* When the checkbox is checked, add a blue background */
 .email-box__checkbox-container input:checked ~ .email-box__checkmark {
   background-color: #445688;
   border: none;
 }
 
-/* Create the checkmark/indicator (hidden when not checked) */
 .email-box__checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
 
-/* Show the checkmark when checked */
 .email-box__checkbox-container input:checked ~ .email-box__checkmark:after {
   display: block;
 }
 
-/* Style the checkmark/indicator */
 .email-box__checkbox-container .email-box__checkmark:after {
   left: 9px;
   top: 5px;
