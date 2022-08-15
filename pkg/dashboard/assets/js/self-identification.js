@@ -15,8 +15,8 @@
   initUIState();
 
   function initQueryParams() {
-    const enteredEmail = localStorage.getItem("enteredEmail");
-    if (enteredEmail && !urlParams.has("emailEntered")) {
+    const isEmailEntered = localStorage.getItem("emailEntered");
+    if (isEmailEntered && !urlParams.has("emailEntered")) {
       setQueryParam("emailEntered", "true");
     }
   }
@@ -34,16 +34,15 @@
 
   emailInput.addEventListener("input", function (evt) {
     const checked = emailCheckbox.checked;
-    toggleSubmitBtn(this.value, checked);
+    toggleSubmitBtn(checked);
   });
 
   emailCheckbox.addEventListener("change", function () {
-    const email = emailInput.value;
-    toggleSubmitBtn(email, this.checked);
+    toggleSubmitBtn(this.checked);
   });
 
-  function toggleSubmitBtn(email, checked) {
-    if (isInputInfoValid(email, checked)) {
+  function toggleSubmitBtn(checked) {
+    if (isInputInfoValid(checked)) {
       submitBtn.disabled = false;
       submitBtn.classList.add("email-box__submit-btn--active");
     } else {
@@ -62,7 +61,7 @@
     }
   });
 
-  function isInputInfoValid(email, checked) {
-    return checked && validator.isEmail(email);
+  function isInputInfoValid(checked) {
+    return checked && emailInput.validity.valid;
   }
 })();
