@@ -57,7 +57,7 @@
     if (isInputInfoValid(email, checked)) {
       // TODO: write logic to call the API to get the access token.
       window.location.reload();
-      localStorage.setItem("enteredEmail", email);
+      localStorage.setItem("emailEntered", true);
     }
   });
 
