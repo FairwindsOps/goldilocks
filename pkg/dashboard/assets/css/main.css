@@ -567,6 +567,10 @@ UTILITIES
   width: 71%;
 }
 
+.email-box__email-input:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
 .email-box__checkbox-label {
   color: #fff;
   display: block;
