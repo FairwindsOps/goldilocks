@@ -538,6 +538,8 @@ UTILITIES
 
 .email-box__toggle-title {
   color: #fff;
+  font-size: var(--step-4);
+  font-weight: 600;
 }
 
 .email-box__content p {
