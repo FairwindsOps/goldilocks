@@ -11,14 +11,14 @@
 
     <form class="email-box__content">
       <p>Enter your email to get a free estimate of the cost impact of applying Goldilocks’ recommendations.</p>
-      <input id="email-box__email-input" class="email-box__email-input" type="email" placeholder="Email" />
-      <div>
-        <label class="email-box__checkbox-container">
-          <input type="checkbox" id="emailbox__checkbox">
-          <span class="email-box__checkmark"></span>
-          <span class="email-box__checkbox-content">By entering your email address, you acknowledge that we may use it as our Privacy Policy describes.</span>
-        </label>
-      </div>
+      <label class="email-box__email-label">
+        <input id="email-box__email-input" class="email-box__email-input" type="email" />
+        <span id="email-box__email-label-content">Email</span>
+      </label>
+      <label class="email-box__checkbox-label">
+        <input type="checkbox" id="email-box__checkbox">
+        <span class="email-box__checkbox-content">By entering your email address, you acknowledge that we may use it as our Privacy Policy describes.</span>
+      </label>
       <button type="submit" class="email-box__submit-btn" id="email-box__submit-btn" disabled>Submit</button>
     </form>
   </details>
