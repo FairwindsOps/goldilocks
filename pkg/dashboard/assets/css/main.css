@@ -548,6 +548,7 @@ UTILITIES
 }
 
 .email-box__email-label {
+  display: block;
   position: relative;
 }
 
@@ -557,7 +558,7 @@ UTILITIES
   left: 0;
   left: 0.5rem;
   position: absolute;
-  top: -8%;
+  top: 14%;
 }
 
 .email-box__email-input {
@@ -575,12 +576,16 @@ UTILITIES
 
 .email-box__checkbox-label {
   color: #fff;
-  display: block;
+  display: inline;
   font-size: 1rem;
 }
 
 #email-box__checkbox {
   accent-color: #dae0ec;
+}
+
+.email-box__privacy-wrapper {
+  color: #fff;
 }
 
 .email-box__privacy {
