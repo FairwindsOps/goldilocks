@@ -552,7 +552,7 @@ UTILITIES
 }
 
 .email-box__email-label span {
-  color: #d3d3d3;
+  color: #575757;
   font-weight: 400;
   left: 0;
   left: 0.5rem;
@@ -602,6 +602,6 @@ UTILITIES
 }
 
 .email-box__submit-btn--active {
-  background-color: #BAECF5;
+  background-color: #baecf5;
   color: #fff;
 }
