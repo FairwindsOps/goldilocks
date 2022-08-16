@@ -603,5 +603,9 @@ UTILITIES
 
 .email-box__submit-btn--active {
   background-color: #baecf5;
-  color: #fff;
+  color: #454545;
+}
+
+.email-box__submit-btn--active:focus-visible {
+  outline: thick solid #4d90fe;
 }
