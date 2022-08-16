@@ -548,16 +548,17 @@ UTILITIES
 }
 
 .email-box__email-label {
+  display: block;
   position: relative;
 }
 
 .email-box__email-label span {
-  color: #d3d3d3;
+  color: #575757;
   font-weight: 400;
   left: 0;
   left: 0.5rem;
   position: absolute;
-  top: -8%;
+  top: 14%;
 }
 
 .email-box__email-input {
@@ -575,23 +576,29 @@ UTILITIES
 
 .email-box__checkbox-label {
   color: #fff;
-  display: block;
+  display: inline;
   font-size: 1rem;
 }
 
 #email-box__checkbox {
-  accent-color: #445688;
+  accent-color: #dae0ec;
+}
+
+.email-box__privacy-wrapper {
+  color: #fff;
+  padding-bottom: 0 !important;
 }
 
 .email-box__privacy {
-  color: #4d90fe !important;
+  color: #d7e4fe !important;
+  text-decoration: underline !important;
 }
 
 .email-box__submit-btn {
-  background-color: #c4c4c4;
+  background-color: #baecf5;
+  color: #454545;
   border-radius: 0.25rem;
   border: none;
-  color: #000;
   font-weight: 600;
   margin-top: 1rem;
   padding: 8px 24px;
@@ -601,7 +608,6 @@ UTILITIES
   cursor: pointer;
 }
 
-.email-box__submit-btn--active {
-  background-color: #BAECF5;
-  color: #fff;
+.email-box__submit-btn:focus-visible {
+  outline: thick solid #4d90fe;
 }

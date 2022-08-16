@@ -35,41 +35,26 @@
   }
 
   emailInput.addEventListener("input", function (evt) {
-    const checked = emailCheckbox.checked;
     toggleLabelContent(this.value);
-    toggleSubmitBtn(checked);
-  });
-
-  emailCheckbox.addEventListener("change", function () {
-    toggleSubmitBtn(this.checked);
   });
 
   function toggleLabelContent(inputEmail) {
     emailLabelContent.style.display = inputEmail ? "none" : "inline-block";
   }
 
-  function toggleSubmitBtn(checked) {
-    if (isInputInfoValid(checked)) {
-      submitBtn.disabled = false;
-      submitBtn.classList.add("email-box__submit-btn--active");
-    } else {
-      submitBtn.disabled = true;
-      submitBtn.classList.remove("email-box__submit-btn--active");
-    }
-  }
-
   submitBtn.addEventListener("click", function (e) {
     e.preventDefault();
-    const email = emailInput.value;
-    const checked = emailCheckbox.checked;
-    if (isInputInfoValid(email, checked)) {
+    if (emailCheckbox.checked && emailInput.validity.valid) {
       fetch(`${window.INSIGHTS_HOST}/v0/oss/users`, {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, project: "goldilocks" }),
+        body: JSON.stringify({
+          email: emailInput.value,
+          project: "goldilocks",
+        }),
       }).then((response) => {
         if (response) {
           response.json().then((data) => {
@@ -82,8 +67,4 @@
       });
     }
   });
-
-  function isInputInfoValid(checked) {
-    return checked && emailInput.validity.valid;
-  }
 })();
