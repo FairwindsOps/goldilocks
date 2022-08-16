@@ -593,10 +593,10 @@ UTILITIES
 }
 
 .email-box__submit-btn {
-  background-color: #c4c4c4;
+  background-color: #baecf5;
+  color: #454545;
   border-radius: 0.25rem;
   border: none;
-  color: #000;
   font-weight: 600;
   margin-top: 1rem;
   padding: 8px 24px;
@@ -606,11 +606,6 @@ UTILITIES
   cursor: pointer;
 }
 
-.email-box__submit-btn--active {
-  background-color: #baecf5;
-  color: #454545;
-}
-
-.email-box__submit-btn--active:focus-visible {
+.email-box__submit-btn:focus-visible {
   outline: thick solid #4d90fe;
 }
