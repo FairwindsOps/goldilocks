@@ -586,6 +586,7 @@ UTILITIES
 
 .email-box__privacy-wrapper {
   color: #fff;
+  padding-bottom: 0 !important;
 }
 
 .email-box__privacy {
