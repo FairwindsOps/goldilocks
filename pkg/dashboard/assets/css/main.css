@@ -590,7 +590,8 @@ UTILITIES
 }
 
 .email-box__privacy {
-  color: #4d90fe !important;
+  color: #d7e4fe !important;
+  text-decoration: underline !important;
 }
 
 .email-box__submit-btn {
