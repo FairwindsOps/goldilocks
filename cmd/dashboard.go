@@ -27,9 +27,10 @@ import (
 )
 
 var (
-	serverPort  int
-	showAllVPAs bool
-	basePath    string
+	serverPort   int
+	showAllVPAs  bool
+	basePath     string
+	insightsHost string
 )
 
 func init() {
@@ -39,6 +40,7 @@ func init() {
 	dashboardCmd.PersistentFlags().BoolVar(&onByDefault, "on-by-default", false, "Display every namespace that isn't explicitly excluded.")
 	dashboardCmd.PersistentFlags().BoolVar(&showAllVPAs, "show-all", false, "Display every VPA, even if it isn't managed by Goldilocks")
 	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served.")
+	dashboardCmd.PersistentFlags().StringVar(&insightsHost, "insightshost", "https://be-vv-add-op.k8s.insights.fairwinds.com", "Insights host the dashboard is connected.")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -53,6 +55,7 @@ var dashboardCmd = &cobra.Command{
 			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
 			dashboard.OnByDefault(onByDefault),
 			dashboard.ShowAllVPAs(showAllVPAs),
+			dashboard.InsightsHost(insightsHost),
 		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v", serverPort, validBasePath)
