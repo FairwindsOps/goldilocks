@@ -39,7 +39,11 @@
   });
 
   function toggleLabelContent(inputEmail) {
-    emailLabelContent.style.display = inputEmail ? "none" : "inline-block";
+    if (inputEmail) {
+      emailLabelContent.classList.add("visually-hidden");
+    } else {
+      emailLabelContent.classList.remove("visually-hidden");
+    }
   }
 
   submitBtn.addEventListener("click", function (e) {
