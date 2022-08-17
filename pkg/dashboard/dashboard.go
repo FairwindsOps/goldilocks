@@ -58,6 +58,7 @@ func Dashboard(opts Options) http.Handler {
 			"filter",
 			"namespace",
 			"email",
+			"api_token",
 		)
 		if err != nil {
 			klog.Errorf("Error getting template data %v", err)
