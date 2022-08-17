@@ -40,7 +40,7 @@ func init() {
 	dashboardCmd.PersistentFlags().BoolVar(&onByDefault, "on-by-default", false, "Display every namespace that isn't explicitly excluded.")
 	dashboardCmd.PersistentFlags().BoolVar(&showAllVPAs, "show-all", false, "Display every VPA, even if it isn't managed by Goldilocks")
 	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served.")
-	dashboardCmd.PersistentFlags().StringVar(&insightsHost, "insights-host", "https://insights.fairwinds.com", "Insights host the dashboard is connected.")
+	dashboardCmd.PersistentFlags().StringVar(&insightsHost, "insights-host", "https://insights.fairwinds.com", "Insights host for retrieving optional cost data.")
 }
 
 var dashboardCmd = &cobra.Command{
