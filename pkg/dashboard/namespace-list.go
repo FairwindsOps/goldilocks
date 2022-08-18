@@ -31,6 +31,7 @@ func NamespaceList(opts Options) http.Handler {
 		if err != nil {
 			klog.Errorf("Error getting namespace list: %v", err)
 			http.Error(w, "Error getting namespace list", http.StatusInternalServerError)
+			return
 		}
 
 		tmpl, err := getTemplate("namespace_list",
