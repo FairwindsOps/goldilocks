@@ -165,7 +165,7 @@ dt::after {
 
 footer {
   font-size: var(--step--1);
-  text-align: center;
+  background: var(--color-bg-2);
 }
 
 form[role="search"] {
@@ -538,7 +538,7 @@ UTILITIES
 
 .email-box__toggle-title {
   color: #fff;
-  font-size: var(--step-4);
+  font-size: 1.125rem;
   font-weight: 600;
 }
 
@@ -610,4 +610,28 @@ UTILITIES
 
 .email-box__submit-btn:focus-visible {
   outline: thick solid #4d90fe;
+}
+
+.footer__top,
+.footer__bottom {
+  align-items: center;
+  display: flex;
+  font-size: 1rem;
+  gap: 1.875rem;
+  justify-content: center;
+  padding: 1.875rem 0;
+}
+
+.footer__middle {
+  align-items: center;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  padding-bottom: 1.875rem;
+}
+
+.footer__logo {
+  align-items: center;
+  display: flex;
+  justify-content: center;
 }
