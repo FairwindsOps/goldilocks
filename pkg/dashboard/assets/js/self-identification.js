@@ -46,11 +46,29 @@
     }
   }
 
-  submitBtn.addEventListener("click", function () {
+  submitBtn.addEventListener("click", function (e) {
+    e.preventDefault();
     if (emailCheckbox.checked && emailInput.validity.valid) {
-      // TODO: write logic to call the API to get the access token.
-      window.location.reload();
-      localStorage.setItem("emailEntered", true);
+      fetch(`${window.INSIGHTS_HOST}/v0/oss/users`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailInput.value,
+          project: "goldilocks",
+        }),
+      }).then((response) => {
+        if (response) {
+          response.json().then((data) => {
+            if (data?.token) {
+              window.location.reload();
+              localStorage.setItem("emailEntered", true);
+            }
+          });
+        }
+      });
     }
   });
 })();

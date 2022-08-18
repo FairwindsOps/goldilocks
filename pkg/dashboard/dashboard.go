@@ -65,6 +65,14 @@ func Dashboard(opts Options) http.Handler {
 			return
 		}
 
-		writeTemplate(tmpl, opts, &vpaData, w)
+		data := struct {
+			VpaData      summary.Summary
+			InsightsHost string
+		}{
+			VpaData:      vpaData,
+			InsightsHost: opts.insightsHost,
+		}
+
+		writeTemplate(tmpl, opts, &data, w)
 	})
 }

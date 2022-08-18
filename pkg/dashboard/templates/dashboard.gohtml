@@ -2,6 +2,12 @@
 <html lang="en-US">
 <head>
   {{ template "head" . }}
+  <script>
+    window.onload = function() {
+      window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
+    }
+  </script>
+  <script defer src="static/js/self-identification.js"></script>
 </head>
 
 <body class="layoutSidebar">
@@ -31,7 +37,7 @@
       </ul>
     </nav>
 
-    {{ if gt (len .Data.Namespaces) 1 }}
+    {{ if gt (len .Data.VpaData.Namespaces) 1 }}
       {{ template "filter" . }}
     {{ end }}
   </header>
@@ -48,12 +54,12 @@
 
       <div
         class="verticalRhythm --rhythm-3"
-        {{ if gt (len .Data.Namespaces) 1 }}
+        {{ if gt (len .Data.VpaData.Namespaces) 1 }}
         aria-live="off"
         id="js-filter-container"
         {{ end }}
       >
-        {{ range $nsName, $nsSummary := .Data.Namespaces }}
+        {{ range $nsName, $nsSummary := .Data.VpaData.Namespaces }}
           {{ template "namespace" $nsSummary }}
         {{end}}
       </div>
