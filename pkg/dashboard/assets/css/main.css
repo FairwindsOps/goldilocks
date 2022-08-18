@@ -538,7 +538,7 @@ UTILITIES
 
 .email-box__toggle-title {
   color: #fff;
-  font-size: var(--step-4);
+  font-size: 1.125rem;
   font-weight: 600;
 }
 
