@@ -10,6 +10,7 @@
   const submitBtn = document.getElementById(submitBtnId);
 
   const apiKey = localStorage.getItem("apiKey");
+  const isEmailEntered = localStorage.getItem("emailEntered");
 
   const urlParams = new URLSearchParams(window.location.search);
 
@@ -28,7 +29,7 @@
   }
 
   function initUIState() {
-    if (apiKey) {
+    if (apiKey || !isEmailEntered) {
       apiTokenBox.style.display = "none";
     }
   }
