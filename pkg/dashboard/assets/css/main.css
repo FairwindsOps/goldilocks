@@ -530,6 +530,88 @@ UTILITIES
   width: 1px;
 }
 
+.email-box {
+  background: #4c415f;
+  padding: 1.375rem 0.8125rem;
+  width: 100%;
+}
+
+.email-box__toggle-title {
+  color: #fff;
+  font-size: var(--step-4);
+  font-weight: 600;
+}
+
+.email-box__content p {
+  color: #fff;
+  padding: 0.75rem 0 1.5rem 0;
+}
+
+.email-box__email-label {
+  display: block;
+  position: relative;
+}
+
+.email-box__email-label span {
+  color: #575757;
+  font-weight: 400;
+  left: 0;
+  left: 0.5rem;
+  position: absolute;
+  top: 14%;
+}
+
+.email-box__email-input {
+  background: #fff;
+  border-radius: 0.25rem;
+  border: 1px solid #d3d3d3;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  width: 71%;
+}
+
+.email-box__email-input:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
+.email-box__checkbox-label {
+  color: #fff;
+  display: inline;
+  font-size: 1rem;
+}
+
+#email-box__checkbox {
+  accent-color: #dae0ec;
+}
+
+.email-box__privacy-wrapper {
+  color: #fff;
+  padding-bottom: 0 !important;
+}
+
+.email-box__privacy {
+  color: #d7e4fe !important;
+  text-decoration: underline !important;
+}
+
+.email-box__submit-btn {
+  background-color: #baecf5;
+  color: #454545;
+  border-radius: 0.25rem;
+  border: none;
+  font-weight: 600;
+  margin-top: 1rem;
+  padding: 8px 24px;
+}
+
+.email-box__submit-btn:hover {
+  cursor: pointer;
+}
+
+.email-box__submit-btn:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
 .footer__top,
 .footer__bottom {
   align-items: center;
