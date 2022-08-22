@@ -718,3 +718,9 @@ UTILITIES
   display: flex;
   justify-content: center;
 }
+
+form:invalid button {
+  background-color: #c4c4c4;
+  color: #2b2b2b;
+  pointer-events: none;
+}
