@@ -3,11 +3,10 @@
 <head>
   {{ template "head" . }}
   <script>
-    window.onload = function() {
-      window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
-    }
+    window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
   </script>
-  <script defer src="static/js/self-identification.js"></script>
+  <script defer src="static/js/email.js"></script>
+  <script defer src="static/js/api-token.js"></script>
 </head>
 
 <body class="layoutSidebar">
@@ -50,6 +49,7 @@
         </a>
       </aside>
       {{ template "email" . }}
+      {{ template "api_token" . }}
       <h1>Namespace Details</h1>
 
       <div
