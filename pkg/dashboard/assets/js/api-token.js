@@ -1,10 +1,14 @@
 (function () {
   const apiTokenBoxId = "api-token-box";
+  const disableCostSettingsBtnId = "api-token__disable-cost-settings";
   const apiTokenlLabelContentId = "api-token-box__api-token-label-content";
   const apiTokenInputId = "api-token-box__api-token-input";
   const submitBtnId = "api-token-box__submit-btn";
 
   const apiTokenBox = document.getElementById(apiTokenBoxId);
+  const disableCostSettingsBtn = document.getElementById(
+    disableCostSettingsBtnId
+  );
   const apiTokenLabelContent = document.getElementById(apiTokenlLabelContentId);
   const apiTokenInput = document.getElementById(apiTokenInputId);
   const submitBtn = document.getElementById(submitBtnId);
@@ -50,5 +54,12 @@
       window.location.reload();
       localStorage.setItem("apiKey", apiTokenInput.value);
     }
+  });
+
+  disableCostSettingsBtn.addEventListener("click", function () {
+    localStorage.removeItem("emailEntered");
+    localStorage.removeItem("apiKey");
+
+    window.location.href = window.location.href.split("?")[0];
   });
 })();

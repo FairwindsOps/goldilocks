@@ -618,6 +618,27 @@ UTILITIES
   width: 100%;
 }
 
+.api-token__title-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.api-token__title-container > div {
+  align-items: center;
+  display: flex;
+  justify-content: right;
+}
+
+.api-token__title-container > div > button {
+  background: transparent;
+  border: none;
+  color: #cce8ec;
+}
+
+.api-token__title-container > div > button:hover {
+  cursor: pointer;
+}
+
 .api-token-box__toggle-title {
   color: #fff;
   font-size: 1.125rem;

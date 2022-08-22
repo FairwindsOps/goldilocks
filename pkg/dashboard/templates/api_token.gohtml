@@ -2,15 +2,20 @@
 <aside class="api-token-box" id="api-token-box">
   <details open>
     <summary class="--hideMarker">
-      <p class="api-token-box__toggle-title">
-        Add API token to see cost estimates!
-        <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
-        ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
-      </p>
+      <div class="api-token__title-container">
+        <p class="api-token-box__toggle-title">
+          Add API token to see cost estimates!
+          <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+          ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+        </p>
+        <div>
+         <button id="api-token__disable-cost-settings">Disable Cost Settings</button>
+        </div>
+      </div>
     </summary>
 
     <form class="api-token-box__content">
-      <p>The token you receive enables Goldilocks to download the latest cloud pricing data to generate cost estimates. No data about your cluster will ever be sent to Fairwinds.</p>
+      <p>We've sent a token to the email you provided. This token enables Goldilocks to download the latest cloud pricing data to generate cost estimates. No data about your cluster will ever be sent to Fairwinds.</p>
       <label class="api-token-box__api-token-label">
         <input id="api-token-box__api-token-input" class="api-token-box__api-token-input" type="api-token" required />
         <span id="api-token-box__api-token-label-content">API Token</span>
