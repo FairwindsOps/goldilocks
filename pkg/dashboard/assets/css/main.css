@@ -695,6 +695,136 @@ UTILITIES
   outline: thick solid #4d90fe;
 }
 
+.cost-settings-box {
+  background: #fff;
+  border: 1px solid #201238;
+  padding: 1.375rem 0.8125rem;
+  width: 100%;
+}
+
+.cost-settings__title-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.cost-settings__title-container > div {
+  align-items: center;
+  display: flex;
+  justify-content: right;
+}
+
+.cost-settings__title-container > div > button {
+  background: transparent;
+  border: none;
+  color: #445688;
+}
+
+.cost-settings__title-container > div > button:hover {
+  cursor: pointer;
+}
+
+.cost-settings-box__toggle-title {
+  color: #201238;
+  font-size: 1.125rem;
+  font-weight: 1000;
+}
+
+.cost-settings-box__content p {
+  color: #201238;
+  font-size: 0.875rem;
+  padding: 0.75rem 0 1.5rem 0;
+}
+
+.cost-settings-box__options-container {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, 11.0625rem);
+}
+
+.cost-settings-box__options-container label {
+  color: #201238;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cost-settings-box__select-container {
+  position: relative;
+}
+
+.cost-settings-box__select-container img {
+  height: 0.5rem;
+  position: absolute;
+  right: 0.75rem;
+  top: 1.75rem;
+  width: 0.5rem;
+}
+
+.cost-settings-box__options-container select {
+  background: #201238;
+  border-radius: 0.25rem;
+  border: 1px solid #201238;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 400;
+  margin-top: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.cost-settings-box__options-container select:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
+.cost-settings-box__inputs-container {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(2, 11.0625rem);
+  margin-top: 0.625rem;
+}
+
+.cost-settings-box__inputs-container span {
+  color: #201238;
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+}
+
+.cost-settings-box__inputs-container input {
+  background: #ccc;
+  border-radius: 0.25rem;
+  border: 1px solid #ccc;
+  color: #201238;
+  font-size: 1rem;
+  font-weight: 400;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.cost-settings-box__inputs-container input:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
+.cost-settings-box__submit-btn {
+  background-color: #201238;
+  color: #fff;
+  border-radius: 0.25rem;
+  border: none;
+  font-weight: 600;
+  margin-top: 1rem;
+  padding: 8px 24px;
+}
+
+.cost-settings-box__submit-btn:hover {
+  cursor: pointer;
+}
+
+.cost-settings-box__submit-btn:focus-visible {
+  outline: thick solid #4d90fe;
+}
+
 .footer__top,
 .footer__bottom {
   align-items: center;
