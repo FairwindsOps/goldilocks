@@ -793,7 +793,6 @@ UTILITIES
 }
 
 .cost-settings-box__inputs-container input {
-  background: #ccc;
   border-radius: 0.25rem;
   border: 1px solid #ccc;
   color: #201238;
@@ -853,4 +852,8 @@ form:invalid button {
   background-color: #c4c4c4;
   color: #2b2b2b;
   pointer-events: none;
+}
+
+input:disabled {
+  background: #ccc;
 }

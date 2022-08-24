@@ -37,11 +37,11 @@
       <div class="cost-settings-box__inputs-container">
         <label class="cost-settings-box__cost-per-cpu">
           <span id="cost-settings-box__cost-per-cpu-label-content">Cost per CPU</span>
-          <input id="cost-settings-box__cost-per-cpu-input" placeholder="${X}/month" required />
+          <input id="cost-settings-box__cost-per-cpu-input" placeholder="${X}/month" required disabled pattern="[0-9]+([\.,][0-9]+)?"/>
         </label>
         <label class="cost-settings-box__cost-per-gb">
           <span id="cost-settings-box__cost-per-gb-label-content">Cost per GB</span>
-          <input id="cost-settings-box__cost-per-gb-input" placeholder="${X}/month" required />
+          <input id="cost-settings-box__cost-per-gb-input" placeholder="${X}/month" required disabled pattern="[0-9]+([\.,][0-9]+)?"/>
         </label>
       </div>
       <button class="cost-settings-box__submit-btn" id="cost-settings-box__submit-btn">Save</button>
