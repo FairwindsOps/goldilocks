@@ -34,12 +34,9 @@
 
   const urlParams = new URLSearchParams(window.location.search);
 
-  let selectedCloudProvider = currentCostPerCPU
-    ? otherOption
-    : localStorage.getItem(selectedCloudProviderKey);
-  let selectedInstanceType = currentCostPerCPU
-    ? otherOption
-    : localStorage.getItem(selectedInstanceTypeKey);
+  let selectedCloudProvider = localStorage.getItem(selectedCloudProviderKey);
+
+  let selectedInstanceType = localStorage.getItem(selectedInstanceTypeKey);
 
   initQueryParams();
   initUIState();
@@ -251,21 +248,26 @@
   function saveOtherOption() {
     const costPerCPU = costPerCPUInput.value;
     const costPerGB = costPerGBInput.value;
-    localStorage.removeItem(selectedCloudProviderKey);
-    localStorage.removeItem(selectedInstanceTypeKey);
+    localStorage.setItem(selectedCloudProviderKey, otherOption);
+    localStorage.setItem(selectedInstanceTypeKey, otherOption);
     localStorage.setItem(costPerCPUKey, costPerCPU);
     localStorage.setItem(costPerGBKey, costPerGB);
     window.location.href = `${window.location.href}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`;
   }
 
   function saveCloudProviderOption() {
-    localStorage.removeItem(costPerCPUKey);
-    localStorage.removeItem(costPerGBKey);
+    const costPerCPU = costPerCPUInput.value;
+    const costPerGB = costPerGBInput.value;
     localStorage.setItem(selectedCloudProviderKey, selectedCloudProvider);
     localStorage.setItem(selectedInstanceTypeKey, selectedInstanceType);
+    localStorage.setItem(costPerCPUKey, costPerCPU);
+    localStorage.setItem(costPerGBKey, costPerGB);
     const costURLIndex = window.location.href.indexOf("&costPerCPU");
     costURLIndex > 0
-      ? (window.location.href = window.location.href.substring(0, costURLIndex))
+      ? (window.location.href = `${window.location.href.substring(
+          0,
+          costURLIndex
+        )}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`)
       : window.location.reload();
   }
 
