@@ -46,7 +46,7 @@
       setQueryParam(costPerCPUKey, currentCostPerCPU);
     }
     if (currentCostPerGB && !urlParams.has(costPerGBKey)) {
-      setQueryParam(costPerGBKey, currentCostPerCPU);
+      setQueryParam(costPerGBKey, currentCostPerGB);
     }
   }
 
