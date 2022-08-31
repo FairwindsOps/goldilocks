@@ -681,6 +681,14 @@ UTILITIES
   width: 71%;
 }
 
+#api-token-box__input-error {
+  color: #ffd8d8;
+  display: block;
+  display: none;
+  font-size: 1rem;
+  padding-bottom: 0.5rem;
+}
+
 .api-token-box__api-token-input:focus-visible {
   outline: thick solid #4d90fe;
 }
