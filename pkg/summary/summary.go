@@ -43,27 +43,32 @@ type Summary struct {
 type namespaceSummary struct {
 	Namespace string                     `json:"namespace"`
 	Workloads map[string]workloadSummary `json:"workloads"`
-	BasePath string
+	BasePath  string
 }
 
 type workloadSummary struct {
 	ControllerName string                      `json:"controllerName"`
 	ControllerType string                      `json:"controllerType"`
 	Containers     map[string]containerSummary `json:"containers"`
-	BasePath string
+	BasePath       string
 }
 
 type containerSummary struct {
 	ContainerName string `json:"containerName"`
 
 	// recommendations
-	LowerBound     corev1.ResourceList `json:"lowerBound"`
-	UpperBound     corev1.ResourceList `json:"upperBound"`
-	Target         corev1.ResourceList `json:"target"`
-	UncappedTarget corev1.ResourceList `json:"uncappedTarget"`
-	Limits         corev1.ResourceList `json:"limits"`
-	Requests       corev1.ResourceList `json:"requests"`
-	BasePath string
+	LowerBound      corev1.ResourceList `json:"lowerBound"`
+	UpperBound      corev1.ResourceList `json:"upperBound"`
+	Target          corev1.ResourceList `json:"target"`
+	UncappedTarget  corev1.ResourceList `json:"uncappedTarget"`
+	Limits          corev1.ResourceList `json:"limits"`
+	Requests        corev1.ResourceList `json:"requests"`
+	BasePath        string
+	TopNumber       float64
+	LowerNumber1    float64
+	LowerNumber2    float64
+	LowerNumberInt1 int
+	LowerNumberInt2 int
 }
 
 // Summarizer represents a source of generating a summary of VPAs
