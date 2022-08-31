@@ -50,9 +50,19 @@
 
   submitBtn.addEventListener("click", function (e) {
     e.preventDefault();
+
     if (apiTokenInput.validity.valid) {
-      window.location.reload();
-      localStorage.setItem("apiKey", apiTokenInput.value);
+      const inputApiToken = apiTokenInput.value.trim();
+      fetch(
+        `${window.INSIGHTS_HOST}/v0/oss/instance-types?ossToken=${inputApiToken}`
+      ).then((response) => {
+        if (response && response.status !== 500) {
+          window.location.reload();
+          localStorage.setItem("apiKey", apiTokenInput.value.trim());
+        } else {
+          alert("Invalid API Token");
+        }
+      });
     }
   });
 

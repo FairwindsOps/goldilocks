@@ -570,6 +570,14 @@ UTILITIES
   width: 71%;
 }
 
+#email-box__input-error {
+  color: #ffd8d8;
+  display: block;
+  display: none;
+  font-size: 1rem;
+  padding-bottom: 0.5rem;
+}
+
 .email-box__email-input:focus-visible {
   outline: thick solid #4d90fe;
 }
@@ -856,4 +864,14 @@ form:invalid button {
 
 input:disabled {
   background: #ccc;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
 }
