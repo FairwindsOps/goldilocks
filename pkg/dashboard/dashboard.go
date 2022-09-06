@@ -25,11 +25,11 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/summary"
 )
 
-const kibabyte = 1024
-const mebibyte = kibabyte * 1024
-const gibibyte = mebibyte * 1024
-const kilobyte = 1000
-const megabyte = kilobyte * 1000
+const (
+	kibabyte = 1024
+	mebibyte = kibabyte * 1024
+	gibibyte = mebibyte * 1024
+)
 
 // Limit data loss to only 5% due to rounding error.
 const roundingThreshold = 10
@@ -70,37 +70,19 @@ func Dashboard(opts Options) http.Handler {
 			costPerCPUFloat, _ := strconv.ParseFloat(costPerCPU, 64)
 			costPerGBFloat, _ := strconv.ParseFloat(costPerGB, 64)
 
+			var containerCost, guaranteedCost, burstableCost float64
+
 			for _, n := range vpaData.Namespaces {
 				for _, w := range n.Workloads {
 					for k, c := range w.Containers {
-						cpuCost := costPerCPUFloat * (c.Requests.Cpu().AsApproximateFloat64() + c.Limits.Cpu().AsApproximateFloat64()) / 2
-						memCost := costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
-						topNumber := toFixed(cpuCost+memCost, 4)
-
-						cpuCostRecommended1 := costPerCPUFloat * c.Target.Cpu().AsApproximateFloat64()
-						memCosttRecommended1 := costPerGBFloat * ConvertToGB(c.Target.Memory().Value())
-
-						cpuCostRecommended2 := costPerCPUFloat * (c.LowerBound.Cpu().AsApproximateFloat64() + c.UpperBound.Cpu().AsApproximateFloat64()) / 2
-						memCosttRecommended2 := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
-
-						lowerNumber1 := toFixed(topNumber-(cpuCostRecommended1+memCosttRecommended1), 4)
-						lowerNumber2 := toFixed(topNumber-(cpuCostRecommended2+memCosttRecommended2), 4)
-
-						if lowerNumber1 < 0 {
-							c.LowerNumberInt1 = -1
-						} else if lowerNumber1 > 0 {
-							c.LowerNumberInt1 = 1
-						}
-						if lowerNumber2 < 0 {
-							c.LowerNumberInt2 = -1
-						} else if lowerNumber2 > 0 {
-							c.LowerNumberInt2 = 1
-						}
-
-						c.TopNumber = topNumber
-						c.LowerNumber1 = math.Abs(lowerNumber1)
-						c.LowerNumber2 = math.Abs(lowerNumber2)
-
+						containerCost = calculateContainerCost(costPerCPUFloat, costPerGBFloat, c)
+						guaranteedCost, burstableCost = calculateRecommendedCosts(costPerCPUFloat, costPerGBFloat, containerCost, c)
+						c.ContainerCost = containerCost
+						c.ContainerCostInt = getCostInt(containerCost)
+						c.GuaranteedCostInt = getCostInt(guaranteedCost)
+						c.BurstableCostInt = getCostInt(burstableCost)
+						c.GuaranteedCost = math.Abs(guaranteedCost)
+						c.BurstableCost = math.Abs(burstableCost)
 						w.Containers[k] = c
 					}
 				}
@@ -132,6 +114,31 @@ func Dashboard(opts Options) http.Handler {
 
 		writeTemplate(tmpl, opts, &data, w)
 	})
+}
+
+func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
+	cpuCost := costPerCPUFloat * (c.Requests.Cpu().AsApproximateFloat64() + c.Limits.Cpu().AsApproximateFloat64()) / 2
+	memCost := costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
+	return toFixed(cpuCost+memCost, 4)
+}
+
+func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, containerCost float64, c summary.ContainerSummary) (float64, float64) {
+	guaranteedCpuCostRecommended := costPerCPUFloat * c.Target.Cpu().AsApproximateFloat64()
+	guaranteedMemCosttRecommended := costPerGBFloat * ConvertToGB(c.Target.Memory().Value())
+
+	burstableCpuCostRecommended := costPerCPUFloat * (c.LowerBound.Cpu().AsApproximateFloat64() + c.UpperBound.Cpu().AsApproximateFloat64()) / 2
+	burstableMemCosttRecommended := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
+
+	return toFixed(containerCost-(guaranteedCpuCostRecommended+guaranteedMemCosttRecommended), 4), toFixed(containerCost-(burstableCpuCostRecommended+burstableMemCosttRecommended), 4)
+}
+
+func getCostInt(cost float64) int {
+	if cost < 0 {
+		return -1
+	} else if cost > 0 {
+		return 1
+	}
+	return 0
 }
 
 func ConvertToGB(memoryValue int64) float64 {

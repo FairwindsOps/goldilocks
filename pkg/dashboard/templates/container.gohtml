@@ -21,10 +21,10 @@
     <a href="#guaranteed-qos"
       >Guaranteed <abbr title="Quality of Service">QoS</abbr></a
     >
-    {{if lt $.LowerNumberInt1 0}}
-      <span class="lower-number lower-number--negative">-${{$.LowerNumber1}}/hour</span>
-    {{else if gt $.LowerNumberInt1 0}}
-      <span class="lower-number lower-number--positive">+${{$.LowerNumber1}}/hour</span>
+    {{if lt $.GuaranteedCostInt 0}}
+      <span class="lower-number lower-number--negative">-${{$.GuaranteedCost}}/hour</span>
+    {{else if gt $.GuaranteedCostInt 0}}
+      <span class="lower-number lower-number--positive">+${{$.GuaranteedCost}}/hour</span>
     {{end}}
   </h5>
 
@@ -116,10 +116,10 @@
     <a href="#burstable-qos"
       >Burstable <abbr title="Quality of Service">QoS</abbr></a
     >
-    {{if lt $.LowerNumberInt2 0}}
-      <span class="lower-number lower-number--negative">-${{$.LowerNumber2}}/hour</span>
-    {{else if gt $.LowerNumberInt2 0}}
-      <span class="lower-number lower-number--positive">+${{$.LowerNumber2}}/hour</span>
+    {{if lt $.BurstableCostInt 0}}
+      <span class="lower-number lower-number--negative">-${{$.BurstableCost}}/hour</span>
+    {{else if gt $.BurstableCostInt 0}}
+      <span class="lower-number lower-number--positive">+${{$.BurstableCost}}/hour</span>
     {{end}}
   </h5>
 

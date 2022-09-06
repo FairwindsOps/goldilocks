@@ -259,12 +259,12 @@ var testSummary = Summary{
 				"test-basic": {
 					ControllerName: "test-basic",
 					ControllerType: "Deployment",
-					Containers:     map[string]containerSummary{},
+					Containers:     map[string]ContainerSummary{},
 				},
 				"test-vpa-with-reco": {
 					ControllerName: "test-vpa-with-reco",
 					ControllerType: "Deployment",
-					Containers: map[string]containerSummary{
+					Containers: map[string]ContainerSummary{
 						"container": {
 							ContainerName: "container",
 							LowerBound:    lowerBound,
@@ -374,7 +374,7 @@ var testSummaryDaemonSet = Summary{
 				"test-ds-with-reco": {
 					ControllerName: "test-ds-with-reco",
 					ControllerType: "DaemonSet",
-					Containers: map[string]containerSummary{
+					Containers: map[string]ContainerSummary{
 						"container": {
 							ContainerName: "container",
 							LowerBound:    lowerBound,

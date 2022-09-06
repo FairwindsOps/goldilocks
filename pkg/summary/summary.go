@@ -49,26 +49,27 @@ type namespaceSummary struct {
 type workloadSummary struct {
 	ControllerName string                      `json:"controllerName"`
 	ControllerType string                      `json:"controllerType"`
-	Containers     map[string]containerSummary `json:"containers"`
+	Containers     map[string]ContainerSummary `json:"containers"`
 	BasePath       string
 }
 
-type containerSummary struct {
+type ContainerSummary struct {
 	ContainerName string `json:"containerName"`
 
 	// recommendations
-	LowerBound      corev1.ResourceList `json:"lowerBound"`
-	UpperBound      corev1.ResourceList `json:"upperBound"`
-	Target          corev1.ResourceList `json:"target"`
-	UncappedTarget  corev1.ResourceList `json:"uncappedTarget"`
-	Limits          corev1.ResourceList `json:"limits"`
-	Requests        corev1.ResourceList `json:"requests"`
-	BasePath        string
-	TopNumber       float64
-	LowerNumber1    float64
-	LowerNumber2    float64
-	LowerNumberInt1 int
-	LowerNumberInt2 int
+	LowerBound        corev1.ResourceList `json:"lowerBound"`
+	UpperBound        corev1.ResourceList `json:"upperBound"`
+	Target            corev1.ResourceList `json:"target"`
+	UncappedTarget    corev1.ResourceList `json:"uncappedTarget"`
+	Limits            corev1.ResourceList `json:"limits"`
+	Requests          corev1.ResourceList `json:"requests"`
+	BasePath          string
+	ContainerCost     float64
+	GuaranteedCost    float64
+	BurstableCost     float64
+	ContainerCostInt  int
+	GuaranteedCostInt int
+	BurstableCostInt  int
 }
 
 // Summarizer represents a source of generating a summary of VPAs
@@ -152,7 +153,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		wSummary := workloadSummary{
 			ControllerName: vpa.Spec.TargetRef.Name,
 			ControllerType: vpa.Spec.TargetRef.Kind,
-			Containers:     map[string]containerSummary{},
+			Containers:     map[string]ContainerSummary{},
 		}
 
 		workload, ok := s.workloadForVPANamed[vpa.Name]
@@ -187,7 +188,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				continue CONTAINER_REC_LOOP
 			}
 
-			var cSummary containerSummary
+			var cSummary ContainerSummary
 			workloadPodSpecUnstructured, workloadPodSpecFound, err := unstructured.NestedMap(workload.TopController.UnstructuredContent(), "spec", "template", "spec")
 			if err != nil {
 				klog.Errorf("unable to parse spec.template.spec from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
@@ -208,7 +209,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			for _, c := range workloadPodSpec.Containers {
 				// find the matching container on the workload
 				if c.Name == containerRecommendation.ContainerName {
-					cSummary = containerSummary{
+					cSummary = ContainerSummary{
 						ContainerName:  containerRecommendation.ContainerName,
 						UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound),
 						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
