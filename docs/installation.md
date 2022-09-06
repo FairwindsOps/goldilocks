@@ -25,7 +25,7 @@ The full VPA install includes the updater and the admission webhook for VPA. Gol
 
 ### GKE Notes
 
-Google has provided the vertical pod autoscaler as a beta feature in GKE. You can see the docs [here](https://cloud.google.com/kubernetes-engine/docs/how-to/vertical-pod-autoscaling), or just enable it like so:
+[VPA](https://cloud.google.com/kubernetes-engine/docs/concepts/verticalpodautoscaler) is enabled by default in Autopilot clusters, but you must [manually enable it in Standard clusters](https://cloud.google.com/kubernetes-engine/docs/how-to/vertical-pod-autoscaling). You can enable it like so: 
 
 ```
 gcloud container clusters update [CLUSTER-NAME] --enable-vertical-pod-autoscaling {--region [REGION-NAME] | --zone [ZONE-NAME]}
@@ -41,6 +41,7 @@ First, make sure you satisfy the requirements above.
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+kubectl create namespace goldilocks
 Helm v2:
 helm install --name goldilocks --namespace goldilocks fairwinds-stable/goldilocks
 Helm v3:
