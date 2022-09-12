@@ -239,36 +239,20 @@
   submitBtn.addEventListener("click", function (e) {
     e.preventDefault();
     if (selectedCloudProvider === otherOption) {
-      saveOtherOption();
+      saveOption(otherOption, otherOption);
     } else {
-      saveCloudProviderOption();
+      saveOption(selectedCloudProvider, selectedInstanceType);
     }
   });
 
-  function saveOtherOption() {
+  function saveOption(cloudProvider, instanceType) {
     const costPerCPU = costPerCPUInput.value;
     const costPerGB = costPerGBInput.value;
-    localStorage.setItem(selectedCloudProviderKey, otherOption);
-    localStorage.setItem(selectedInstanceTypeKey, otherOption);
+    localStorage.setItem(selectedCloudProviderKey, cloudProvider);
+    localStorage.setItem(selectedInstanceTypeKey, instanceType);
     localStorage.setItem(costPerCPUKey, costPerCPU);
     localStorage.setItem(costPerGBKey, costPerGB);
-    window.location.href = `${window.location.href}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`;
-  }
-
-  function saveCloudProviderOption() {
-    const costPerCPU = costPerCPUInput.value;
-    const costPerGB = costPerGBInput.value;
-    localStorage.setItem(selectedCloudProviderKey, selectedCloudProvider);
-    localStorage.setItem(selectedInstanceTypeKey, selectedInstanceType);
-    localStorage.setItem(costPerCPUKey, costPerCPU);
-    localStorage.setItem(costPerGBKey, costPerGB);
-    const costURLIndex = window.location.href.indexOf("&costPerCPU");
-    costURLIndex > 0
-      ? (window.location.href = `${window.location.href.substring(
-          0,
-          costURLIndex
-        )}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`)
-      : window.location.reload();
+    window.location.href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
   }
 
   disableCostSettingsBtn.addEventListener("click", function () {
