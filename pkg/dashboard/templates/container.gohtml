@@ -23,7 +23,7 @@
     >
     {{if lt $.GuaranteedCostInt 0}}
       <span class="lower-number lower-number--negative">-${{$.GuaranteedCost}}/hour</span>
-    {{else if gt $.GuaranteedCostInt 0}}
+    {{else}}
       <span class="lower-number lower-number--positive">+${{$.GuaranteedCost}}/hour</span>
     {{end}}
   </h5>
@@ -118,7 +118,7 @@
     >
     {{if lt $.BurstableCostInt 0}}
       <span class="lower-number lower-number--negative">-${{$.BurstableCost}}/hour</span>
-    {{else if gt $.BurstableCostInt 0}}
+    {{else}}
       <span class="lower-number lower-number--positive">+${{$.BurstableCost}}/hour</span>
     {{end}}
   </h5>

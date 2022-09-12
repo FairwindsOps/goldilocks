@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	kibabyte = 1024
-	mebibyte = kibabyte * 1024
+	kibibyte = 1024
+	mebibyte = kibibyte * 1024
 	gibibyte = mebibyte * 1024
 )
 
@@ -118,7 +118,12 @@ func Dashboard(opts Options) http.Handler {
 
 func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
 	cpuCost := costPerCPUFloat * (c.Requests.Cpu().AsApproximateFloat64() + c.Limits.Cpu().AsApproximateFloat64()) / 2
-	memCost := costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
+	var memCost float64
+	if c.Limits != nil {
+		memCost = costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
+	} else {
+		memCost = costPerGBFloat * ConvertToGB(c.Requests.Memory().Value())
+	}
 	return toFixed(cpuCost+memCost, 4)
 }
 
@@ -152,8 +157,8 @@ func ConvertToGB(memoryValue int64) float64 {
 		convertedMemoryValue = float64((memoryValue / gibibyte) * roundingBase)
 	} else if absoluteValue > mebibyte*roundingThreshold {
 		convertedMemoryValue = float64(((memoryValue / mebibyte) * roundingBase)) / 1024
-	} else if absoluteValue > kibabyte*roundingThreshold {
-		convertedMemoryValue = float64(((memoryValue / kibabyte) * roundingBase)) / (1024 * 1024)
+	} else if absoluteValue > kibibyte*roundingThreshold {
+		convertedMemoryValue = float64(((memoryValue / kibibyte) * roundingBase)) / (1024 * 1024)
 	}
 	return convertedMemoryValue
 }
