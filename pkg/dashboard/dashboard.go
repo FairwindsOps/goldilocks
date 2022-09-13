@@ -117,21 +117,22 @@ func Dashboard(opts Options) http.Handler {
 }
 
 func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
-	cpuCost := costPerCPUFloat * (c.Requests.Cpu().AsApproximateFloat64() + c.Limits.Cpu().AsApproximateFloat64()) / 2
-	var memCost float64
+	var memCost, cpuCost float64
 	if c.Limits != nil {
+		cpuCost = costPerCPUFloat * (float64(c.Requests.Cpu().Value() + c.Limits.Cpu().Value())) / 2
 		memCost = costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
 	} else {
+		cpuCost = costPerCPUFloat * float64(c.Requests.Cpu().Value())
 		memCost = costPerGBFloat * ConvertToGB(c.Requests.Memory().Value())
 	}
 	return toFixed(cpuCost+memCost, 4)
 }
 
 func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, containerCost float64, c summary.ContainerSummary) (float64, float64) {
-	guaranteedCpuCostRecommended := costPerCPUFloat * c.Target.Cpu().AsApproximateFloat64()
+	guaranteedCpuCostRecommended := costPerCPUFloat * float64(c.Target.Cpu().Value())
 	guaranteedMemCosttRecommended := costPerGBFloat * ConvertToGB(c.Target.Memory().Value())
 
-	burstableCpuCostRecommended := costPerCPUFloat * (c.LowerBound.Cpu().AsApproximateFloat64() + c.UpperBound.Cpu().AsApproximateFloat64()) / 2
+	burstableCpuCostRecommended := costPerCPUFloat * (float64(c.LowerBound.Cpu().Value() + c.UpperBound.Cpu().Value())) / 2
 	burstableMemCosttRecommended := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
 
 	return toFixed(containerCost-(guaranteedCpuCostRecommended+guaranteedMemCosttRecommended), 4), toFixed(containerCost-(burstableCpuCostRecommended+burstableMemCosttRecommended), 4)
