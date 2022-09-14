@@ -117,15 +117,36 @@ func Dashboard(opts Options) http.Handler {
 }
 
 func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
-	var memCost, cpuCost float64
+	var cpuRequests, memRequests, cpuLimits, memLimits float64
+
+	cpuRequests = 0
+	memRequests = 0
+	cpuLimits = 0
+	memLimits = 0
+
 	if c.Limits != nil {
-		cpuCost = costPerCPUFloat * (float64(c.Requests.Cpu().Value() + c.Limits.Cpu().Value())) / 2
-		memCost = costPerGBFloat * (ConvertToGB(c.Requests.Memory().Value()) + ConvertToGB(c.Limits.Memory().Value())) / 2
-	} else {
-		cpuCost = costPerCPUFloat * float64(c.Requests.Cpu().Value())
-		memCost = costPerGBFloat * ConvertToGB(c.Requests.Memory().Value())
+		cpuLimits = float64(c.Limits.Cpu().Value())
+		memLimits = float64(c.Limits.Memory().Value())
 	}
+	if c.Requests != nil {
+		cpuRequests = float64(c.Requests.Cpu().Value())
+		memRequests = float64(c.Requests.Memory().Value())
+	}
+
+	cpuCost := costPerCPUFloat * getNonZeroAverage(cpuRequests, cpuLimits)
+	memCost := costPerGBFloat * ConvertToGB(int64(getNonZeroAverage(memRequests, memLimits)))
+
 	return toFixed(cpuCost+memCost, 4)
+}
+
+func getNonZeroAverage(req, limit float64) float64 {
+	if req == 0.0 {
+		return limit
+	}
+	if limit == 0.0 {
+		return req
+	}
+	return (req + limit) / 2.0
 }
 
 func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, containerCost float64, c summary.ContainerSummary) (float64, float64) {
@@ -135,7 +156,10 @@ func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, 
 	burstableCpuCostRecommended := costPerCPUFloat * (float64(c.LowerBound.Cpu().Value() + c.UpperBound.Cpu().Value())) / 2
 	burstableMemCosttRecommended := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
 
-	return toFixed(containerCost-(guaranteedCpuCostRecommended+guaranteedMemCosttRecommended), 4), toFixed(containerCost-(burstableCpuCostRecommended+burstableMemCosttRecommended), 4)
+	guaranteedCostRecommended := math.Abs(containerCost - (guaranteedCpuCostRecommended + guaranteedMemCosttRecommended))
+	burstableCostRecommended := math.Abs(containerCost - (burstableCpuCostRecommended + burstableMemCosttRecommended))
+
+	return toFixed(guaranteedCostRecommended, 4), toFixed(burstableCostRecommended, 4)
 }
 
 func getCostInt(cost float64) int {
