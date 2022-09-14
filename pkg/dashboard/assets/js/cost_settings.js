@@ -6,6 +6,7 @@
   const costPerCPUInputId = "cost-settings-box__cost-per-cpu-input";
   const costPerGBInputId = "cost-settings-box__cost-per-gb-input";
   const submitBtnId = "cost-settings-box__submit-btn";
+  const lowerNumberClass = "lower-number";
 
   const costSettingsBox = document.getElementById(costSettingsBoxId);
   const disableCostSettingsBtn = document.getElementById(
@@ -16,6 +17,7 @@
   const costPerCPUInput = document.getElementById(costPerCPUInputId);
   const costPerGBInput = document.getElementById(costPerGBInputId);
   const submitBtn = document.getElementById(submitBtnId);
+  const lowerNumbers = document.getElementsByClassName(lowerNumberClass);
 
   const apiKeyLS = "apiKey";
   const emailEnteredKey = "emailEntered";
@@ -40,6 +42,7 @@
 
   initQueryParams();
   initUIState();
+  initLowerNumberUI();
 
   function initQueryParams() {
     if (currentCostPerCPU && !urlParams.has(costPerCPUKey)) {
@@ -61,6 +64,18 @@
       return;
     }
     loadInstanceTypes();
+  }
+
+  function initLowerNumberUI() {
+    if (!lowerNumbers) {
+      return;
+    }
+    Array.from(lowerNumbers).forEach((lowerNumber) => {
+      lowerNumber.style.display =
+        lowerNumber && currentCostPerCPU && currentCostPerGB
+          ? "inline"
+          : "none";
+    });
   }
 
   function loadInstanceTypes() {
