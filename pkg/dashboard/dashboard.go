@@ -156,10 +156,17 @@ func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, 
 	burstableCpuCostRecommended := costPerCPUFloat * (float64(c.LowerBound.Cpu().Value() + c.UpperBound.Cpu().Value())) / 2
 	burstableMemCosttRecommended := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
 
-	guaranteedCostRecommended := math.Abs(containerCost - (guaranteedCpuCostRecommended + guaranteedMemCosttRecommended))
-	burstableCostRecommended := math.Abs(containerCost - (burstableCpuCostRecommended + burstableMemCosttRecommended))
+	guaranteedCostRecommended := guaranteedCpuCostRecommended + guaranteedMemCosttRecommended
+	burstableCostRecommended := burstableCpuCostRecommended + burstableMemCosttRecommended
 
-	return toFixed(guaranteedCostRecommended, 4), toFixed(burstableCostRecommended, 4)
+	return transformRecommendedCost(containerCost, guaranteedCostRecommended), transformRecommendedCost(containerCost, burstableCostRecommended)
+}
+
+func transformRecommendedCost(containerCost float64, recommendedCost float64) float64 {
+	if containerCost > recommendedCost {
+		return -1.0 * toFixed(containerCost-recommendedCost, 4)
+	}
+	return toFixed(recommendedCost-containerCost, 4)
 }
 
 func getCostInt(cost float64) int {
