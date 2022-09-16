@@ -159,14 +159,7 @@ func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, 
 	guaranteedCostRecommended := guaranteedCpuCostRecommended + guaranteedMemCosttRecommended
 	burstableCostRecommended := burstableCpuCostRecommended + burstableMemCosttRecommended
 
-	return transformRecommendedCost(containerCost, guaranteedCostRecommended), transformRecommendedCost(containerCost, burstableCostRecommended)
-}
-
-func transformRecommendedCost(containerCost float64, recommendedCost float64) float64 {
-	if containerCost > recommendedCost {
-		return -1.0 * toFixed(containerCost-recommendedCost, 4)
-	}
-	return toFixed(recommendedCost-containerCost, 4)
+	return toFixed(guaranteedCostRecommended-containerCost, 4), toFixed(burstableCostRecommended-containerCost, 4)
 }
 
 func getCostInt(cost float64) int {
