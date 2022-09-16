@@ -27,6 +27,8 @@
   const costPerGBKey = "costPerGB";
   const otherOption = "Other";
   const emptyString = "";
+  const defaultCloudProvider = "AWS";
+  const defaultInstanceType = "663";
   const transformedInstanceTypes = {};
 
   const apiKey = localStorage.getItem(apiKeyLS);
@@ -128,8 +130,7 @@
 
   async function initSelectedCloudProvider() {
     if (!selectedCloudProvider) {
-      selectedCloudProvider = cloudProvidersSelect.options[0].value;
-      cloudProvidersSelect.options[0].selected = true;
+      initDefaultCloudProvider();
       return;
     }
     if (selectedCloudProvider !== otherOption) {
@@ -138,6 +139,15 @@
     }
     setSelectedOptionUI(cloudProvidersSelect, otherOption);
     selectedCloudProvider = otherOption;
+  }
+
+  function initDefaultCloudProvider() {
+    for (const option of cloudProvidersSelect) {
+      if (option.value === defaultCloudProvider) {
+        selectedCloudProvider = defaultCloudProvider;
+        option.selected = true;
+      }
+    }
   }
 
   instanceTypesSelect.addEventListener("change", async () => {
@@ -151,12 +161,20 @@
       return;
     }
     instanceTypesSelect.options.length = 0;
-    const selectedInstanceTypes =
-      transformedInstanceTypes[selectedCloudProvider];
-    for (const type of selectedInstanceTypes) {
+    const sortedInstanceTypes = sortInstanceTypes(
+      transformedInstanceTypes[selectedCloudProvider]
+    );
+    for (const type of sortedInstanceTypes) {
       instanceTypesSelect.options[instanceTypesSelect.options.length] =
         new Option(type.Name, type.ID);
     }
+  }
+
+  function sortInstanceTypes(instanceTypes) {
+    if (!instanceTypes?.length) {
+      return [];
+    }
+    return instanceTypes.sort((a, b) => a.Name.localeCompare(b.Name));
   }
 
   function shouldInit() {
@@ -167,8 +185,7 @@
 
   async function initSelectedInstanceType() {
     if (!selectedInstanceType) {
-      selectedInstanceType = instanceTypesSelect.options[0].value;
-      instanceTypesSelect.options[0].selected = true;
+      initDefaultInstanceType();
       return;
     }
     if (selectedInstanceType !== otherOption) {
@@ -176,6 +193,15 @@
       return;
     }
     instanceTypesSelect.options[0].selected = true;
+  }
+
+  function initDefaultInstanceType() {
+    for (const option of instanceTypesSelect) {
+      if (option.value === defaultInstanceType) {
+        selectedInstanceType = option.value;
+        option.selected = true;
+      }
+    }
   }
 
   function setSelectedOptionUI(options, selectedOption) {
