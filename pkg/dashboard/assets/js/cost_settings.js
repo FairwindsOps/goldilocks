@@ -6,6 +6,7 @@
   const costPerCPUInputId = "cost-settings-box__cost-per-cpu-input";
   const costPerGBInputId = "cost-settings-box__cost-per-gb-input";
   const submitBtnId = "cost-settings-box__submit-btn";
+  const lowerNumberClass = "lower-number";
 
   const costSettingsBox = document.getElementById(costSettingsBoxId);
   const disableCostSettingsBtn = document.getElementById(
@@ -16,6 +17,7 @@
   const costPerCPUInput = document.getElementById(costPerCPUInputId);
   const costPerGBInput = document.getElementById(costPerGBInputId);
   const submitBtn = document.getElementById(submitBtnId);
+  const lowerNumbers = document.getElementsByClassName(lowerNumberClass);
 
   const apiKeyLS = "apiKey";
   const emailEnteredKey = "emailEntered";
@@ -25,6 +27,8 @@
   const costPerGBKey = "costPerGB";
   const otherOption = "Other";
   const emptyString = "";
+  const defaultCloudProvider = "AWS";
+  const defaultInstanceType = "663";
   const transformedInstanceTypes = {};
 
   const apiKey = localStorage.getItem(apiKeyLS);
@@ -40,6 +44,7 @@
 
   initQueryParams();
   initUIState();
+  initLowerNumberUI();
 
   function initQueryParams() {
     if (currentCostPerCPU && !urlParams.has(costPerCPUKey)) {
@@ -61,6 +66,18 @@
       return;
     }
     loadInstanceTypes();
+  }
+
+  function initLowerNumberUI() {
+    if (!lowerNumbers) {
+      return;
+    }
+    Array.from(lowerNumbers).forEach((lowerNumber) => {
+      lowerNumber.style.display =
+        lowerNumber && currentCostPerCPU && currentCostPerGB
+          ? "inline"
+          : "none";
+    });
   }
 
   function loadInstanceTypes() {
@@ -113,8 +130,7 @@
 
   async function initSelectedCloudProvider() {
     if (!selectedCloudProvider) {
-      selectedCloudProvider = cloudProvidersSelect.options[0].value;
-      cloudProvidersSelect.options[0].selected = true;
+      initDefaultCloudProvider();
       return;
     }
     if (selectedCloudProvider !== otherOption) {
@@ -123,6 +139,15 @@
     }
     setSelectedOptionUI(cloudProvidersSelect, otherOption);
     selectedCloudProvider = otherOption;
+  }
+
+  function initDefaultCloudProvider() {
+    for (const option of cloudProvidersSelect) {
+      if (option.value === defaultCloudProvider) {
+        selectedCloudProvider = defaultCloudProvider;
+        option.selected = true;
+      }
+    }
   }
 
   instanceTypesSelect.addEventListener("change", async () => {
@@ -136,12 +161,20 @@
       return;
     }
     instanceTypesSelect.options.length = 0;
-    const selectedInstanceTypes =
-      transformedInstanceTypes[selectedCloudProvider];
-    for (const type of selectedInstanceTypes) {
+    const sortedInstanceTypes = sortInstanceTypes(
+      transformedInstanceTypes[selectedCloudProvider]
+    );
+    for (const type of sortedInstanceTypes) {
       instanceTypesSelect.options[instanceTypesSelect.options.length] =
         new Option(type.Name, type.ID);
     }
+  }
+
+  function sortInstanceTypes(instanceTypes) {
+    if (!instanceTypes?.length) {
+      return [];
+    }
+    return instanceTypes.sort((a, b) => a.Name.localeCompare(b.Name));
   }
 
   function shouldInit() {
@@ -152,8 +185,7 @@
 
   async function initSelectedInstanceType() {
     if (!selectedInstanceType) {
-      selectedInstanceType = instanceTypesSelect.options[0].value;
-      instanceTypesSelect.options[0].selected = true;
+      initDefaultInstanceType();
       return;
     }
     if (selectedInstanceType !== otherOption) {
@@ -161,6 +193,15 @@
       return;
     }
     instanceTypesSelect.options[0].selected = true;
+  }
+
+  function initDefaultInstanceType() {
+    for (const option of instanceTypesSelect) {
+      if (option.value === defaultInstanceType) {
+        selectedInstanceType = option.value;
+        option.selected = true;
+      }
+    }
   }
 
   function setSelectedOptionUI(options, selectedOption) {
@@ -239,36 +280,20 @@
   submitBtn.addEventListener("click", function (e) {
     e.preventDefault();
     if (selectedCloudProvider === otherOption) {
-      saveOtherOption();
+      saveOption(otherOption, otherOption);
     } else {
-      saveCloudProviderOption();
+      saveOption(selectedCloudProvider, selectedInstanceType);
     }
   });
 
-  function saveOtherOption() {
+  function saveOption(cloudProvider, instanceType) {
     const costPerCPU = costPerCPUInput.value;
     const costPerGB = costPerGBInput.value;
-    localStorage.setItem(selectedCloudProviderKey, otherOption);
-    localStorage.setItem(selectedInstanceTypeKey, otherOption);
+    localStorage.setItem(selectedCloudProviderKey, cloudProvider);
+    localStorage.setItem(selectedInstanceTypeKey, instanceType);
     localStorage.setItem(costPerCPUKey, costPerCPU);
     localStorage.setItem(costPerGBKey, costPerGB);
-    window.location.href = `${window.location.href}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`;
-  }
-
-  function saveCloudProviderOption() {
-    const costPerCPU = costPerCPUInput.value;
-    const costPerGB = costPerGBInput.value;
-    localStorage.setItem(selectedCloudProviderKey, selectedCloudProvider);
-    localStorage.setItem(selectedInstanceTypeKey, selectedInstanceType);
-    localStorage.setItem(costPerCPUKey, costPerCPU);
-    localStorage.setItem(costPerGBKey, costPerGB);
-    const costURLIndex = window.location.href.indexOf("&costPerCPU");
-    costURLIndex > 0
-      ? (window.location.href = `${window.location.href.substring(
-          0,
-          costURLIndex
-        )}&costPerCPU=${costPerCPU}&costPerGB=${costPerGB}`)
-      : window.location.reload();
+    window.location.href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
   }
 
   disableCostSettingsBtn.addEventListener("click", function () {
