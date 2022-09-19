@@ -125,15 +125,15 @@ func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c s
 	memLimits = 0
 
 	if c.Limits != nil {
-		cpuLimits = float64(c.Limits.Cpu().Value())
+		cpuLimits = float64(c.Limits.Cpu().MilliValue())
 		memLimits = float64(c.Limits.Memory().Value())
 	}
 	if c.Requests != nil {
-		cpuRequests = float64(c.Requests.Cpu().Value())
+		cpuRequests = float64(c.Requests.Cpu().MilliValue())
 		memRequests = float64(c.Requests.Memory().Value())
 	}
 
-	cpuCost := costPerCPUFloat * getNonZeroAverage(cpuRequests, cpuLimits)
+	cpuCost := costPerCPUFloat * getNonZeroAverage(cpuRequests, cpuLimits) / 1000
 	memCost := costPerGBFloat * ConvertToGB(int64(getNonZeroAverage(memRequests, memLimits)))
 
 	return toFixed(cpuCost+memCost, 4)
@@ -150,10 +150,10 @@ func getNonZeroAverage(req, limit float64) float64 {
 }
 
 func calculateRecommendedCosts(costPerCPUFloat float64, costPerGBFloat float64, containerCost float64, c summary.ContainerSummary) (float64, float64) {
-	guaranteedCpuCostRecommended := costPerCPUFloat * float64(c.Target.Cpu().Value())
+	guaranteedCpuCostRecommended := costPerCPUFloat * float64(c.Target.Cpu().MilliValue()) / 1000
 	guaranteedMemCosttRecommended := costPerGBFloat * ConvertToGB(c.Target.Memory().Value())
 
-	burstableCpuCostRecommended := costPerCPUFloat * (float64(c.LowerBound.Cpu().Value() + c.UpperBound.Cpu().Value())) / 2
+	burstableCpuCostRecommended := costPerCPUFloat * (float64(c.LowerBound.Cpu().MilliValue() + c.UpperBound.Cpu().MilliValue())) / 2 / 1000
 	burstableMemCosttRecommended := costPerGBFloat * (ConvertToGB(c.LowerBound.Memory().Value()) + ConvertToGB(c.UpperBound.Memory().Value())) / 2
 
 	guaranteedCostRecommended := guaranteedCpuCostRecommended + guaranteedMemCosttRecommended
