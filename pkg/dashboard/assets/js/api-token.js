@@ -59,7 +59,7 @@
       fetch(
         `${window.INSIGHTS_HOST}/v0/oss/instance-types?ossToken=${inputApiToken}`
       ).then((response) => {
-        if (response && response.status !== 400) {
+        if (response && ![400, 401].includes(response.status)) {
           window.location.reload();
           localStorage.setItem("apiKey", apiTokenInput.value.trim());
         } else {

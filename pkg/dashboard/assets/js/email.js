@@ -61,7 +61,7 @@
       }).then((response) => {
         if (response && response.status !== 400) {
           response.json().then((data) => {
-            if (data?.token) {
+            if (data?.email) {
               window.location.reload();
               localStorage.setItem("emailEntered", true);
             }
