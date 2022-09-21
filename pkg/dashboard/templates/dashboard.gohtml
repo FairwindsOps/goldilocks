@@ -2,12 +2,6 @@
 <html lang="en-US">
 <head>
   {{ template "head" . }}
-  <script>
-    window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
-  </script>
-  <script defer src="static/js/email.js"></script>
-  <script defer src="static/js/api-token.js"></script>
-  <script defer src="static/js/cost_settings.js"></script>
 </head>
 
 <body class="layoutSidebar">
@@ -165,5 +159,11 @@
       {{ template "footer" . }}
     </footer>
   </div>
+  <script>
+    window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
+  </script>
+  <script defer src="static/js/email.js"></script>
+  <script defer src="static/js/api-token.js"></script>
+  <script defer src="static/js/cost_settings.js"></script>
 </body>
 </html>

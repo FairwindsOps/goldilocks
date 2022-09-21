@@ -28,7 +28,7 @@
   const otherOption = "Other";
   const emptyString = "";
   const defaultCloudProvider = "AWS";
-  const defaultInstanceType = "663";
+  let defaultInstanceType = "691";
   const transformedInstanceTypes = {};
 
   const apiKey = localStorage.getItem(apiKeyLS);
@@ -87,6 +87,7 @@
       if (response) {
         response.json().then(async (data) => {
           await transformInstanceTypes(data);
+          await getDefaultInstanceType();
           await initCloudProvidersUI();
           await initSelectedCloudProvider();
           await initInstanceTypesUI();
@@ -95,6 +96,15 @@
         });
       }
     });
+  }
+
+  async function getDefaultInstanceType() {
+    t3Medium = transformedInstanceTypes[defaultCloudProvider].find(
+      (instanceType) => instanceType.Name === "t3.medium"
+    );
+    if (t3Medium?.ID) {
+      defaultInstanceType = String(t3Medium?.ID);
+    }
   }
 
   async function transformInstanceTypes(instanceTypes) {
