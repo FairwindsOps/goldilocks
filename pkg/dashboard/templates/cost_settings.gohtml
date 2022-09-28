@@ -1,0 +1,47 @@
+{{ define "cost_settings" }}
+<aside class="cost-settings-box" id="cost-settings-box">
+  <details open>
+    <summary class="--hideMarker">
+      <p class="cost-settings-box__toggle-title">
+        Cost Settings
+        <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
+        ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
+      </p>
+    </summary>
+
+    <form class="cost-settings-box__content">
+      <p>Choose an AWS or GCP instance type to get an accurate cost data, or set your cost per CPU and cost per GB of memory manually. Pick "Other" Cloud Provider to customize the numbers.</p>
+      <div class="cost-settings-box__options-container">
+        <div class="cost-settings-box__cloud-providers">
+          <label for="cost-settings-box__cloud-providers">Cloud Provider</label>
+          <div class="cost-settings-box__select-container">
+            <select name="cloud-providers" id="cost-settings-box__cloud-providers">
+            </select>
+            <img src="/static/images/triangle.svg" alt="Select Icon" aria-hidden="true" />
+          </div>
+        </div>
+        <div class="cost-settings-box__instance-types">
+          <label for="cost-settings-box__instance-types">Instance Type</label>
+          <div class="cost-settings-box__select-container">
+            <select name="instance-types" id="cost-settings-box__instance-types">
+            </select> 
+            <img src="/static/images/triangle.svg" alt="Select Icon" aria-hidden="true" />
+          </div>
+        </div>
+      </div>
+      <div class="cost-settings-box__inputs-container">
+        <label class="cost-settings-box__cost-per-cpu">
+          <span id="cost-settings-box__cost-per-cpu-label-content">Dollars per CPU-hour</span>
+          <input id="cost-settings-box__cost-per-cpu-input" type="number" step="0.01" required disabled />
+        </label>
+        <label class="cost-settings-box__cost-per-gb">
+          <span id="cost-settings-box__cost-per-gb-label-content">Dollars per GB-hour</span>
+          <input id="cost-settings-box__cost-per-gb-input" type="number" step="0.01" required disabled />
+        </label>
+      </div>
+      <button class="cost-settings-box__submit-btn" id="cost-settings-box__submit-btn">Save</button>
+    </form>
+  </details>
+  <button id="cost-settings__disable-cost-settings">Disable Cost Settings</button>
+</aside>
+{{ end }}

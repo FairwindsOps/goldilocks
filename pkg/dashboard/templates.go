@@ -17,13 +17,16 @@ var templateBox = (*packr.Box)(nil)
 
 // templates
 const (
-	ContainerTemplateName = "container.gohtml"
-	DashboardTemplateName = "dashboard.gohtml"
-	FilterTemplateName    = "filter.gohtml"
-	FooterTemplateName    = "footer.gohtml"
-	HeadTemplateName      = "head.gohtml"
-	NamespaceTemplateName = "namespace.gohtml"
-	NavbarTemplateName    = "navbar.gohtml"
+	ContainerTemplateName   = "container.gohtml"
+	DashboardTemplateName   = "dashboard.gohtml"
+	FilterTemplateName      = "filter.gohtml"
+	FooterTemplateName      = "footer.gohtml"
+	HeadTemplateName        = "head.gohtml"
+	NamespaceTemplateName   = "namespace.gohtml"
+	NavbarTemplateName      = "navbar.gohtml"
+	EmailTemplateName       = "email.gohtml"
+	ApiTokenTemplateName    = "api_token.gohtml"
+	CostSettingTemplateName = "cost_settings.gohtml"
 )
 
 var (

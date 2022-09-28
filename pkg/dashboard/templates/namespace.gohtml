@@ -49,7 +49,7 @@
             <span aria-label="Container:" class="badge detailBadge --container"
               >Container</span
             >
-            {{ $cName }}
+            {{ $cName }} {{ if gt $cSummary.ContainerCostInt 0 }} <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> {{ end }}
             <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
             ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
           </h4>
