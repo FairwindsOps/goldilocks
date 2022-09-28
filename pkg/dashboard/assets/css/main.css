@@ -532,6 +532,7 @@ UTILITIES
 
 .email-box {
   background: #4c415f;
+  display: none;
   padding: 1.375rem 0.8125rem;
   width: 100%;
 }
@@ -622,28 +623,22 @@ UTILITIES
 
 .api-token-box {
   background: #4c415f;
+  display: none;
   padding: 1.375rem 0.8125rem;
+  position: relative;
   width: 100%;
 }
 
-.api-token__title-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.api-token__title-container > div {
-  align-items: center;
-  display: flex;
-  justify-content: right;
-}
-
-.api-token__title-container > div > button {
+#api-token__disable-cost-settings {
   background: transparent;
   border: none;
   color: #cce8ec;
+  position: absolute;
+  right: 0.675rem;
+  top: 1.25rem;
 }
 
-.api-token__title-container > div > button:hover {
+#api-token__disable-cost-settings:hover {
   cursor: pointer;
 }
 
@@ -714,28 +709,22 @@ UTILITIES
 .cost-settings-box {
   background: #fff;
   border: 1px solid #201238;
+  display: none;
   padding: 1.375rem 0.8125rem;
+  position: relative;
   width: 100%;
 }
 
-.cost-settings__title-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.cost-settings__title-container > div {
-  align-items: center;
-  display: flex;
-  justify-content: right;
-}
-
-.cost-settings__title-container > div > button {
+#cost-settings__disable-cost-settings {
   background: transparent;
   border: none;
   color: #445688;
+  position: absolute;
+  right: 0.675rem;
+  top: 1.25rem;
 }
 
-.cost-settings__title-container > div > button:hover {
+#cost-settings__disable-cost-settings:hover {
   cursor: pointer;
 }
 

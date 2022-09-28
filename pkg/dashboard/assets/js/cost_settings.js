@@ -42,30 +42,54 @@
 
   let selectedInstanceType = localStorage.getItem(selectedInstanceTypeKey);
 
+  setTimeout(() => {
+    initUIState();
+  }, 500);
   initQueryParams();
-  initUIState();
   initLowerNumberUI();
 
-  function initQueryParams() {
-    if (currentCostPerCPU && !urlParams.has(costPerCPUKey)) {
-      setQueryParam(costPerCPUKey, currentCostPerCPU);
+  function initQueryParams(isForced = false) {
+    let hasChanged = false;
+    if ((isEmailEntered && !urlParams.has(emailEnteredKey)) || isForced) {
+      setQueryParam(emailEnteredKey, true);
+      hasChanged = true;
     }
-    if (currentCostPerGB && !urlParams.has(costPerGBKey)) {
-      setQueryParam(costPerGBKey, currentCostPerGB);
+    if ((apiKey && !urlParams.has(apiKeyLS)) || isForced) {
+      setQueryParam(apiKeyLS, apiKey);
+      hasChanged = true;
+    }
+    if ((currentCostPerCPU && !urlParams.has(costPerCPUKey)) || isForced) {
+      setQueryParam(
+        costPerCPUKey,
+        getParamValue(isForced, costPerCPUKey, currentCostPerCPU)
+      );
+      hasChanged = true;
+    }
+    if ((currentCostPerGB && !urlParams.has(costPerGBKey)) || isForced) {
+      setQueryParam(
+        costPerGBKey,
+        getParamValue(isForced, costPerGBKey, currentCostPerGB)
+      );
+      hasChanged = true;
+    }
+    if (hasChanged) {
+      window.location.search = urlParams;
     }
   }
 
   function setQueryParam(key, value) {
     urlParams.set(key, value);
-    window.location.search = urlParams;
+  }
+
+  function getParamValue(isForced, valueKey, defaultValue) {
+    return isForced ? localStorage.getItem(valueKey) : defaultValue;
   }
 
   function initUIState() {
-    if (!apiKey || !isEmailEntered) {
-      costSettingsBox.style.display = "none";
-      return;
+    if (apiKey && isEmailEntered) {
+      costSettingsBox.style.display = "block";
+      loadInstanceTypes();
     }
-    loadInstanceTypes();
   }
 
   function initLowerNumberUI() {
@@ -303,7 +327,7 @@
     localStorage.setItem(selectedInstanceTypeKey, instanceType);
     localStorage.setItem(costPerCPUKey, costPerCPU);
     localStorage.setItem(costPerGBKey, costPerGB);
-    window.location.href = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+    initQueryParams(true);
   }
 
   disableCostSettingsBtn.addEventListener("click", function () {

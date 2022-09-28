@@ -18,25 +18,13 @@
   const apiKey = localStorage.getItem("apiKey");
   const isEmailEntered = localStorage.getItem("emailEntered");
 
-  const urlParams = new URLSearchParams(window.location.search);
-
-  initQueryParams();
-  initUIState();
-
-  function initQueryParams() {
-    if (apiKey && !urlParams.has("apiKey")) {
-      setQueryParam("apiKey", apiKey);
-    }
-  }
-
-  function setQueryParam(key, value) {
-    urlParams.set(key, value);
-    window.location.search = urlParams;
-  }
+  setTimeout(() => {
+    initUIState();
+  }, 500);
 
   function initUIState() {
-    if (apiKey || !isEmailEntered) {
-      apiTokenBox.style.display = "none";
+    if (!apiKey && isEmailEntered) {
+      apiTokenBox.style.display = "block";
     }
   }
 

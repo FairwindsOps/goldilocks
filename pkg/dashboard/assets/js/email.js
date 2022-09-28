@@ -15,24 +15,13 @@
 
   const urlParams = new URLSearchParams(window.location.search);
 
-  initQueryParams();
-  initUIState();
-
-  function initQueryParams() {
-    const isEmailEntered = localStorage.getItem("emailEntered");
-    if (isEmailEntered && !urlParams.has("emailEntered")) {
-      setQueryParam("emailEntered", "true");
-    }
-  }
-
-  function setQueryParam(key, value) {
-    urlParams.set(key, value);
-    window.location.search = urlParams;
-  }
+  setTimeout(() => {
+    initUIState();
+  }, 500);
 
   function initUIState() {
-    if (urlParams.get("emailEntered")) {
-      emailBox.style.display = "none";
+    if (!urlParams.get("emailEntered")) {
+      emailBox.style.display = "block";
     }
   }
 

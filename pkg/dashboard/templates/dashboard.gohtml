@@ -2,6 +2,19 @@
 <html lang="en-US">
 <head>
   {{ template "head" . }}
+  <noscript>
+    <style>
+      #email-box, #api-token-box, #cost-settings-box {
+        display:none;
+      }
+    </style>
+  </noscript>
+  <script>
+    window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
+  </script>
+  <script defer src="static/js/email.js"></script>
+  <script defer src="static/js/api-token.js"></script>
+  <script defer src="static/js/cost_settings.js"></script>
 </head>
 
 <body class="layoutSidebar">
@@ -38,11 +51,6 @@
 
   <div class="layoutSidebar__main">
     <main class="verticalRhythm --rhythm-3">
-      <aside class="banner">
-        <a href="https://www.fairwinds.com/kubernetes-config-benchmark-ui" target="_blank" rel="noreferrer">
-          <img src="static/images/benchmark.png" alt="Apply K8s right sizing and best practices across multiple clusters and teams with Fairwinds Insights. Try Demo. (Opens in new window.)">
-        </a>
-      </aside>
       {{ template "email" . }}
       {{ template "api_token" . }}
       {{ template "cost_settings" . }}
@@ -159,11 +167,5 @@
       {{ template "footer" . }}
     </footer>
   </div>
-  <script>
-    window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
-  </script>
-  <script defer src="static/js/email.js"></script>
-  <script defer src="static/js/api-token.js"></script>
-  <script defer src="static/js/cost_settings.js"></script>
 </body>
 </html>

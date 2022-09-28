@@ -119,11 +119,6 @@ func Dashboard(opts Options) http.Handler {
 func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
 	var cpuRequests, memRequests, cpuLimits, memLimits float64
 
-	cpuRequests = 0
-	memRequests = 0
-	cpuLimits = 0
-	memLimits = 0
-
 	if c.Limits != nil {
 		cpuLimits = float64(c.Limits.Cpu().MilliValue())
 		memLimits = float64(c.Limits.Memory().Value())
