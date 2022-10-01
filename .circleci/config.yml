@@ -42,9 +42,9 @@ references:
 
 jobs:
   test:
-    working_directory: /go/src/github.com/fairwindsops/goldilocks
+    working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: circleci/golang:1.17.1
+      - image: cimg/go:1.18
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -53,8 +53,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 1.41.1
-            GOLANGCI_LINT_CHECKSUM: 23e1078ab00a750afcde7e7eb5aab8e908ef18bee5486eeaa2d52ee57d178580
+            GOLANGCI_LINT_VERSION: 1.49.0
+            GOLANGCI_LINT_CHECKSUM: 5badc6e9fee2003621efa07e385910d9a88c89b38f6c35aded153193c5125178
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
@@ -70,9 +70,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v1.5.0
-        environment:
-          GO111MODULE: "on"
+      - image: goreleaser/goreleaser:v1.11.4
     steps:
       - checkout
       - setup_remote_docker:
@@ -91,7 +89,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v1.5.0
+      - image: goreleaser/goreleaser:v1.11.4
     steps:
       - checkout
       - setup_remote_docker:
