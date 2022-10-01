@@ -16,6 +16,7 @@ type Options struct {
 	excludedContainers sets.String
 	onByDefault        bool
 	showAllVPAs        bool
+	insightsHost       string
 }
 
 // default options for the dashboard
@@ -67,5 +68,11 @@ func ShowAllVPAs(showAllVPAs bool) Option {
 func BasePath(basePath string) Option {
 	return func(opts *Options) {
 		opts.basePath = basePath
+	}
+}
+
+func InsightsHost(insightsHost string) Option {
+	return func(opts *Options) {
+		opts.insightsHost = insightsHost
 	}
 }
