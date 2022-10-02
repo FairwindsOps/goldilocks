@@ -1,7 +1,7 @@
 {{define "namespace"}}
 {{ $foundFirstWorkload := false }}
 
-<article class="detailInfo --namespace" data-filter="{{ $.Namespace }}">
+<article class="detailInfo --namespace verticalRhythm" data-filter="{{ $.Namespace }}">
   <h2>
     <span class="badge detailBadge --namespace">Namespace</span>
     {{ $.Namespace }}
@@ -12,7 +12,7 @@
     href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
   >Limit results to the {{ $.Namespace }} namespace</a>
 
-  <details class="verticalRhythm" open>
+  <details open>
     <summary>Workloads</summary>
 
     {{ if lt (len $.Workloads) 1 }}
@@ -21,20 +21,20 @@
     {{ else }}
       {{ range $workload := $.Workloads }}
 
-    <div class="detailInfo --deployment">
+    <div class="detailInfo --deployment verticalRhythm">
       <h3>
         <span class="badge detailBadge --deployment">{{ $workload.ControllerType }}</span>
         {{ $workload.ControllerName }}
       </h3>
 
-      <details class="verticalRhythm"
+      <details
           {{ if not $foundFirstWorkload }}
             {{ $foundFirstWorkload = true }} open
           {{ end }}>
         <summary>Containers</summary>
 
         {{ range $cName, $cSummary := $workload.Containers }}
-        <div class="detailInfo --container">
+        <div class="detailInfo --container verticalRhythm">
           <h4>
             <span class="badge detailBadge --container">Container</span>
             {{ $cName }}
@@ -44,7 +44,7 @@
           <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> 
           {{ end }}
 
-          <details class="verticalRhythm" open>
+          <details open>
             <summary>Details</summary>
 
             <div class="layoutLineup">
