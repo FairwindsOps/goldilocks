@@ -1,7 +1,7 @@
 {{define "namespace"}}
 {{ $foundFirstWorkload := false }}
 
-<article data-filter="{{ $.Namespace }}">
+<article class="detailInfo --namespace" data-filter="{{ $.Namespace }}">
   <h2>
     <span class="badge detailBadge --namespace">Namespace</span>
     {{ $.Namespace }}
@@ -12,7 +12,7 @@
     href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
   >Limit results to the {{ $.Namespace }} namespace</a>
 
-  <details class="detailInfo --namespace verticalRhythm" open>
+  <details class="verticalRhythm" open>
     <summary>Workloads</summary>
 
     {{ if lt (len $.Workloads) 1 }}
@@ -21,37 +21,40 @@
     {{ else }}
       {{ range $workload := $.Workloads }}
 
-    <h3>
-      <span class="badge detailBadge --deployment">{{ $workload.ControllerType }}</span>
-      {{ $workload.ControllerName }}
-    </h3>
+    <div class="detailInfo --deployment">
+      <h3>
+        <span class="badge detailBadge --deployment">{{ $workload.ControllerType }}</span>
+        {{ $workload.ControllerName }}
+      </h3>
 
-    <details class="detailInfo --deployment verticalRhythm"
-        {{ if not $foundFirstWorkload }}
-          {{ $foundFirstWorkload = true }} open
-        {{ end }}>
-      <summary>Containers</summary>
+      <details class="verticalRhythm"
+          {{ if not $foundFirstWorkload }}
+            {{ $foundFirstWorkload = true }} open
+          {{ end }}>
+        <summary>Containers</summary>
 
-      {{ range $cName, $cSummary := $workload.Containers }}
-      
-      <h4>
-        <span class="badge detailBadge --container">Container</span>
-        {{ $cName }}
-      </h4>
+        {{ range $cName, $cSummary := $workload.Containers }}
+        <div class="detailInfo --container">
+          <h4>
+            <span class="badge detailBadge --container">Container</span>
+            {{ $cName }}
+          </h4>
 
-      {{ if gt $cSummary.ContainerCostInt 0 }}
-      <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> 
-      {{ end }}
+          {{ if gt $cSummary.ContainerCostInt 0 }}
+          <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> 
+          {{ end }}
 
-      <details class="detailInfo --container verticalRhythm" open>
-        <summary>Details</summary>
+          <details class="verticalRhythm" open>
+            <summary>Details</summary>
 
-        <div class="layoutLineup">
-          {{ template "container" $cSummary }}
+            <div class="layoutLineup">
+              {{ template "container" $cSummary }}
+            </div>
+          </details>
         </div>
+        {{ end }}
       </details>
-      {{ end }}
-    </details>
+    </div>
       {{ end }}
     {{ end }}
   </details>
