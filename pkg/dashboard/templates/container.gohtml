@@ -17,16 +17,15 @@
 {{ $uuid := getUUID }}
 
 <section class="detailInfo --qos verticalRhythm">
-  <h5>
-    <a href="#guaranteed-qos"
-      >Guaranteed <abbr title="Quality of Service">QoS</abbr></a
-    >
+  <div class="layoutCluster --start">
+    <h5>Guaranteed QoS</h5>
+
     {{if lt $.GuaranteedCostInt 0}}
-      <span class="lower-number lower-number--negative">-${{$.GuaranteedCost}}/hour</span>
+      <p class="lower-number lower-number--negative">-${{$.GuaranteedCost}}/hour</p>
     {{else}}
-      <span class="lower-number lower-number--positive">+${{$.GuaranteedCost}}/hour</span>
+      <p class="lower-number lower-number--positive">+${{$.GuaranteedCost}}/hour</p>
     {{end}}
-  </h5>
+  </div>
 
   <table class="compTable callout">
     <caption class="visually-hidden">
@@ -110,16 +109,15 @@
 </section>
 
 <section class="detailInfo --qos verticalRhythm">
-  <h5>
-    <a href="#burstable-qos"
-      >Burstable <abbr title="Quality of Service">QoS</abbr></a
-    >
+  <div class="layoutCluster --start">
+    <h5>Burstable QoS</h5>
+
     {{if lt $.BurstableCostInt 0}}
-      <span class="lower-number lower-number--negative">-${{$.BurstableCost}}/hour</span>
+      <p class="lower-number lower-number--negative">-${{$.BurstableCost}}/hour</p>
     {{else}}
-      <span class="lower-number lower-number--positive">+${{$.BurstableCost}}/hour</span>
+      <p class="lower-number lower-number--positive">+${{$.BurstableCost}}/hour</p>
     {{end}}
-  </h5>
+  </div>
 
   <table class="compTable callout">
     <caption class="visually-hidden">

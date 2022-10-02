@@ -402,6 +402,18 @@ COMPONENTS
   color: var(--color-accent-2);
 }
 
+.layoutCluster {
+  align-items: center;
+  gap: var(--gap--2);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.layoutCluster.--start {
+  justify-content: start;
+}
+
 .layoutLineup {
   display: flex;
   flex-wrap: wrap;
@@ -855,7 +867,6 @@ input[type="number"] {
 
 .lower-number {
   font-size: 1.25rem;
-  font-weight: normal;
 }
 
 .lower-number--negative {
