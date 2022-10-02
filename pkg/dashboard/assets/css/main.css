@@ -108,31 +108,6 @@ blockquote > cite {
   text-align: right;
 }
 
-details > summary > h2,
-details > summary > h3,
-details > summary > h4,
-details > summary > h5,
-details > summary > h6 {
-  display: inline-block;
-}
-
-details > summary.--hideMarker {
-  cursor: pointer;
-  list-style: none;
-}
-
-details > summary.--hideMarker::-webkit-details-marker {
-  display: none;
-}
-
-details:not([open]) > summary.--hideMarker i.--showWhenOpen {
-  display: none;
-}
-
-details[open] > summary.--hideMarker i.--showWhenClosed {
-  display: none;
-}
-
 dd {
   margin: var(--gap-0);
 }
