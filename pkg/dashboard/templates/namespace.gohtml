@@ -2,58 +2,49 @@
 {{ $foundFirstWorkload := false }}
 
 <article data-filter="{{ $.Namespace }}">
+  <h2>
+    <span class="badge detailBadge --namespace">Namespace</span>
+    {{ $.Namespace }}
+  </h2>
+
+  <a
+    class="detailLink --namespace"
+    href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
+  >Limit results to the {{ $.Namespace }} namespace</a>
+
   <details class="detailInfo --namespace verticalRhythm" open>
-    <summary class="--hideMarker">
-      <h2>
-        <span aria-label="Namespace:" class="badge detailBadge --namespace"
-          >Namespace</span
-        >
-        {{ $.Namespace }}
-        <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
-        ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
-      </h2>
-      <p>
-        <a
-          class="detailLink --namespace"
-          href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
-        >Limit results to the {{ $.Namespace }} namespace</a>
-      </p>
-    </summary>
+    <summary>Workloads</summary>
 
     {{ if lt (len $.Workloads) 1 }}
-    <section class="detailInfo --empty">
-      <p>No workloads found in this namespace.</p>
-    </section>
+    <p class="detailInfo --empty">No workloads found in this namespace.</p>
 
     {{ else }}
       {{ range $workload := $.Workloads }}
+
+    <h3>
+      <span class="badge detailBadge --deployment">{{ $workload.ControllerType }}</span>
+      {{ $workload.ControllerName }}
+    </h3>
+
     <details class="detailInfo --deployment verticalRhythm"
         {{ if not $foundFirstWorkload }}
           {{ $foundFirstWorkload = true }} open
         {{ end }}>
-      <summary class="--hideMarker">
-        <h3>
-          <span aria-label="Workload:" class="badge detailBadge --deployment"
-            >{{ $workload.ControllerType }}</span
-          >
-          {{ $workload.ControllerName }}
-          <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
-          ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
-        </h3>
-      </summary>
+      <summary>Containers</summary>
 
       {{ range $cName, $cSummary := $workload.Containers }}
+      
+      <h4>
+        <span class="badge detailBadge --container">Container</span>
+        {{ $cName }}
+      </h4>
+
+      {{ if gt $cSummary.ContainerCostInt 0 }}
+      <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> 
+      {{ end }}
+
       <details class="detailInfo --container verticalRhythm" open>
-        <summary class="--hideMarker">
-          <h4>
-            <span aria-label="Container:" class="badge detailBadge --container"
-              >Container</span
-            >
-            {{ $cName }} {{ if gt $cSummary.ContainerCostInt 0 }} <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> {{ end }}
-            <i aria-hidden="true" class="fas fa-fw fa-angle-down --showWhenClosed"></i
-            ><i aria-hidden="true" class="fas fa-fw fa-angle-up --showWhenOpen"></i>
-          </h4>
-        </summary>
+        <summary>Details</summary>
 
         <div class="layoutLineup">
           {{ template "container" $cSummary }}
@@ -63,7 +54,6 @@
     </details>
       {{ end }}
     {{ end }}
-
   </details>
 </article>
 {{end}}
