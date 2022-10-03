@@ -1,7 +1,7 @@
 before:
   hooks:
     - go mod tidy
-    - go get -u github.com/gobuffalo/packr/v2/packr2
+    - go install github.com/gobuffalo/packr/v2/packr2@latest
     - packr2
 builds:
   - id: goldilocks
