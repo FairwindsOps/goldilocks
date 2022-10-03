@@ -108,31 +108,6 @@ blockquote > cite {
   text-align: right;
 }
 
-details > summary > h2,
-details > summary > h3,
-details > summary > h4,
-details > summary > h5,
-details > summary > h6 {
-  display: inline-block;
-}
-
-details > summary.--hideMarker {
-  cursor: pointer;
-  list-style: none;
-}
-
-details > summary.--hideMarker::-webkit-details-marker {
-  display: none;
-}
-
-details:not([open]) > summary.--hideMarker i.--showWhenOpen {
-  display: none;
-}
-
-details[open] > summary.--hideMarker i.--showWhenClosed {
-  display: none;
-}
-
 dd {
   margin: var(--gap-0);
 }
@@ -425,6 +400,18 @@ COMPONENTS
 
 .detailLink.--namespace {
   color: var(--color-accent-2);
+}
+
+.layoutCluster {
+  align-items: center;
+  gap: var(--gap--2);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.layoutCluster.--start {
+  justify-content: start;
 }
 
 .layoutLineup {
@@ -880,7 +867,6 @@ input[type="number"] {
 
 .lower-number {
   font-size: 1.25rem;
-  font-weight: normal;
 }
 
 .lower-number--negative {
