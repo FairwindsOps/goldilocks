@@ -7,21 +7,6 @@
 <body class="layoutSidebar">
   <header class="layoutSidebar__sidebar">
     {{ template "navbar" . }}
-
-    {{ if gt (len .Data) 1 }}
-    <nav>
-      <ul class="navList" role="list">
-        <li>
-          <a class="linkIcon" href="{{ $.BasePath }}dashboard">
-            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
-            Detail All Namespaces
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-      {{ template "filter" . }}
-    {{ end }}
   </header>
 
   <div class="layoutSidebar__main">
@@ -34,7 +19,11 @@
       </article>
 
       {{ else }}
+      {{ if gt (len .Data) 1 }}
+      {{ template "filter" . }}
+
       <p class="summary">{{len .Data}} total namespaces found</p>
+      {{ end }}
 
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
