@@ -23,7 +23,7 @@ const (
 	FooterTemplateName      = "footer.gohtml"
 	HeadTemplateName        = "head.gohtml"
 	NamespaceTemplateName   = "namespace.gohtml"
-	NavigationTemplateName      = "navigation.gohtml"
+	NavigationTemplateName  = "navigation.gohtml"
 	EmailTemplateName       = "email.gohtml"
 	ApiTokenTemplateName    = "api_token.gohtml"
 	CostSettingTemplateName = "cost_settings.gohtml"
