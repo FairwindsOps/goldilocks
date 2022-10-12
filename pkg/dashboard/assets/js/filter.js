@@ -39,6 +39,8 @@
         } else {
             clearFilter();
         }
+
+        updateStatus();
     }
 
     function showElement(element) {
@@ -52,6 +54,23 @@
     function clearFilter() {
         for (result of potentialResults) {
             showElement(result);
+        }
+    }
+
+    function updateStatus() {
+        const outputPolite = document.querySelector("output[aria-live='polite']");
+        const outputAlert = document.querySelector("output[role='alert']");
+        const numResults = container?.querySelectorAll("[data-filter]:not([hidden])").length;
+
+        if (!filterInput.value) {
+            outputPolite.textContent = `${numPotentialResults} namespaces found`;
+            outputAlert.textContent = "";
+        } else if (numResults === 0) {
+            outputPolite.textContent = "";
+            outputAlert.textContent = "No namespaces match filter";
+        } else {
+            outputPolite.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
+            outputAlert.textContent = "";
         }
     }
 })();
