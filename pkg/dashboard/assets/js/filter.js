@@ -9,12 +9,18 @@
     const potentialResults = container?.querySelectorAll("[data-filter]");
     const numPotentialResults = potentialResults?.length;
 
-    function showFilterResult(result) {
-        result.removeAttribute("hidden");
-    }
+    if (form && container) {
+        if (numPotentialResults === 0) {
+            form.setAttribute("hidden", "");
+            console.error("No filterable entries found, removed filter form");
+        } else {
+            filterInput.addEventListener("input", updateResults);
 
-    function hideFilterResult(result) {
-        result.setAttribute("hidden", "");
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                updateResults();
+            })
+        }
     }
 
     function updateResults() {
@@ -35,23 +41,17 @@
         }
     }
 
+    function showFilterResult(result) {
+        result.removeAttribute("hidden");
+    }
+
+    function hideFilterResult(result) {
+        result.setAttribute("hidden", "");
+    }
+
     function clearFilter() {
         for (result of potentialResults) {
             showFilterResult(result);
-        }
-    }
-
-    if (form && container) {
-        if (numPotentialResults === 0) {
-            form.setAttribute("hidden", "");
-            console.error("No filterable entries found, removed filter form");
-        } else {
-            filterInput.addEventListener("input", updateResults);
-
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                updateResults();
-            })
         }
     }
 })();
