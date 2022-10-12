@@ -23,11 +23,8 @@
         if (filterTerm) {
             let regex = new RegExp(`${ filterTerm.trim().replace(/\s/g, "|") }`, "i");
 
-            for (let i = 0; i < numPotentialResults; i++) {
-                let result = potentialResults[i];
-                let filterWithin = result.dataset.filter;
-
-                if (regex.test(filterWithin)) {
+            for (result of potentialResults) {
+                if (regex.test(result.dataset.filter)) {
                     showFilterResult(result);
                 } else {
                     hideFilterResult(result);
@@ -39,8 +36,8 @@
     }
 
     function clearFilter() {
-        for (let i = 0; i < numPotentialResults; i++) {
-            showFilterResult(potentialResults[i]);
+        for (result of potentialResults) {
+            showFilterResult(result);
         }
     }
 
