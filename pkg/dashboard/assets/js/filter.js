@@ -31,9 +31,9 @@
 
             for (result of potentialResults) {
                 if (regex.test(result.dataset.filter)) {
-                    showFilterResult(result);
+                    showElement(result);
                 } else {
-                    hideFilterResult(result);
+                    hideElement(result);
                 }
             }
         } else {
@@ -41,17 +41,17 @@
         }
     }
 
-    function showFilterResult(result) {
-        result.removeAttribute("hidden");
+    function showElement(element) {
+        element.removeAttribute("hidden");
     }
 
-    function hideFilterResult(result) {
-        result.setAttribute("hidden", "");
+    function hideElement(element) {
+        element.setAttribute("hidden", "");
     }
 
     function clearFilter() {
         for (result of potentialResults) {
-            showFilterResult(result);
+            showElement(result);
         }
     }
 })();
