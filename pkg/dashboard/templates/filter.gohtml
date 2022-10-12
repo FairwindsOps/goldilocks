@@ -1,16 +1,31 @@
-{{define "filter"}}
-<form aria-controls="js-filter-container" id="js-filter-form" role="search">
-    <label class="visually-hidden" for="namespace-filter-input">
+{{ define "filter" }}
+{{ if eq (len .Data) 1 }}
+<p class="summary">{{ len .Data }} namespace found</p>
+
+{{ else }}
+<form
+    aria-controls="js-filter-container"
+    id="js-filter-form"
+    role="search"
+>
+    <label for="namespace-filter-input">
         Filter namespaces
     </label>
 
+    <p id="namespace-filter-desc">Results update as you type.</p>
+
     <input
         aria-controls="js-filter-container"
+        aria-describedby="namespace-filter-desc"
         id="namespace-filter-input"
-        name="q"
-        placeholder="Filter Namespaces..."
+        name="filter"
         type="search"
     />
 
+    <output aria-live="polite">{{len .Data}} namespaces found</output>
+    <output role="alert">
+        <!-- This element is used to notify users as soon as all results have been filtered out -->
+    </output>
 </form>
-{{end}}
+{{ end }}
+{{ end }}
