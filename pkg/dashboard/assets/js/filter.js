@@ -10,11 +10,11 @@
     const numPotentialResults = potentialResults?.length;
 
     function showFilterResult(result) {
-        result.style.removeProperty("display");
+        result.removeAttribute("hidden");
     }
 
     function hideFilterResult(result) {
-        result.style.display = "none";
+        result.setAttribute("hidden", "");
     }
 
     function updateResults() {
@@ -46,7 +46,7 @@
 
     if (form && container) {
         if (numPotentialResults === 0) {
-            form.style.display = "none";
+            form.setAttribute("hidden", "");
             console.error("No filterable entries found, removed filter form");
         } else {
             filterInput.addEventListener("input", updateResults);
