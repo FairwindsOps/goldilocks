@@ -14,9 +14,16 @@
             form.setAttribute("hidden", "");
             console.error("No filterable entries found, removed filter form");
         } else {
-            filterInput.addEventListener("input", updateResults);
+            // Handle case where input value doesn't start empty (such as on page refresh)
+            runFilter();
 
+            filterInput.addEventListener("input", runFilter);
         }
+    }
+
+    function runFilter() {
+        updateResults();
+        updateStatus();
     }
 
     function updateResults() {
@@ -35,8 +42,6 @@
         } else {
             clearFilter();
         }
-
-        updateStatus();
     }
 
     function showElement(element) {
