@@ -9,6 +9,8 @@
     const potentialResults = container?.querySelectorAll("[data-filter]");
     const numPotentialResults = potentialResults?.length;
 
+    let statusDelay = null;
+
     if (form && container) {
         if (numPotentialResults === 0) {
             form.setAttribute("hidden", "");
@@ -59,19 +61,43 @@
     }
 
     function updateStatus() {
-        const outputPolite = document.querySelector("output[aria-live='polite']");
-        const outputAlert = document.querySelector("output[role='alert']");
+        const outputVisual = form.querySelector("output");
+        const outputPolite = form.querySelector("output[aria-live='polite']");
+        const outputAlert = form.querySelector("output[role='alert']");
         const numResults = container?.querySelectorAll("[data-filter]:not([hidden])").length;
 
         if (!filterInput.value) {
-            outputPolite.textContent = `${numPotentialResults} namespaces found`;
-            outputAlert.textContent = "";
+            outputVisual.textContent = `${numPotentialResults} namespaces found`;
         } else if (numResults === 0) {
-            outputPolite.textContent = "";
-            outputAlert.textContent = "No namespaces match filter";
+            outputVisual.textContent = "No namespaces match filter";
         } else {
-            outputPolite.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
-            outputAlert.textContent = "";
+            outputVisual.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
         }
+
+        if (statusDelay) {
+            window.clearTimeout(statusDelay);
+        }
+
+        /* 
+           If you don't clear the content, then repeats of the same message aren't announced.
+           There must be a time gap between clearing and injecting new content for this to work.
+        */ 
+        outputPolite.textContent = "";
+        outputAlert.textContent = "";
+
+        // Delay also helps make spoken announcements less disruptive by generating fewer of them
+        statusDelay = window.setTimeout(() => {
+            if (!filterInput.value) {
+                outputPolite.textContent = `${numPotentialResults} namespaces found`;
+                outputAlert.textContent = "";
+            } else if (numResults === 0) {
+                outputPolite.textContent = "";
+                outputAlert.textContent = "No namespaces match filter";
+            } else {
+                outputPolite.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
+                outputAlert.textContent = "";
+            }
+        }, 1000);
+
     }
 })();

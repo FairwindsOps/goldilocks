@@ -1,6 +1,6 @@
 {{ define "filter" }}
 {{ if eq (len .Data) 1 }}
-<p class="summary">{{ len .Data }} namespace found</p>
+<p class="summary">{{ len .Data }} total namespace found</p>
 
 {{ else }}
 <form
@@ -21,10 +21,13 @@
         type="text"
     />
 
-    <output aria-live="polite">{{len .Data}} namespaces found</output>
-    <output role="alert">
+    {{ with $initialStatus := (len .Data) | printf "%d total namespaces found" }}
+    <output aria-hidden="true">{{ $initialStatus }}</output>
+    <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>
+    <output class="visually-hidden" role="alert">
         <!-- This element is used to notify users as soon as all results have been filtered out -->
     </output>
+    {{ end }}
 </form>
 {{ end }}
 {{ end }}
