@@ -3,7 +3,7 @@
     const containerId = "js-filter-container";
 
     const form = document.getElementById(formId);
-    const filterInput = form?.querySelector("input[type='search']");
+    const filterInput = form?.querySelector("input[type='text']");
 
     const container = document.getElementById(containerId);
     const potentialResults = container?.querySelectorAll("[data-filter]");
