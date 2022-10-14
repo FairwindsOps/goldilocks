@@ -85,7 +85,11 @@
         outputPolite.textContent = "";
         outputAlert.textContent = "";
 
-        // Delay also helps make spoken announcements less disruptive by generating fewer of them
+        /*
+            Delay also:
+            - Helps make spoken announcements less disruptive by generating fewer of them
+            - Gives the screen reader a chance to finish announcing what's been typed, which will otherwise talk over these announcements (in MacOS/VoiceOver)
+        */
         statusDelay = window.setTimeout(() => {
             if (!filterInput.value) {
                 outputPolite.textContent = `${numPotentialResults} namespaces found`;
@@ -98,6 +102,5 @@
                 outputAlert.textContent = "";
             }
         }, 1000);
-
     }
 })();

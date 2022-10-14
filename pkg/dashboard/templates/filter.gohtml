@@ -21,12 +21,16 @@
         type="text"
     />
 
+    <!-- Three elements needed here for screen reader announcements and visual status to play nicely:
+        1. Polite output, to handle status updates generally
+        2. Alert output, to be more disruptive when that would be helpful, e.g. as soon as they've filtered down to no results
+        3. An output that's always shown visually. We have to remove content from the above two to get them to announce the same content back to back. This would make the words pop in and out visually.
+      Note that the elements used for dynamic screen reader announcements can't themselves be injected or they won't work. Must be pre-existing containers into which the announcment content is injected. 
+    -->
     {{ with $initialStatus := (len .Data) | printf "%d total namespaces found" }}
     <output aria-hidden="true">{{ $initialStatus }}</output>
     <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>
-    <output class="visually-hidden" role="alert">
-        <!-- This element is used to notify users as soon as all results have been filtered out -->
-    </output>
+    <output class="visually-hidden" role="alert"></output>
     {{ end }}
 </form>
 {{ end }}
