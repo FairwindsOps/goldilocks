@@ -95,8 +95,8 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20210512163311-63b5d3c536b0/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/evanphx/json-patch v5.6.0+incompatible h1:jBYDEEiFBPxA0v50tFdvOzQQTCvpL6mnFh5mB2/l16U=
 github.com/evanphx/json-patch v5.6.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
-github.com/fairwindsops/controller-utils v0.2.1 h1:mA2TlMamrfOs43yhQ8KKsr+HqjrcXFdoPhdKF82NB2Q=
-github.com/fairwindsops/controller-utils v0.2.1/go.mod h1:FyllXuHLkiGGfTZicx3zNMNXNqAe9ivJM9xZEcT6IQM=
+github.com/fairwindsops/controller-utils v0.3.0 h1:otfA6HZ7oVzF690AdGwVU4+6Q5Uie6G6oOF7MBT+L4g=
+github.com/fairwindsops/controller-utils v0.3.0/go.mod h1:Plr++8B/A+TlhbVBG0sNhToaaQKo7LoFNIfdKi58vpM=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/flowstack/go-jsonschema v0.1.1/go.mod h1:yL7fNggx1o8rm9RlgXv7hTBWxdBM0rVwpMwimd3F3N0=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
