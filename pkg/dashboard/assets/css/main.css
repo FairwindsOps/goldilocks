@@ -210,6 +210,10 @@ h6 {
   font-size: var(--step-0);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 i.error {
   color: var(--color-negative);
 }

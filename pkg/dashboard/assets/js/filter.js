@@ -13,7 +13,7 @@
 
     if (form && container) {
         if (numPotentialResults === 0) {
-            form.setAttribute("hidden", "");
+            hideElement(form);
             console.error("No filterable entries found, removed filter form");
         } else {
             // Handle case where input value doesn't start empty (such as on page refresh)
