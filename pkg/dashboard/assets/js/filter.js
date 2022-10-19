@@ -66,40 +66,55 @@
         const outputAlert = form.querySelector("output[role='alert']");
         const numResults = container?.querySelectorAll("[data-filter]:not([hidden])").length;
 
+        let message, type;
+
         if (!filterInput.value) {
-            outputVisual.textContent = `${numPotentialResults} namespaces found`;
+            message = `${numPotentialResults} namespaces found`;
+            type = "polite";
         } else if (numResults === 0) {
-            outputVisual.textContent = "No namespaces match filter";
+            message = "No namespaces match filter";
+            type = "alert";
         } else {
-            outputVisual.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
+            message = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
+            type = "polite";
         }
+
+        changeStatusMessage(message, type);
+    }
+
+    function changeStatusMessage(message, type = "polite") {
+        const outputVisual = form.querySelector("output[aria-hidden]");
+        const outputPolite = form.querySelector("output[aria-live='polite']");
+        const outputAlert = form.querySelector("output[role='alert']");
 
         if (statusDelay) {
             window.clearTimeout(statusDelay);
         }
 
-        /* 
-           If you don't clear the content, then repeats of the same message aren't announced.
-           There must be a time gap between clearing and injecting new content for this to work.
-        */ 
+        outputVisual.textContent = message;
         outputPolite.textContent = "";
         outputAlert.textContent = "";
 
-        /*
+        /* 
+           If you don't clear the content, then repeats of the same message aren't announced.
+           There must be a time gap between clearing and injecting new content for this to work.
             Delay also:
             - Helps make spoken announcements less disruptive by generating fewer of them
-            - Gives the screen reader a chance to finish announcing what's been typed, which will otherwise talk over these announcements (in MacOS/VoiceOver)
+            - Gives the screen reader a chance to finish announcing what's been typed, which will otherwise talk over these announcements (in MacOS/VoiceOver at least)
         */
         statusDelay = window.setTimeout(() => {
-            if (!filterInput.value) {
-                outputPolite.textContent = `${numPotentialResults} namespaces found`;
-                outputAlert.textContent = "";
-            } else if (numResults === 0) {
-                outputPolite.textContent = "";
-                outputAlert.textContent = "No namespaces match filter";
-            } else {
-                outputPolite.textContent = `Showing ${numResults} out of ${numPotentialResults} namespaces`;
-                outputAlert.textContent = "";
+            switch (type) {
+                case "polite":
+                    outputPolite.textContent = message;
+                    outputAlert.textContent = "";
+                    break;
+                case "alert":
+                    outputPolite.textContent = "";
+                    outputAlert.textContent = message;
+                    break;
+                default:
+                    outputPolite.textContent = "Error: There was a problem with the filter.";
+                    outputAlert.textContent = "";
             }
         }, 1000);
     }
