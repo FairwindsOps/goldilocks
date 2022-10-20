@@ -3,10 +3,6 @@
     <p class="summary">{{ len . }} namespaces found</p>
 </noscript>
 
-{{ if eq (len .) 1 }}
-<p class="summary">{{ len . }} namespace found</p>
-
-{{ else }}
 <form
     aria-controls="js-filter-container"
     data-javascript-required="true"
@@ -38,5 +34,4 @@
     <output class="visually-hidden" role="alert"></output>
     {{ end }}
 </form>
-{{ end }}
 {{ end }}

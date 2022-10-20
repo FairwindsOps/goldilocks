@@ -3,7 +3,9 @@
 <head>
   {{ template "head" . }}
 
+  {{ if gt (len .Data.VpaData.Namespaces) 1 }}
   <script src="static/js/filter.js" type="module"></script>
+  {{ end }}
 
   <noscript>
     <style>
