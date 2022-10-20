@@ -2,6 +2,9 @@
 <html lang="en-US">
 <head>
   {{ template "head" . }}
+
+  <script src="static/js/filter.js" type="module"></script>
+
   <noscript>
     <style>
       #email-box, #api-token-box, #cost-settings-box {
@@ -9,9 +12,11 @@
       }
     </style>
   </noscript>
+
   <script>
     window.INSIGHTS_HOST = "{{ .Data.InsightsHost }}"
   </script>
+
   <script defer src="static/js/email.js"></script>
   <script defer src="static/js/api-token.js"></script>
   <script defer src="static/js/cost_settings.js"></script>
