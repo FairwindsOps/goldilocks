@@ -19,7 +19,7 @@
       <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
 
       {{ else }}
-      {{ template "filter" . }}
+      {{ template "filter" .Data }}
 
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
