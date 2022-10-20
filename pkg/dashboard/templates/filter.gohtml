@@ -1,10 +1,15 @@
 {{ define "filter" }}
+<noscript>
+    <p class="summary">{{ len .Data }} namespaces found</p>
+</noscript>
+
 {{ if eq (len .Data) 1 }}
-<p class="summary">{{ len .Data }} total namespace found</p>
+<p class="summary">{{ len .Data }} namespace found</p>
 
 {{ else }}
 <form
     aria-controls="js-filter-container"
+    data-javascript-required="true"
     id="js-filter-form"
     role="search"
 >
