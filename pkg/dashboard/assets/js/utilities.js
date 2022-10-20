@@ -1,3 +1,7 @@
+function setJavascriptAvailable() {
+	document.body.dataset.javascriptAvailable = true;
+}
+
 function showElement(element) {
 	element.removeAttribute("hidden");
 }
@@ -7,6 +11,7 @@ function hideElement(element) {
 }
 
 export {
+	setJavascriptAvailable,
 	showElement,
 	hideElement
 };
