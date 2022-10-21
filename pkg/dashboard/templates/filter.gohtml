@@ -1,26 +1,29 @@
 {{ define "filter" }}
 <noscript>
-    <p class="summary">{{ len . }} namespaces found</p>
+    <p class="controls">{{ len . }} namespaces found</p>
 </noscript>
 
 <form
     aria-controls="js-filter-container"
+    class="controls verticalRhythm"
     data-javascript-required="true"
     id="js-filter-form"
     role="search"
 >
-    <label for="namespace-filter-input">
-        Filter namespaces
-    </label>
+    <div class="control-block">
+        <label for="namespace-filter-input">
+            Filter namespaces.
+        </label>
 
-    <p id="namespace-filter-desc">Results update as you type.</p>
+        <p class="control-block__description" id="namespace-filter-desc">Results update as you type.</p>
 
-    <input
-        aria-controls="js-filter-container"
-        aria-describedby="namespace-filter-desc"
-        id="namespace-filter-input"
-        type="text"
-    />
+        <input
+            aria-controls="js-filter-container"
+            aria-describedby="namespace-filter-desc"
+            id="namespace-filter-input"
+            type="text"
+        />
+    </div>
 
     <!-- Three elements needed here for screen reader announcements and visual status to play nicely:
         1. Polite output, to handle status updates generally
@@ -29,9 +32,11 @@
       Note that the elements used for dynamic screen reader announcements can't themselves be injected or they won't work. Must be pre-existing containers into which the announcment content is injected. 
     -->
     {{ with $initialStatus := (len .) | printf "%d total namespaces found" }}
-    <output aria-hidden="true">{{ $initialStatus }}</output>
-    <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>
-    <output class="visually-hidden" role="alert"></output>
+    <div class="control-block">
+        <output aria-hidden="true">{{ $initialStatus }}</output>
+        <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>
+        <output class="visually-hidden" role="alert"></output>
+    </div>
     {{ end }}
 </form>
 {{ end }}

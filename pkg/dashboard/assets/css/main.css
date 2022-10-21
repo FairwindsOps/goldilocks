@@ -64,6 +64,10 @@ html {
   font-size: var(--step-0);
 }
 
+body {
+  accent-color: var(--color-accent-2);
+}
+
 /*
 -----
 ELEMENTS
@@ -141,39 +145,6 @@ dt::after {
 footer {
   font-size: var(--step--1);
   background: var(--color-bg-2);
-}
-
-form[role="search"] {
-  display: flex;
-}
-
-form[role="search"] input[type="search"] {
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--color-accent-3);
-  color: var(--color-text-1);
-  flex: 1 1 30ch;
-  margin: 0;
-  padding: 0;
-}
-
-form[role="search"] button[type="submit"] {
-  background: none;
-  border: 1px solid var(--color-accent-3);
-  border-radius: var(--gap--2);
-  margin: 0 0 0 var(--gap-0);
-}
-
-form[role="search"] button[type="submit"]:active {
-  color: inherit;
-  transform: scale(var(--scale));
-}
-
-@media (prefers-reduced-motion) {
-  form[role="search"] button[type="submit"]:active {
-    background: var(--color-accent-3);
-    transform: none;
-  }
 }
 
 h1,
@@ -351,6 +322,22 @@ COMPONENTS
   text-align: right;
 }
 
+.controls {
+  border-block-end: 2px solid var(--color-accent-2);
+  margin-block: var(--gap-0);
+  padding-block-end: var(--gap-0);
+}
+
+.control-block input {
+  display: block;
+  inline-size: min(30ch, 100%);
+  margin-block: var(--gap--2);
+}
+
+.control-block .control-block__description {
+  display: inline;
+}
+
 .detailBadge {
   margin-left: calc(-1 * var(--gap-detail, var(--gap-0)));
 }
@@ -473,14 +460,6 @@ COMPONENTS
   grid-gap: var(--gap-3);
   grid-template-columns: repeat(auto-fit, minmax(30ch, 1fr));
   margin: var(--gap-1);
-}
-
-.summary {
-  border-top: 2px solid var(--color-accent-2);
-  color: var(--color-accent-2);
-  margin-top: var(--gap-0);
-  margin-bottom: var(--gap-0);
-  padding-top: var(--gap-0);
 }
 
 .banner img {
