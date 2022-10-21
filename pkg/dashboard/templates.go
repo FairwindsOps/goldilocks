@@ -66,6 +66,7 @@ func getTemplate(name string, includedTemplates ...string) (*template.Template, 
 		"getStatusRange": helpers.GetStatusRange,
 		"resourceName":   helpers.ResourceName,
 		"getUUID":        helpers.GetUUID,
+		"hasField":		  helpers.HasField,
 	})
 
 	// join the default templates and included templates
