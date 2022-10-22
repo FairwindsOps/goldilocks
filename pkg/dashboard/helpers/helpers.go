@@ -16,7 +16,7 @@ package helpers
 
 import (
 	"reflect"
-	
+
 	"github.com/google/uuid"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -132,10 +132,10 @@ func GetUUID() string {
 func HasField(v interface{}, name string) bool {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Ptr {
-	  rv = rv.Elem()
+		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {
-	  return false
+		return false
 	}
 	return rv.FieldByName(name).IsValid()
 }
