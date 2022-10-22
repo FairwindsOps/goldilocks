@@ -7,10 +7,12 @@
     {{ $.Namespace }}
   </h2>
 
+  {{ if not .IsOnlyNamespace }}
   <a
     class="detailLink --namespace"
     href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
   >Limit results to the {{ $.Namespace }} namespace</a>
+  {{ end }}
 
   <details open>
     <summary>Workloads</summary>
