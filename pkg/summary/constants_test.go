@@ -255,6 +255,7 @@ var testSummary = Summary{
 	Namespaces: map[string]namespaceSummary{
 		"testing": {
 			Namespace: "testing",
+			IsOnlyNamespace: true,
 			Workloads: map[string]workloadSummary{
 				"test-basic": {
 					ControllerName: "test-basic",
