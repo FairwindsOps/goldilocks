@@ -13,7 +13,6 @@ build:
 lint:
 	golangci-lint run
 test:
-	printf "\n\nTests:\n\n"
 	$(GOCMD) test -v --bench --benchmem -coverprofile coverage.txt -covermode=atomic ./...
 	$(GOCMD) vet ./... 2> govet-report.out
 	$(GOCMD) tool cover -html=coverage.txt -o cover-report.html
