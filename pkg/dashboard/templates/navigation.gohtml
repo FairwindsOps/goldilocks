@@ -1,0 +1,46 @@
+{{define "navigation"}}
+<a href="{{ .BasePath }}">
+  <img alt="Goldilocks" class="logo" src="static/images/goldilocks.svg" />
+</a>
+
+<p class="logoSupport">
+  An Open Source Project by
+  <a
+    href="https://fairwinds.com?source=goldilocks"
+    rel="noreferrer noopener"
+    target="_blank"
+  >
+    <img
+      alt="Fairwinds"
+      class="logo logo--secondary"
+      src="static/images/fw-logo.png"
+    />
+    <span class="visually-hidden">(Opens in new window)</span>
+  </a>
+</p>
+
+<nav>
+  <ul class="navList" role="list">
+    <li>
+      <a class="linkIcon" href="{{ .BasePath }}">
+        <i aria-hidden="true" class="fas fa-fw fa-list-ul"></i>
+        List All Namespaces
+      </a>
+    </li>
+    <li>
+      <a class="linkIcon" href="{{ .BasePath }}dashboard">
+        <i aria-hidden="true" class="far fa-fw fa-eye"></i>
+        Detail All Namespaces
+      </a>
+    </li>
+    {{ if hasField .Data "VpaData" }}
+    <li>
+      <a class="linkIcon" href="#glossary">
+        <i aria-hidden="true" class="fas fa-fw fa-book"></i>
+        Glossary
+      </a>
+    </li>
+    {{ end }}
+  </ul>
+</nav>
+{{end}}

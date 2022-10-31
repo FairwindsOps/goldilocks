@@ -255,6 +255,7 @@ var testSummary = Summary{
 	Namespaces: map[string]namespaceSummary{
 		"testing": {
 			Namespace: "testing",
+			IsOnlyNamespace: true,
 			Workloads: map[string]workloadSummary{
 				"test-basic": {
 					ControllerName: "test-basic",
@@ -370,6 +371,7 @@ var testSummaryDaemonSet = Summary{
 	Namespaces: map[string]namespaceSummary{
 		"testing-daemonset": {
 			Namespace: "testing-daemonset",
+			IsOnlyNamespace: true,
 			Workloads: map[string]workloadSummary{
 				"test-ds-with-reco": {
 					ControllerName: "test-ds-with-reco",

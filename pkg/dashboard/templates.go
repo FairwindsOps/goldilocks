@@ -23,7 +23,7 @@ const (
 	FooterTemplateName      = "footer.gohtml"
 	HeadTemplateName        = "head.gohtml"
 	NamespaceTemplateName   = "namespace.gohtml"
-	NavbarTemplateName      = "navbar.gohtml"
+	NavigationTemplateName  = "navigation.gohtml"
 	EmailTemplateName       = "email.gohtml"
 	ApiTokenTemplateName    = "api_token.gohtml"
 	CostSettingTemplateName = "cost_settings.gohtml"
@@ -33,7 +33,7 @@ var (
 	// templates with these names are included by default in getTemplate()
 	defaultIncludedTemplates = []string{
 		"head",
-		"navbar",
+		"navigation",
 		"footer",
 	}
 )
@@ -66,6 +66,7 @@ func getTemplate(name string, includedTemplates ...string) (*template.Template, 
 		"getStatusRange": helpers.GetStatusRange,
 		"resourceName":   helpers.ResourceName,
 		"getUUID":        helpers.GetUUID,
+		"hasField":       helpers.HasField,
 	})
 
 	// join the default templates and included templates

@@ -1,60 +1,124 @@
-(function () {
-    const formId = "js-filter-form";
-    const containerId = "js-filter-container";
+import {
+    showElement,
+    hideElement
+} from "./utilities.js";
 
-    const form = document.getElementById(formId);
-    const filterInput = form?.querySelector("input[type='search']");
+const form = document.getElementById("js-filter-form");
+const container = document.getElementById("js-filter-container");
 
-    const container = document.getElementById(containerId);
-    const potentialResults = container?.querySelectorAll("[data-filter]");
-    const numPotentialResults = potentialResults?.length;
+/* 
+    These lookups simultaneously test that certain elements and attributes
+    required for accessibility are present
+*/
+const filterInput = form?.querySelector("input[type='text']");
+const potentialResults = container?.querySelectorAll("[data-filter]");
 
-    function showFilterResult(result) {
-        result.style.removeProperty("display");
-    }
+const outputVisual = form?.querySelector("output[aria-hidden]");
+const outputPolite = form?.querySelector("output[aria-live='polite']");
+const outputAlert = form?.querySelector("output[role='alert']");
 
-    function hideFilterResult(result) {
-        result.style.display = "none";
-    }
+let statusDelay = null;
 
-    function updateResults() {
-        let filterTerm = filterInput.value;
+// Test that all expected HTML is present
+if (!form) {
+    console.error("Could not find filter form");
+} else if (!filterInput) {
+    hideElement(form);
+    console.error("Could not find filter input element, removed filter form");
+} else if (!container) {
+    hideElement(form);
+    console.error("Could not find filter results container, removed filter form");
+} else if (!outputVisual || !outputPolite || !outputAlert) {
+    hideElement(form);
+    console.error("Could not find all filter output elements, removed filter form");
+} else if (potentialResults.length === 0) {
+    hideElement(form);
+    console.error("No filterable entries found, removed filter form");
+} else {
+    // HTML was successfully set up, wire in JS
+    filterInput.addEventListener("input", runFilter);
 
-        if (filterTerm) {
-            let regex = new RegExp(`${ filterTerm.trim().replace(/\s/g, "|") }`, "i");
+    // Handle case where input value doesn't start empty (such as on page refresh)
+    runFilter();
+}
 
-            for (let i = 0; i < numPotentialResults; i++) {
-                let result = potentialResults[i];
-                let filterWithin = result.dataset.filter;
+function runFilter() {
+    updateResults();
+    updateStatus();
+}
 
-                if (regex.test(filterWithin)) {
-                    showFilterResult(result);
-                } else {
-                    hideFilterResult(result);
-                }
+function updateResults() {
+    let filterTerm = filterInput.value;
+
+    if (filterTerm) {
+        let regex = new RegExp(`${ filterTerm.trim().replace(/\s/g, "|") }`, "i");
+
+        for (const result of potentialResults) {
+            if (regex.test(result.dataset.filter)) {
+                showElement(result);
+            } else {
+                hideElement(result);
             }
-        } else {
-            clearFilter();
         }
+    } else {
+        clearFilter();
+    }
+}
+
+function clearFilter() {
+    for (const result of potentialResults) {
+        showElement(result);
+    }
+}
+
+function updateStatus() {
+    const numResults = container?.querySelectorAll("[data-filter]:not([hidden])").length;
+
+    let message, type;
+
+    if (!filterInput.value) {
+        message = `${potentialResults.length} namespaces found`;
+        type = "polite";
+    } else if (numResults === 0) {
+        message = "No namespaces match filter";
+        type = "alert";
+    } else {
+        message = `Showing ${numResults} out of ${potentialResults.length} namespaces`;
+        type = "polite";
     }
 
-    function clearFilter() {
-        for (let i = 0; i < numPotentialResults; i++) {
-            showFilterResult(potentialResults[i]);
-        }
+    changeStatusMessage(message, type);
+}
+
+function changeStatusMessage(message, type = "polite") {
+    if (statusDelay) {
+        window.clearTimeout(statusDelay);
     }
 
-    if (form && container) {
-        if (numPotentialResults === 0) {
-            form.style.display = "none";
-            console.error("No filterable entries found, removed filter form");
-        } else {
-            filterInput.addEventListener("input", updateResults);
+    outputVisual.textContent = message;
+    outputPolite.textContent = "";
+    outputAlert.textContent = "";
 
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                updateResults();
-            })
+    /*
+        If you don't clear the content, then repeats of the same message aren't announced.
+        There must be a time gap between clearing and injecting new content for this to work.
+        Delay also:
+            - Helps make spoken announcements less disruptive by generating fewer of them
+            - Gives the screen reader a chance to finish announcing what's been typed, which will otherwise talk over these announcements (in MacOS/VoiceOver at least)
+    */
+    statusDelay = window.setTimeout(() => {
+        switch (type) {
+            case "polite":
+                outputPolite.textContent = message;
+                outputAlert.textContent = "";
+                break;
+            case "alert":
+                outputPolite.textContent = "";
+                outputAlert.textContent = message;
+                break;
+            default:
+                outputPolite.textContent = "Error: There was a problem with the filter.";
+                outputAlert.textContent = "";
         }
-    }
-})();
+    }, 1000);
+}

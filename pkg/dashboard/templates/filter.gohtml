@@ -1,20 +1,42 @@
-{{define "filter"}}
-<form aria-controls="js-filter-container" id="js-filter-form" role="search">
-    <label class="visually-hidden" for="namespace-filter-input">
-        Filter namespaces
-    </label>
+{{ define "filter" }}
+<noscript>
+    <p class="controls">{{ len . }} namespaces found</p>
+</noscript>
 
-    <input
-        aria-controls="js-filter-container"
-        id="namespace-filter-input"
-        name="q"
-        placeholder="Filter Namespaces..."
-        type="search"
-    />
+<form
+    aria-controls="js-filter-container"
+    class="controls verticalRhythm"
+    data-javascript-required="true"
+    id="js-filter-form"
+    role="search"
+>
+    <div class="control-block">
+        <label for="namespace-filter-input">
+            Filter namespaces.
+        </label>
 
-    <button type="submit">
-        <i aria-hidden="true" class="fas fa-fw fa-search"></i>
-        <span class="visually-hidden">Search</span>
-    </button>
+        <p class="control-block__description" id="namespace-filter-desc">Results update as you type.</p>
+
+        <input
+            aria-controls="js-filter-container"
+            aria-describedby="namespace-filter-desc"
+            id="namespace-filter-input"
+            type="text"
+        />
+    </div>
+
+    <!-- Three elements needed here for screen reader announcements and visual status to play nicely:
+        1. Polite output, to handle status updates generally
+        2. Alert output, to be more disruptive when that would be helpful, e.g. as soon as they've filtered down to no results
+        3. An output that's always shown visually. We have to remove content from the above two to get them to announce the same content back to back. This would make the words pop in and out visually.
+      Note that the elements used for dynamic screen reader announcements can't themselves be injected or they won't work. Must be pre-existing containers into which the announcment content is injected. 
+    -->
+    {{ with $initialStatus := (len .) | printf "%d total namespaces found" }}
+    <div class="control-block">
+        <output aria-hidden="true">{{ $initialStatus }}</output>
+        <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>
+        <output class="visually-hidden" role="alert"></output>
+    </div>
+    {{ end }}
 </form>
-{{end}}
+{{ end }}

@@ -41,9 +41,10 @@ type Summary struct {
 }
 
 type namespaceSummary struct {
-	Namespace string                     `json:"namespace"`
-	Workloads map[string]workloadSummary `json:"workloads"`
-	BasePath  string
+	Namespace       string                     `json:"namespace"`
+	Workloads       map[string]workloadSummary `json:"workloads"`
+	BasePath        string
+	IsOnlyNamespace bool
 }
 
 type workloadSummary struct {
@@ -227,6 +228,16 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		// update summary maps
 		nsSummary.Workloads[wSummary.ControllerName] = wSummary
 		summary.Namespaces[nsSummary.Namespace] = nsSummary
+	}
+
+	// Indicate if this is the only namespace we are returning. This allows us
+	// to manipulate the summary on the dashboard
+	if len(summary.Namespaces) == 1 {
+		for namespaceName, namespace := range summary.Namespaces {
+			klog.V(3).Infof("setting ns %s as the only namespace", namespaceName)
+			namespace.IsOnlyNamespace = true
+			summary.Namespaces[namespaceName] = namespace
+		}
 	}
 
 	return summary, nil
