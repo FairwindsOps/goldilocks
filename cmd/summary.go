@@ -17,7 +17,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -69,7 +69,7 @@ By default the summary will be about all VPAs in all namespaces.`,
 		}
 
 		if outputFile != "" {
-			err := ioutil.WriteFile(outputFile, summaryJSON, 0644)
+			err := os.WriteFile(outputFile, summaryJSON, 0644)
 			if err != nil {
 				klog.Fatalf("Failed to write summary to file: %v", err)
 			}
