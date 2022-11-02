@@ -2,26 +2,15 @@
 <html lang="en-US">
 <head>
   {{ template "head" . }}
+
+  {{ if gt (len .Data) 1 }}
+  <script src="static/js/filter.js" type="module"></script>
+  {{ end }}
 </head>
 
 <body class="layoutSidebar">
   <header class="layoutSidebar__sidebar">
-    {{ template "navbar" . }}
-
-    {{ if gt (len .Data) 1 }}
-    <nav>
-      <ul class="navList" role="list">
-        <li>
-          <a class="linkIcon" href="{{ $.BasePath }}dashboard">
-            <i aria-hidden="true" class="far fa-fw fa-eye"></i>
-            Detail All Namespaces
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-      {{ template "filter" . }}
-    {{ end }}
+    {{ template "navigation" . }}
   </header>
 
   <div class="layoutSidebar__main">
@@ -29,12 +18,12 @@
       <h1>Namespaces</h1>
 
       {{ if lt (len .Data) 1 }}
-      <article>
-        <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
-      </article>
+      <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
 
       {{ else }}
-      <p class="summary">{{len .Data}} total namespaces found</p>
+        {{ if gt (len .Data) 1 }}
+          {{ template "filter" .Data }}
+        {{ end }}
 
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data }}
