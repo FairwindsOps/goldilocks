@@ -336,7 +336,7 @@ func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workloa
 
 func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
 	client := kube.GetControllerUtilsClient()
-	workloads, err := client.GetAllTopControllersWithPods(s.namespace)
+	workloads, err := client.GetAllTopControllersSummary(s.namespace)
 	if err != nil {
 		return nil, err
 	}
