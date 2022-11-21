@@ -26,11 +26,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
+	"github.com/fairwindsops/controller-utils/pkg/controller"
+	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 )
 
 // ClientInstance is a wrapper around the kubernetes interface for testing purposes
@@ -49,13 +50,31 @@ type DynamicClientInstance struct {
 	RESTMapper meta.RESTMapper
 }
 
+type ControllerUtilsClientInstance struct {
+	Client controller.Client
+}
+
 
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
 var dynamicClient *DynamicClientInstance
+var controllerUtilsClient *ControllerUtilsClientInstance
 var clientOnce sync.Once
 var clientOnceVPA sync.Once
 var clientOnceDynamic sync.Once
+var clientOnceControllerUtils sync.Once
+
+func GetControllerUtilsInstance() *ControllerUtilsClientInstance {
+	clientOnceControllerUtils.Do(func() {
+		if controllerUtilsClient == nil {
+			controllerUtilsClient = &ControllerUtilsClientInstance{
+				Client: GetControllerUtilsClient(),
+			}
+		}
+	})
+	return controllerUtilsClient
+}
+
 
 // GetInstance returns a Kubernetes interface based on the current configuration
 func GetInstance() *ClientInstance {
@@ -102,9 +121,7 @@ func GetControllerUtilsClient() controllerUtils.Client {
 		RESTMapper: restmapper,
 		Dynamic: dynamic,
 	}
-
 	return client
-
 }
 
 func getKubeClient() kubernetes.Interface {
