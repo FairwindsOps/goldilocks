@@ -30,7 +30,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	controllerLog "github.com/fairwindsops/controller-utils/pkg/log"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -234,7 +233,8 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 
 func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 	controllers := []Controller{}
-	allTopControllers, err := controllerUtils.GetAllTopControllers(context.TODO(), r.DynamicClient.Client, r.DynamicClient.RESTMapper, namespace)
+	client := kube.GetControllerUtilsClient()
+	allTopControllers, err := client.GetAllTopControllersSummary(namespace)
 	if err != nil {
 		return nil, err
 	}

@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 )
 
 // ClientInstance is a wrapper around the kubernetes interface for testing purposes
@@ -47,6 +48,7 @@ type DynamicClientInstance struct {
 	Client     dynamic.Interface
 	RESTMapper meta.RESTMapper
 }
+
 
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
@@ -89,6 +91,20 @@ func GetDynamicInstance() *DynamicClientInstance {
 		}
 	})
 	return dynamicClient
+}
+
+func GetControllerUtilsClient() controllerUtils.Client {
+	dynamic := getKubeClientDynamic()
+	restmapper := getRESTMapper()
+
+	client := controllerUtils.Client{
+		Context: context.TODO(),
+		RESTMapper: restmapper,
+		Dynamic: dynamic,
+	}
+
+	return client
+
 }
 
 func getKubeClient() kubernetes.Interface {
