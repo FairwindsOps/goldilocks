@@ -43,13 +43,14 @@ import (
 
 // Reconciler checks if VPA objects should be created or deleted
 type Reconciler struct {
-	KubeClient        *kube.ClientInstance
-	VPAClient         *kube.VPAClientInstance
-	DynamicClient     *kube.DynamicClientInstance
-	OnByDefault       bool
-	DryRun            bool
-	IncludeNamespaces []string
-	ExcludeNamespaces []string
+	KubeClient            *kube.ClientInstance
+	VPAClient             *kube.VPAClientInstance
+	DynamicClient         *kube.DynamicClientInstance
+	ControllerUtilsClient *kube.ControllerUtilsClientInstance
+	OnByDefault           bool
+	DryRun                bool
+	IncludeNamespaces     []string
+	ExcludeNamespaces     []string
 }
 
 type Controller struct {
@@ -233,8 +234,7 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 
 func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 	controllers := []Controller{}
-	client := kube.GetControllerUtilsClient()
-	allTopControllers, err := client.GetAllTopControllersSummary(namespace)
+	allTopControllers, err := r.ControllerUtilsClient.Client.GetAllTopControllersSummary(namespace)
 	if err != nil {
 		return nil, err
 	}
