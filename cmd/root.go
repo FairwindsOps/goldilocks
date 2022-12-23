@@ -67,6 +67,7 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			klog.Error(err)
 		}
+		os.Exit(1)
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		os.Stderr.WriteString("\n\nWant more? Upgrade to the free tier of Fairwinds Insights! https://fairwinds.com/insights-signup/goldilocks 🚀 \n")
