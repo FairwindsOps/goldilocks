@@ -31,4 +31,7 @@ var versionCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Version:" + version + " Commit:" + commit)
 	},
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+		return nil
+	},
 }

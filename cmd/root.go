@@ -26,6 +26,7 @@ import (
 
 var kubeconfig string
 var nsName string
+var exitCode int
 
 var (
 	version string
@@ -67,6 +68,10 @@ var rootCmd = &cobra.Command{
 			klog.Error(err)
 		}
 		os.Exit(1)
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		os.Stderr.WriteString("\n\nWant more? Automate Goldilocks for free with Fairwinds Insights!\n🚀 https://fairwinds.com/insights-signup/goldilocks 🚀 \n")
+		os.Exit(exitCode)
 	},
 }
 
