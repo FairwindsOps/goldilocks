@@ -67,20 +67,22 @@ var controllerUtilsLogr = klogr.New()
 func GetInstance() *Reconciler {
 	if singleton == nil {
 		singleton = &Reconciler{
-			KubeClient:    kube.GetInstance(),
-			VPAClient:     kube.GetVPAInstance(),
-			DynamicClient: kube.GetDynamicInstance(),
+			KubeClient:            kube.GetInstance(),
+			VPAClient:             kube.GetVPAInstance(),
+			DynamicClient:         kube.GetDynamicInstance(),
+			ControllerUtilsClient: kube.GetControllerUtilsInstance(),
 		}
 	}
 	return singleton
 }
 
 // SetInstance sets the singleton using preconstructed k8s and vpa clients. Used for testing.
-func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic *kube.DynamicClientInstance) *Reconciler {
+func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic *kube.DynamicClientInstance, controller *kube.ControllerUtilsClientInstance) *Reconciler {
 	singleton = &Reconciler{
-		KubeClient:    k8s,
-		VPAClient:     vpa,
-		DynamicClient: dynamic,
+		KubeClient:            k8s,
+		VPAClient:             vpa,
+		DynamicClient:         dynamic,
+		ControllerUtilsClient: controller,
 	}
 	return singleton
 }

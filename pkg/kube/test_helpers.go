@@ -7,6 +7,8 @@ import (
 	v1beta2fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	fakedyn "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
+	"github.com/fairwindsops/controller-utils/pkg/controller"
+	"context"
 )
 
 // GetMockClient returns a fake client instance for mocking
@@ -26,6 +28,24 @@ func GetMockVPAClient() *VPAClientInstance {
 	SetVPAInstance(kc)
 	return &kc
 }
+
+// GetMockControllerUtilsClient returns a fake controller client instance for mocking.
+func GetMockControllerUtilsClient() *ControllerUtilsClientInstance {
+	gvapps := schema.GroupVersion{Group: "apps", Version: "v1"}
+	gvcore := schema.GroupVersion{Group: "", Version: "v1"}
+	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore})
+	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), nil)
+	kc := ControllerUtilsClientInstance{
+		Client: controller.Client{
+			Context: context.TODO(),
+			RESTMapper: restMapper,
+			Dynamic: fc,
+			},
+	}
+	SetControllerUtilsInstance(kc)
+	return &kc
+}
+
 
 // GetMockVPAClient returns fake vpa client instance for mocking.
 func GetMockDynamicClient() *DynamicClientInstance {
@@ -98,4 +118,9 @@ func SetVPAInstance(kc VPAClientInstance) {
 // SetVPAInstance sets the kubeClient for VPA
 func SetDynamicInstance(kc DynamicClientInstance) {
 	dynamicClient = &kc
+}
+
+// SetControllerUtilsInstance sets a kubeClient for Controller
+func SetControllerUtilsInstance(kc ControllerUtilsClientInstance) {
+	controllerUtilsClient = &kc
 }

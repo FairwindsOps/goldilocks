@@ -26,7 +26,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	"github.com/fairwindsops/controller-utils/pkg/controller"
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -50,8 +49,9 @@ type DynamicClientInstance struct {
 	RESTMapper meta.RESTMapper
 }
 
+//ControllerUtilsClientInstance is a wrapper around the controller-utils client for testing purposes
 type ControllerUtilsClientInstance struct {
-	Client controller.Client
+	Client controllerUtils.Client
 }
 
 
@@ -64,6 +64,7 @@ var clientOnceVPA sync.Once
 var clientOnceDynamic sync.Once
 var clientOnceControllerUtils sync.Once
 
+// GetControllerUtilsInstance returns a Kubernetes client to be used for interfacing with Kubernetes controllers
 func GetControllerUtilsInstance() *ControllerUtilsClientInstance {
 	clientOnceControllerUtils.Do(func() {
 		if controllerUtilsClient == nil {

@@ -36,7 +36,8 @@ func setupVPAForTests(t *testing.T) {
 	kubeClient := kube.GetMockClient()
 	vpaClient := kube.GetMockVPAClient()
 	dynamicClient := kube.GetMockDynamicClient()
-	testVPAReconciler := SetInstance(kubeClient, vpaClient, dynamicClient)
+	controllerUtilsClient := kube.GetMockControllerUtilsClient()
+	testVPAReconciler := SetInstance(kubeClient, vpaClient, dynamicClient, controllerUtilsClient)
 	testVPAReconciler.OnByDefault = false
 	testVPAReconciler.IncludeNamespaces = []string{}
 	testVPAReconciler.ExcludeNamespaces = []string{}
