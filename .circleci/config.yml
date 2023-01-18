@@ -5,16 +5,6 @@ orbs:
   oss-docs: fairwinds/oss-docs@0
 
 references:
-  enable_experimental_features: &enable_experimental_docker_features
-    run:
-      name: enable experimental features
-      command: |
-        set -ex
-        apk --update add openssh
-        ssh remote-docker \<<EOF
-          sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
-          sudo systemctl restart docker
-        EOF
   install_vault: &install_vault
     run:
       name: install hashicorp vault
@@ -73,9 +63,7 @@ jobs:
       - image: goreleaser/goreleaser:v1.11.4
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.17
-      - *enable_experimental_docker_features
+      - setup_remote_docker
       - *install_vault
       - rok8s/get_vault_env:
           vault_path: repo/global/env
@@ -92,9 +80,7 @@ jobs:
       - image: goreleaser/goreleaser:v1.12.3
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.17
-      - *enable_experimental_docker_features
+      - setup_remote_docker
       - run: goreleaser --snapshot --skip-sign
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
