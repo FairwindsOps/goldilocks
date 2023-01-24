@@ -31,15 +31,12 @@ func GetMockVPAClient() *VPAClientInstance {
 
 // GetMockControllerUtilsClient returns a fake controller client instance for mocking.
 func GetMockControllerUtilsClient() *ControllerUtilsClientInstance {
-	gvapps := schema.GroupVersion{Group: "apps", Version: "v1"}
-	gvcore := schema.GroupVersion{Group: "", Version: "v1"}
-	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore})
-	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), nil)
+	dynamicClient := GetMockDynamicClient()
 	kc := ControllerUtilsClientInstance{
 		Client: controller.Client{
 			Context: context.TODO(),
-			RESTMapper: restMapper,
-			Dynamic: fc,
+			RESTMapper: dynamicClient.RESTMapper,
+			Dynamic: dynamicClient.Client,
 			},
 	}
 	SetControllerUtilsInstance(kc)
@@ -51,7 +48,8 @@ func GetMockControllerUtilsClient() *ControllerUtilsClientInstance {
 func GetMockDynamicClient() *DynamicClientInstance {
 	gvapps := schema.GroupVersion{Group: "apps", Version: "v1"}
 	gvcore := schema.GroupVersion{Group: "", Version: "v1"}
-	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore})
+	gvbatch := schema.GroupVersion{Group: "batch", Version: "v1"}
+	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore, gvbatch})
 	gvk := gvapps.WithKind("Deployment")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvapps.WithKind("DaemonSet")
@@ -64,6 +62,10 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvcore.WithKind("Namespace")
 	restMapper.Add(gvk, meta.RESTScopeRoot)
+	gvk = gvbatch.WithKind("CronJob")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
+	gvk = gvbatch.WithKind("Job")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvrToListKind := map[schema.GroupVersionResource]string{
 		schema.GroupVersionResource{
 			Group:    "",
@@ -95,6 +97,16 @@ func GetMockDynamicClient() *DynamicClientInstance {
 			Version:  "v1",
 			Resource: "statefulsets",
 		}: "StatefulSetList",
+		schema.GroupVersionResource{
+			Group:    "batch",
+			Version:  "v1",
+			Resource: "cronjobs",
+		}: "CronJobList",
+		schema.GroupVersionResource{
+			Group:    "batch",
+			Version:  "v1",
+			Resource: "jobs",
+		}: "JobList",
 	}
 	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), gvrToListKind)
 	kc := DynamicClientInstance{

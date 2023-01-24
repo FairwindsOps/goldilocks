@@ -481,7 +481,7 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 
 	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
-	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	_, err := GetInstance().DynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// Create all deployment objects (deployment, replicaset, and pod)
