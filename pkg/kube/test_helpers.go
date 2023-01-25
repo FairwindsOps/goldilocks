@@ -1,14 +1,15 @@
 package kube
 
 import (
+	"context"
+
+	"github.com/fairwindsops/controller-utils/pkg/controller"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	v1beta2fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	fakedyn "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
-	"github.com/fairwindsops/controller-utils/pkg/controller"
-	"context"
 )
 
 // GetMockClient returns a fake client instance for mocking
@@ -30,19 +31,17 @@ func GetMockVPAClient() *VPAClientInstance {
 }
 
 // GetMockControllerUtilsClient returns a fake controller client instance for mocking.
-func GetMockControllerUtilsClient() *ControllerUtilsClientInstance {
-	dynamicClient := GetMockDynamicClient()
+func GetMockControllerUtilsClient(dynamicClient *DynamicClientInstance) *ControllerUtilsClientInstance {
 	kc := ControllerUtilsClientInstance{
 		Client: controller.Client{
-			Context: context.TODO(),
+			Context:    context.TODO(),
 			RESTMapper: dynamicClient.RESTMapper,
-			Dynamic: dynamicClient.Client,
-			},
+			Dynamic:    dynamicClient.Client,
+		},
 	}
 	SetControllerUtilsInstance(kc)
 	return &kc
 }
-
 
 // GetMockVPAClient returns fake vpa client instance for mocking.
 func GetMockDynamicClient() *DynamicClientInstance {
@@ -67,42 +66,42 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	gvk = gvbatch.WithKind("Job")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvrToListKind := map[schema.GroupVersionResource]string{
-		schema.GroupVersionResource{
+		{
 			Group:    "",
 			Version:  "v1",
 			Resource: "pods",
 		}: "PodList",
-		schema.GroupVersionResource{
+		{
 			Group:    "",
 			Version:  "v1",
 			Resource: "namespaces",
 		}: "NamespaceList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "replicasets",
 		}: "ReplicaSetList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "deployments",
 		}: "DeploymentList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "daemonsets",
 		}: "DaemonSetList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "statefulsets",
 		}: "StatefulSetList",
-		schema.GroupVersionResource{
+		{
 			Group:    "batch",
 			Version:  "v1",
 			Resource: "cronjobs",
 		}: "CronJobList",
-		schema.GroupVersionResource{
+		{
 			Group:    "batch",
 			Version:  "v1",
 			Resource: "jobs",

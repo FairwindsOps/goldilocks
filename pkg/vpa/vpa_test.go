@@ -36,7 +36,7 @@ func setupVPAForTests(t *testing.T) {
 	kubeClient := kube.GetMockClient()
 	vpaClient := kube.GetMockVPAClient()
 	dynamicClient := kube.GetMockDynamicClient()
-	controllerUtilsClient := kube.GetMockControllerUtilsClient()
+	controllerUtilsClient := kube.GetMockControllerUtilsClient(dynamicClient)
 	testVPAReconciler := SetInstance(kubeClient, vpaClient, dynamicClient, controllerUtilsClient)
 	testVPAReconciler.OnByDefault = false
 	testVPAReconciler.IncludeNamespaces = []string{}
@@ -476,8 +476,6 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 
 func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	setupVPAForTests(t)
-	VPAClient := GetInstance().VPAClient
-	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
 	nsName := nsLabeledTrue.ObjectMeta.Name
@@ -485,21 +483,22 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create all deployment objects (deployment, replicaset, and pod)
-	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	_, err = GetInstance().DynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	_, err = GetInstance().DynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
-	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	_, err = GetInstance().DynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
 	// This should create a single VPA
 	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
-	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	vpaList, err := GetInstance().VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 1, len(vpaList.Items))
-	assert.Equal(t, "goldilocks-test-deploy", vpaList.Items[0].ObjectMeta.Name)
+	if assert.Equal(t, 1, len(vpaList.Items)) {
+		assert.Equal(t, "goldilocks-test-deploy", vpaList.Items[0].ObjectMeta.Name)
+	}
 }
 
 func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
