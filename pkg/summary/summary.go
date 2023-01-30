@@ -28,7 +28,6 @@ import (
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
 
-	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
@@ -282,7 +281,6 @@ func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]vpav1.VerticalPo
 	if err != nil {
 		return nil, err
 	}
-
 	return vpas.Items, nil
 }
 
@@ -335,8 +333,7 @@ func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workloa
 }
 
 func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
-	client := kube.GetControllerUtilsClient()
-	workloads, err := client.GetAllTopControllersSummary(s.namespace)
+	workloads, err := s.controllerUtilsClient.Client.GetAllTopControllersSummary(s.namespace)
 	if err != nil {
 		return nil, err
 	}
