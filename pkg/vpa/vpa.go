@@ -30,7 +30,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 
-	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	controllerLog "github.com/fairwindsops/controller-utils/pkg/log"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -44,13 +43,14 @@ import (
 
 // Reconciler checks if VPA objects should be created or deleted
 type Reconciler struct {
-	KubeClient        *kube.ClientInstance
-	VPAClient         *kube.VPAClientInstance
-	DynamicClient     *kube.DynamicClientInstance
-	OnByDefault       bool
-	DryRun            bool
-	IncludeNamespaces []string
-	ExcludeNamespaces []string
+	KubeClient            *kube.ClientInstance
+	VPAClient             *kube.VPAClientInstance
+	DynamicClient         *kube.DynamicClientInstance
+	ControllerUtilsClient *kube.ControllerUtilsClientInstance
+	OnByDefault           bool
+	DryRun                bool
+	IncludeNamespaces     []string
+	ExcludeNamespaces     []string
 }
 
 type Controller struct {
@@ -67,20 +67,22 @@ var controllerUtilsLogr = klogr.New()
 func GetInstance() *Reconciler {
 	if singleton == nil {
 		singleton = &Reconciler{
-			KubeClient:    kube.GetInstance(),
-			VPAClient:     kube.GetVPAInstance(),
-			DynamicClient: kube.GetDynamicInstance(),
+			KubeClient:            kube.GetInstance(),
+			VPAClient:             kube.GetVPAInstance(),
+			DynamicClient:         kube.GetDynamicInstance(),
+			ControllerUtilsClient: kube.GetControllerUtilsInstance(),
 		}
 	}
 	return singleton
 }
 
 // SetInstance sets the singleton using preconstructed k8s and vpa clients. Used for testing.
-func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic *kube.DynamicClientInstance) *Reconciler {
+func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic *kube.DynamicClientInstance, controller *kube.ControllerUtilsClientInstance) *Reconciler {
 	singleton = &Reconciler{
-		KubeClient:    k8s,
-		VPAClient:     vpa,
-		DynamicClient: dynamic,
+		KubeClient:            k8s,
+		VPAClient:             vpa,
+		DynamicClient:         dynamic,
+		ControllerUtilsClient: controller,
 	}
 	return singleton
 }
@@ -234,7 +236,7 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 
 func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 	controllers := []Controller{}
-	allTopControllers, err := controllerUtils.GetAllTopControllers(context.TODO(), r.DynamicClient.Client, r.DynamicClient.RESTMapper, namespace)
+	allTopControllers, err := r.ControllerUtilsClient.Client.GetAllTopControllersSummary(namespace)
 	if err != nil {
 		return nil, err
 	}

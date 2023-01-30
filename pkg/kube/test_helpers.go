@@ -1,6 +1,9 @@
 package kube
 
 import (
+	"context"
+
+	"github.com/fairwindsops/controller-utils/pkg/controller"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,11 +30,25 @@ func GetMockVPAClient() *VPAClientInstance {
 	return &kc
 }
 
+// GetMockControllerUtilsClient returns a fake controller client instance for mocking.
+func GetMockControllerUtilsClient(dynamicClient *DynamicClientInstance) *ControllerUtilsClientInstance {
+	kc := ControllerUtilsClientInstance{
+		Client: controller.Client{
+			Context:    context.TODO(),
+			RESTMapper: dynamicClient.RESTMapper,
+			Dynamic:    dynamicClient.Client,
+		},
+	}
+	SetControllerUtilsInstance(kc)
+	return &kc
+}
+
 // GetMockVPAClient returns fake vpa client instance for mocking.
 func GetMockDynamicClient() *DynamicClientInstance {
 	gvapps := schema.GroupVersion{Group: "apps", Version: "v1"}
 	gvcore := schema.GroupVersion{Group: "", Version: "v1"}
-	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore})
+	gvbatch := schema.GroupVersion{Group: "batch", Version: "v1"}
+	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore, gvbatch})
 	gvk := gvapps.WithKind("Deployment")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvapps.WithKind("DaemonSet")
@@ -44,37 +61,51 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvcore.WithKind("Namespace")
 	restMapper.Add(gvk, meta.RESTScopeRoot)
+	gvk = gvbatch.WithKind("CronJob")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
+	gvk = gvbatch.WithKind("Job")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvrToListKind := map[schema.GroupVersionResource]string{
-		schema.GroupVersionResource{
+		{
 			Group:    "",
 			Version:  "v1",
 			Resource: "pods",
 		}: "PodList",
-		schema.GroupVersionResource{
+		{
 			Group:    "",
 			Version:  "v1",
 			Resource: "namespaces",
 		}: "NamespaceList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "replicasets",
 		}: "ReplicaSetList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "deployments",
 		}: "DeploymentList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "daemonsets",
 		}: "DaemonSetList",
-		schema.GroupVersionResource{
+		{
 			Group:    "apps",
 			Version:  "v1",
 			Resource: "statefulsets",
 		}: "StatefulSetList",
+		{
+			Group:    "batch",
+			Version:  "v1",
+			Resource: "cronjobs",
+		}: "CronJobList",
+		{
+			Group:    "batch",
+			Version:  "v1",
+			Resource: "jobs",
+		}: "JobList",
 	}
 	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), gvrToListKind)
 	kc := DynamicClientInstance{
@@ -98,4 +129,9 @@ func SetVPAInstance(kc VPAClientInstance) {
 // SetVPAInstance sets the kubeClient for VPA
 func SetDynamicInstance(kc DynamicClientInstance) {
 	dynamicClient = &kc
+}
+
+// SetControllerUtilsInstance sets a kubeClient for Controller
+func SetControllerUtilsInstance(kc ControllerUtilsClientInstance) {
+	controllerUtilsClient = &kc
 }

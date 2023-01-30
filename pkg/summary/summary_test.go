@@ -28,11 +28,13 @@ func Test_Summarizer(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
 	kubeClient := kube.GetMockClient()
 	dynamicClient := kube.GetMockDynamicClient()
+	controllerUtilsClient := kube.GetMockControllerUtilsClient(dynamicClient)
 
 	summarizer := NewSummarizer()
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 	summarizer.dynamicClient = dynamicClient
+	summarizer.controllerUtilsClient = controllerUtilsClient
 
 	// _, _ = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	_, err := dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicUnstructured, metav1.CreateOptions{})
@@ -66,11 +68,13 @@ func Test_Summarizer_Daemonset(t *testing.T) {
 	kubeClientVPA := kube.GetMockVPAClient()
 	kubeClient := kube.GetMockClient()
 	dynamicClient := kube.GetMockDynamicClient()
+	controllerUtilsClient := kube.GetMockControllerUtilsClient(dynamicClient)
 
 	summarizer := NewSummarizer()
 	summarizer.kubeClient = kubeClient
 	summarizer.vpaClient = kubeClientVPA
 	summarizer.dynamicClient = dynamicClient
+	summarizer.controllerUtilsClient = controllerUtilsClient
 
 	// _, _ = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	_, err := dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}).Namespace("testing-daemonset").Create(context.TODO(), testDaemonSettWithRecoUnstructured, metav1.CreateOptions{})

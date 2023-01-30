@@ -281,7 +281,6 @@ func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]vpav1.VerticalPo
 	if err != nil {
 		return nil, err
 	}
-
 	return vpas.Items, nil
 }
 
@@ -334,7 +333,7 @@ func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workloa
 }
 
 func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
-	workloads, err := controllerUtils.GetAllTopControllers(context.TODO(), s.dynamicClient.Client, s.dynamicClient.RESTMapper, s.namespace)
+	workloads, err := s.controllerUtilsClient.Client.GetAllTopControllersSummary(s.namespace)
 	if err != nil {
 		return nil, err
 	}
