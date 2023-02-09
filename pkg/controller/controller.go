@@ -169,7 +169,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 	klog.Infof("Creating controller for resource type %s", resource)
 	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			var evt utils.Event
 			var err error
@@ -213,6 +213,10 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			wq.Add(evt)
 		},
 	})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return &KubeResourceWatcher{
 		kubeClient: kubeClient,

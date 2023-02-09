@@ -13,7 +13,7 @@ type Options struct {
 	port               int
 	basePath           string
 	vpaLabels          map[string]string
-	excludedContainers sets.String
+	excludedContainers Set[string]
 	onByDefault        bool
 	showAllVPAs        bool
 	insightsHost       string
@@ -25,7 +25,7 @@ func defaultOptions() *Options {
 		port:               8080,
 		basePath:           "/",
 		vpaLabels:          utils.VPALabels,
-		excludedContainers: sets.NewString(),
+		excludedContainers: Set[string]{},
 		onByDefault:        false,
 		showAllVPAs:        false,
 	}
