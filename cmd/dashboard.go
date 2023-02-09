@@ -52,7 +52,7 @@ var dashboardCmd = &cobra.Command{
 		router := dashboard.GetRouter(
 			dashboard.OnPort(serverPort),
 			dashboard.BasePath(validBasePath),
-			dashboard.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)),
+			dashboard.ExcludeContainers(sets.New[string](strings.Split(excludeContainers, ",")...)),
 			dashboard.OnByDefault(onByDefault),
 			dashboard.ShowAllVPAs(showAllVPAs),
 			dashboard.InsightsHost(insightsHost),

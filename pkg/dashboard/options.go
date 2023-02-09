@@ -13,7 +13,7 @@ type Options struct {
 	port               int
 	basePath           string
 	vpaLabels          map[string]string
-	excludedContainers sets.String
+	excludedContainers sets.Set[string]
 	onByDefault        bool
 	showAllVPAs        bool
 	insightsHost       string
@@ -25,7 +25,7 @@ func defaultOptions() *Options {
 		port:               8080,
 		basePath:           "/",
 		vpaLabels:          utils.VPALabels,
-		excludedContainers: sets.NewString(),
+		excludedContainers: sets.Set[string]{},
 		onByDefault:        false,
 		showAllVPAs:        false,
 	}
@@ -39,7 +39,7 @@ func OnPort(port int) Option {
 }
 
 // ExcludeContainers is an Option for excluding containers in the dashboard summary
-func ExcludeContainers(excludedContainers sets.String) Option {
+func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 	return func(opts *Options) {
 		opts.excludedContainers = excludedContainers
 	}

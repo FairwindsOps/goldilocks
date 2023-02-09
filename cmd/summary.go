@@ -54,7 +54,7 @@ By default the summary will be about all VPAs in all namespaces.`,
 
 		// exclude containers from the summary
 		if excludeContainers != "" {
-			opts = append(opts, summary.ExcludeContainers(sets.NewString(strings.Split(excludeContainers, ",")...)))
+			opts = append(opts, summary.ExcludeContainers(sets.New[string](strings.Split(excludeContainers, ",")...)))
 		}
 
 		summarizer := summary.NewSummarizer(opts...)

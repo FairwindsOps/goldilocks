@@ -16,7 +16,7 @@ type options struct {
 	controllerUtilsClient *kube.ControllerUtilsClientInstance
 	namespace          string
 	vpaLabels          map[string]string
-	excludedContainers sets.String
+	excludedContainers sets.Set[string]
 }
 
 // defaultOptions for a Summarizer
@@ -28,7 +28,7 @@ func defaultOptions() *options {
 		controllerUtilsClient: kube.GetControllerUtilsInstance(),
 		namespace:          namespaceAllNamespaces,
 		vpaLabels:          utils.VPALabels,
-		excludedContainers: sets.NewString(),
+		excludedContainers: sets.Set[string]{},
 	}
 }
 
@@ -40,7 +40,7 @@ func ForNamespace(namespace string) Option {
 }
 
 // ExcludeContainers is an Option for excluding containers in the summary
-func ExcludeContainers(excludedContainers sets.String) Option {
+func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 	return func(opts *options) {
 		opts.excludedContainers = excludedContainers
 	}
