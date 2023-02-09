@@ -40,7 +40,7 @@ func ForNamespace(namespace string) Option {
 }
 
 // ExcludeContainers is an Option for excluding containers in the summary
-func ExcludeContainers(excludedContainers sets.String) Option {
+func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 	return func(opts *options) {
 		opts.excludedContainers = excludedContainers
 	}

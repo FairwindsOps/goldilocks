@@ -39,7 +39,7 @@ func OnPort(port int) Option {
 }
 
 // ExcludeContainers is an Option for excluding containers in the dashboard summary
-func ExcludeContainers(excludedContainers sets.String) Option {
+func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 	return func(opts *Options) {
 		opts.excludedContainers = excludedContainers
 	}

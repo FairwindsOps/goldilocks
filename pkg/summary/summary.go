@@ -177,7 +177,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		}
 
 		// get the full set of excluded containers for this workload
-		excludedContainers := sets.NewString().Union(s.excludedContainers)
+		excludedContainers := (sets.Set[string]{}).Union(s.excludedContainers)
 		if val, exists := workload.TopController.GetAnnotations()[utils.WorkloadExcludeContainersAnnotation]; exists {
 			excludedContainers.Insert(strings.Split(val, ",")...)
 		}
