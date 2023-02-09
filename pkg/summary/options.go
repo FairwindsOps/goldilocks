@@ -16,7 +16,7 @@ type options struct {
 	controllerUtilsClient *kube.ControllerUtilsClientInstance
 	namespace          string
 	vpaLabels          map[string]string
-	excludedContainers Set[string]
+	excludedContainers sets.Set[string]
 }
 
 // defaultOptions for a Summarizer
@@ -28,7 +28,7 @@ func defaultOptions() *options {
 		controllerUtilsClient: kube.GetControllerUtilsInstance(),
 		namespace:          namespaceAllNamespaces,
 		vpaLabels:          utils.VPALabels,
-		excludedContainers: Set[string]{},
+		excludedContainers: sets.Set[string]{},
 	}
 }
 
