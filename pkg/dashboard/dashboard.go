@@ -82,7 +82,7 @@ func Dashboard(opts Options) http.Handler {
 	})
 }
 
-// Dashboard replies with the rendered dashboard (on the basePath) for the summarizer
+// API replies with the JSON data of the VPA summary
 func API(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
