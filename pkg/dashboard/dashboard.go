@@ -47,46 +47,11 @@ func Dashboard(opts Options) http.Handler {
 			namespace = val
 		}
 
-		filterLabels := make(map[string]string)
-		if !opts.showAllVPAs {
-			filterLabels = opts.vpaLabels
-		}
-
-		// TODO [hkatz] add caching or refresh button support
-		summarizer := summary.NewSummarizer(
-			summary.ForNamespace(namespace),
-			summary.ForVPAsWithLabels(filterLabels),
-			summary.ExcludeContainers(opts.excludedContainers),
-		)
-
-		vpaData, err := summarizer.GetSummary()
+		vpaData, err := getVPAData(opts, namespace, costPerCPU, costPerGB)
 		if err != nil {
-			klog.Errorf("Error getting vpaData: %v", err)
-			http.Error(w, "Error running summary.", http.StatusInternalServerError)
+			klog.Errorf("Error getting vpa data %v", err)
+			http.Error(w, "Error getting vpa data", http.StatusInternalServerError)
 			return
-		}
-
-		if costPerCPU != "" && costPerGB != "" {
-			costPerCPUFloat, _ := strconv.ParseFloat(costPerCPU, 64)
-			costPerGBFloat, _ := strconv.ParseFloat(costPerGB, 64)
-
-			var containerCost, guaranteedCost, burstableCost float64
-
-			for _, n := range vpaData.Namespaces {
-				for _, w := range n.Workloads {
-					for k, c := range w.Containers {
-						containerCost = calculateContainerCost(costPerCPUFloat, costPerGBFloat, c)
-						guaranteedCost, burstableCost = calculateRecommendedCosts(costPerCPUFloat, costPerGBFloat, containerCost, c)
-						c.ContainerCost = containerCost
-						c.ContainerCostInt = getCostInt(containerCost)
-						c.GuaranteedCostInt = getCostInt(guaranteedCost)
-						c.BurstableCostInt = getCostInt(burstableCost)
-						c.GuaranteedCost = math.Abs(guaranteedCost)
-						c.BurstableCost = math.Abs(burstableCost)
-						w.Containers[k] = c
-					}
-				}
-			}
 		}
 
 		tmpl, err := getTemplate("dashboard",
@@ -114,6 +79,96 @@ func Dashboard(opts Options) http.Handler {
 
 		writeTemplate(tmpl, opts, &data, w)
 	})
+}
+
+// Dashboard replies with the rendered dashboard (on the basePath) for the summarizer
+func API(opts Options) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		costPerCPU := r.URL.Query().Get("costPerCPU")
+		costPerGB := r.URL.Query().Get("costPerGB")
+
+		var namespace string
+		if val, ok := vars["namespace"]; ok {
+			namespace = val
+		}
+
+		vpaData, err := getVPAData(opts, namespace, costPerCPU, costPerGB)
+		if err != nil {
+			klog.Errorf("Error getting vpa data %v", err)
+			http.Error(w, "Error getting vpa data", http.StatusInternalServerError)
+			return
+		}
+
+		tmpl, err := getTemplate("dashboard",
+			"container",
+			"dashboard",
+			"filter",
+			"namespace",
+			"email",
+			"api_token",
+			"cost_settings",
+		)
+		if err != nil {
+			klog.Errorf("Error getting template data %v", err)
+			http.Error(w, "Error getting template data", http.StatusInternalServerError)
+			return
+		}
+
+		data := struct {
+			VpaData      summary.Summary
+			InsightsHost string
+		}{
+			VpaData:      vpaData,
+			InsightsHost: opts.insightsHost,
+		}
+
+		writeTemplate(tmpl, opts, &data, w)
+	})
+}
+
+func getVPAData(opts Options, namespace, costPerCPU, costPerGB string) (summary.Summary, error) {
+
+	filterLabels := make(map[string]string)
+	if !opts.showAllVPAs {
+		filterLabels = opts.vpaLabels
+	}
+
+	summarizer := summary.NewSummarizer(
+		summary.ForNamespace(namespace),
+		summary.ForVPAsWithLabels(filterLabels),
+		summary.ExcludeContainers(opts.excludedContainers),
+	)
+
+	vpaData, err := summarizer.GetSummary()
+	if err != nil {
+		return summary.Summary{}, err
+	}
+
+	if costPerCPU != "" && costPerGB != "" {
+		costPerCPUFloat, _ := strconv.ParseFloat(costPerCPU, 64)
+		costPerGBFloat, _ := strconv.ParseFloat(costPerGB, 64)
+
+		var containerCost, guaranteedCost, burstableCost float64
+
+		for _, n := range vpaData.Namespaces {
+			for _, w := range n.Workloads {
+				for k, c := range w.Containers {
+					containerCost = calculateContainerCost(costPerCPUFloat, costPerGBFloat, c)
+					guaranteedCost, burstableCost = calculateRecommendedCosts(costPerCPUFloat, costPerGBFloat, containerCost, c)
+					c.ContainerCost = containerCost
+					c.ContainerCostInt = getCostInt(containerCost)
+					c.GuaranteedCostInt = getCostInt(guaranteedCost)
+					c.BurstableCostInt = getCostInt(burstableCost)
+					c.GuaranteedCost = math.Abs(guaranteedCost)
+					c.BurstableCost = math.Abs(burstableCost)
+					w.Containers[k] = c
+				}
+			}
+		}
+	}
+	return vpaData, nil
 }
 
 func calculateContainerCost(costPerCPUFloat float64, costPerGBFloat float64, c summary.ContainerSummary) float64 {
