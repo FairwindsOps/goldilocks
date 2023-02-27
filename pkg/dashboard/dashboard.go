@@ -15,6 +15,7 @@
 package dashboard
 
 import (
+	"encoding/json"
 	"math"
 	"net/http"
 	"strconv"
@@ -101,30 +102,12 @@ func API(opts Options) http.Handler {
 			return
 		}
 
-		tmpl, err := getTemplate("dashboard",
-			"container",
-			"dashboard",
-			"filter",
-			"namespace",
-			"email",
-			"api_token",
-			"cost_settings",
-		)
-		if err != nil {
-			klog.Errorf("Error getting template data %v", err)
-			http.Error(w, "Error getting template data", http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(vpaData); err != nil {
+			klog.Errorf("Error writing vpa data %v", err)
+			http.Error(w, "Error writing vpa data", http.StatusInternalServerError)
 			return
 		}
-
-		data := struct {
-			VpaData      summary.Summary
-			InsightsHost string
-		}{
-			VpaData:      vpaData,
-			InsightsHost: opts.insightsHost,
-		}
-
-		writeTemplate(tmpl, opts, &data, w)
 	})
 }
 

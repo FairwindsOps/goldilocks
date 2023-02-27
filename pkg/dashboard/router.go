@@ -83,6 +83,6 @@ func GetRouter(setters ...Option) *mux.Router {
 	})
 
 	// api
-	router.Handle("/", API(*opts))
+	router.Handle("/api", API(*opts))
 	return router
 }
