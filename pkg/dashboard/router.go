@@ -15,9 +15,10 @@
 package dashboard
 
 import (
-	"k8s.io/klog/v2"
 	"net/http"
 	"path"
+
+	"k8s.io/klog/v2"
 
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
@@ -81,5 +82,7 @@ func GetRouter(setters ...Option) *mux.Router {
 		http.Redirect(w, r, path.Join(opts.basePath, "/namespaces"), http.StatusMovedPermanently)
 	})
 
+	// api
+	router.Handle("/api/{namespace:[a-zA-Z0-9-]+}", API(*opts))
 	return router
 }
