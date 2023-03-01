@@ -1,3 +1,8 @@
+---
+meta:
+  - name: description
+    content: We get a lot of questions about how Goldilocks works and where it gets the recomendations. Hopefully we can answer the most common ones here
+---
 # Frequently Asked Questions
 
 We get a lot of questions about how Goldilocks works and where it gets the recomendations. Hopefully we can answer the most common ones here.

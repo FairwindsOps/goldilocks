@@ -1,3 +1,8 @@
+---
+meta:
+  - name: description
+    content: Installation instructions, requirements, and troubleshooting for Goldilocks.
+---
 # Installation
 
 ## Requirements
