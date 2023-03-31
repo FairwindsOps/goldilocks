@@ -1,7 +1,7 @@
 ---
 meta:
   - name: description
-    content: Goldilocks is a utility that can help you identify a starting point for resource requests and limits. Here are some advanced usages.
+    content: "Goldilocks is a utility that can help you identify a starting point for resource requests and limits. Here are some advanced usages."
 ---
 # Advanced Usage
 
