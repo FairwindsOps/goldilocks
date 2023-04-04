@@ -1,7 +1,7 @@
 ---
 meta:
   - name: description
-    content: Issues are essential for keeping goldilocks great. There are a few guidelines that we need contributors to follow so that we can keep on top of things
+    content: "Issues are essential for keeping goldilocks great. There are a few guidelines that we need contributors to follow so that we can keep on top of things"
 ---
 # Contributing
 

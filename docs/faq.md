@@ -1,7 +1,7 @@
 ---
 meta:
   - name: description
-    content: We get a lot of questions about how Goldilocks works and where it gets the recomendations. Hopefully we can answer the most common ones here
+    content: "We get a lot of questions about how Goldilocks works and where it gets the recomendations. Hopefully we can answer the most common ones here"
 ---
 # Frequently Asked Questions
 
@@ -56,6 +56,13 @@ We generate two different QoS classes of recommendation from this
 ## How Accurate is Goldilocks?
 
 This is entirely based on the underlying VPA project. However, in our experience Goldilocks has usually been a good _starting point_ for setting your resource requests and limits. Every environment will be different, and Goldilocks is not a replacement for tuning your applications for your specific use-case.
+
+## I see incoherent recommendations for my limits like 100T for memory or 100G for CPU, what gives?
+
+This situation can happen if you look at the recommendations very shortly after starting your workload.
+Indeed, the statistical model used in the VPA recommender needs 8 days of historic data to produce recommendations and upper/lower boundaries with maximum accuracy. In the time between starting a workload for the first time and these 8 days, the boundaries will become more and more accurate. The lowerBound converges much quicker to maximum accuracy than the upperBound: the idea is that upscaling can be done much more liberally than downscaling. 
+If you see an upperBound value which is incredibly high, it is the maximum possible value for the VPA recommender's statistical model.
+TL;DR: wait a little bit to have more accurate values.
 
 ## I don't see any VPA objects getting created, what gives?
 
