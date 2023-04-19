@@ -1,7 +1,7 @@
 ---
 meta:
   - name: description
-    content: Installation instructions, requirements, and troubleshooting for Goldilocks.
+    content: "Installation instructions, requirements, and troubleshooting for Goldilocks."
 ---
 # Installation
 
