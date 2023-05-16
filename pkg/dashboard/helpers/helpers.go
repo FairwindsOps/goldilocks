@@ -75,7 +75,7 @@ func GetStatus(existing resource.Quantity, recommendation resource.Quantity, sty
 	return ""
 }
 
-func GetStatusRange(existing, lower, upper resource.Quantity, style string) string {
+func GetStatusRange(existing, lower, upper resource.Quantity, style string, resourceType string) string {
 	if existing.IsZero() {
 		switch style {
 		case "text":
@@ -89,16 +89,6 @@ func GetStatusRange(existing, lower, upper resource.Quantity, style string) stri
 
 	comparisonLower := existing.Cmp(lower)
 	comparisonUpper := existing.Cmp(upper)
-	if comparisonUpper <= 0 && comparisonLower >= 0 {
-		switch style {
-		case "text":
-			return "equal"
-		case "icon":
-			return "fa-equals success"
-		default:
-			return ""
-		}
-	}
 
 	if comparisonLower < 0 {
 		switch style {
@@ -116,6 +106,34 @@ func GetStatusRange(existing, lower, upper resource.Quantity, style string) stri
 		case "icon":
 			return "fa-greater-than warning"
 		}
+	}
+
+	switch resourceType {
+	case "request":
+		if comparisonLower == 0 {
+			switch style {
+			case "text":
+				return "equal"
+			case "icon":
+				return "fa-equals success"
+			}
+		}
+	case "limit":
+		if comparisonUpper == 0 {
+			switch style {
+			case "text":
+				return "equal"
+			case "icon":
+				return "fa-equals success"
+			}
+		}
+	}
+
+	switch style {
+	case "text":
+		return "not equal"
+	case "icon":
+		return "fa-exclamation error"
 	}
 
 	return ""
