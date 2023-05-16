@@ -152,10 +152,11 @@ func Test_GetStatus(t *testing.T) {
 
 func Test_GetStatusRange(t *testing.T) {
 	type args struct {
-		existing resource.Quantity
-		lower    resource.Quantity
-		upper    resource.Quantity
-		style    string
+		existing     resource.Quantity
+		lower        resource.Quantity
+		upper        resource.Quantity
+		resourceType string
+		style        string
 	}
 	tests := []struct {
 		name string
@@ -205,20 +206,22 @@ func Test_GetStatusRange(t *testing.T) {
 		{
 			name: "text equal",
 			args: args{
-				existing: *resource.NewMilliQuantity(50, resource.DecimalSI),
-				lower:    *resource.NewMilliQuantity(25, resource.DecimalSI),
-				upper:    *resource.NewMilliQuantity(75, resource.DecimalSI),
-				style:    "text",
+				existing:     *resource.NewMilliQuantity(25, resource.DecimalSI),
+				lower:        *resource.NewMilliQuantity(25, resource.DecimalSI),
+				upper:        *resource.NewMilliQuantity(75, resource.DecimalSI),
+				resourceType: "request",
+				style:        "text",
 			},
 			want: "equal",
 		},
 		{
 			name: "icon equal",
 			args: args{
-				existing: *resource.NewMilliQuantity(50, resource.DecimalSI),
-				lower:    *resource.NewMilliQuantity(25, resource.DecimalSI),
-				upper:    *resource.NewMilliQuantity(75, resource.DecimalSI),
-				style:    "icon",
+				existing:     *resource.NewMilliQuantity(25, resource.DecimalSI),
+				lower:        *resource.NewMilliQuantity(25, resource.DecimalSI),
+				upper:        *resource.NewMilliQuantity(75, resource.DecimalSI),
+				resourceType: "request",
+				style:        "icon",
 			},
 			want: "fa-equals success",
 		},
@@ -245,7 +248,7 @@ func Test_GetStatusRange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetStatusRange(tt.args.existing, tt.args.lower, tt.args.upper, tt.args.style)
+			got := GetStatusRange(tt.args.existing, tt.args.lower, tt.args.upper, tt.args.style, tt.args.resourceType)
 			assert.Equal(t, got, tt.want)
 		})
 	}
