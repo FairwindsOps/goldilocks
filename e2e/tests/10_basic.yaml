@@ -7,9 +7,8 @@ testcases:
 - name: Setup demo namespace
   steps:
   - script: |
-      kubectl create ns demo
       helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-      helm install basic-demo fairwinds-incubator/basic-demo
+      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo --create-namespace
       kubectl -n demo wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
 - name: No VPA Anywhere Before Labels
   steps:
