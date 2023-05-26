@@ -28,6 +28,8 @@ testcases:
 - name: Setup redis in statefulset-demo namespace
   steps:
   - script: |
+      helm repo add bitnami https://charts.bitnami.com/bitnami
+      helm repo update
       kubectl create ns statefulset-demo
       helm install redis bitnami/redis --namespace statefulset-demo --set architecture=replication
 - name: No VPA in statefulset-demo namespace Before Labels
