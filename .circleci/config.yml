@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@11
+  rok8s: fairwinds/rok8s-scripts@12
   oss-docs: fairwinds/oss-docs@0
 
 references:
@@ -11,13 +11,14 @@ references:
       command: |
         apk --update add curl yq
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.9.2/vault_1.9.2_linux_amd64.zip
-        unzip vault_1.9.2_linux_amd64.zip
+        curl -LO https://releases.hashicorp.com/vault/1.13.2/vault_1.13.2_linux_amd64.zip
+        sha256sum vault_1.13.2_linux_amd64.zip | grep f7930279de8381de7c532164b4a4408895d9606c0d24e2e9d2f9acb5dfe99b3c
+        unzip vault_1.13.2_linux_amd64.zip
         mv vault /usr/bin/vault
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
-    command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
+    command_runner_image: quay.io/reactiveops/ci-images:v12-buster
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     attach-workspace: true
@@ -34,7 +35,7 @@ jobs:
   test:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.19
+      - image: cimg/go:1.20
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -43,8 +44,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 1.50.1
-            GOLANGCI_LINT_CHECKSUM: 4ba1dc9dbdf05b7bdc6f0e04bdfe6f63aa70576f51817be1b2540bbce017b69a
+            GOLANGCI_LINT_VERSION: 1.52.2
+            GOLANGCI_LINT_CHECKSUM: c9cf72d12058a131746edd409ed94ccd578fbd178899d1ed41ceae3ce5f54501
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
@@ -60,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v1.11.4
+      - image: goreleaser/goreleaser:v1.18.2
     steps:
       - checkout
       - setup_remote_docker
@@ -77,7 +78,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v1.12.3
+      - image: goreleaser/goreleaser:v1.18.2
     steps:
       - checkout
       - setup_remote_docker
@@ -102,12 +103,16 @@ workflows:
           requires:
             - test
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.20.2"
-          kind_node_image: "kindest/node:v1.20.2@sha256:15d3b5c4f521a84896ed1ead1b14e4774d02202d5c65ab68f30eeaf310a3b1a7"
+          name: "End-To-End Kubernetes 1.23"
+          kind_node_image: "kindest/node:v1.23.13@sha256:ef453bb7c79f0e3caba88d2067d4196f427794086a7d0df8df4f019d5e336b61"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.21.1"
-          kind_node_image: "kindest/node:v1.21.2@sha256:9d07ff05e4afefbba983fac311807b3c17a5f36e7061f6cb7e2ba756255b2be4"
+          name: "End-To-End Kubernetes 1.24"
+          kind_node_image: "kindest/node:v1.24.7@sha256:577c630ce8e509131eab1aea12c022190978dd2f745aac5eb1fe65c0807eb315"
+          <<: *e2e_configuration
+      - rok8s/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.25"
+          kind_node_image: "kindest/node:v1.25.3@sha256:f52781bc0d7a19fb6c405c2af83abfeb311f130707a0e219175677e366cc45d1"
           <<: *e2e_configuration
   release:
     jobs:
