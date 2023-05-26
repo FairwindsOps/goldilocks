@@ -165,7 +165,7 @@ func getRESTMapper() meta.RESTMapper {
 	if err != nil {
 		klog.Fatalf("Error getting kubeconfig: %v", err)
 	}
-	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, http.DefaultClient)
+	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, &http.Client{})
 	if err != nil {
 		klog.Fatalf("Error creating REST Mapper: %v", err)
 	}
