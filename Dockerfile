@@ -12,5 +12,5 @@ LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
 # 'nobody' user in alpine
 USER 65534
 COPY goldilocks /
-
+RUN apk --update --nocache install ca-certificates
 CMD ["/goldilocks"]
