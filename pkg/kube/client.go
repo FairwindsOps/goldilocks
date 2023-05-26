@@ -16,13 +16,13 @@ package kube
 
 import (
 	"context"
-	"net/http"
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
 	"k8s.io/client-go/dynamic"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -165,7 +165,12 @@ func getRESTMapper() meta.RESTMapper {
 	if err != nil {
 		klog.Fatalf("Error getting kubeconfig: %v", err)
 	}
-	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, &http.Client{})
+	httpClient, err := rest.HTTPClientFor(kubeConf)
+	if err != nil {
+		klog.Fatal("error creating httpClient using kubeconfig: %s", err.Error())
+	}
+
+	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, httpClient)
 	if err != nil {
 		klog.Fatalf("Error creating REST Mapper: %v", err)
 	}
