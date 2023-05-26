@@ -16,6 +16,7 @@ package kube
 
 import (
 	"context"
+	"net/http"
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
@@ -49,11 +50,10 @@ type DynamicClientInstance struct {
 	RESTMapper meta.RESTMapper
 }
 
-//ControllerUtilsClientInstance is a wrapper around the controller-utils client for testing purposes
+// ControllerUtilsClientInstance is a wrapper around the controller-utils client for testing purposes
 type ControllerUtilsClientInstance struct {
 	Client controllerUtils.Client
 }
-
 
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
@@ -75,7 +75,6 @@ func GetControllerUtilsInstance() *ControllerUtilsClientInstance {
 	})
 	return controllerUtilsClient
 }
-
 
 // GetInstance returns a Kubernetes interface based on the current configuration
 func GetInstance() *ClientInstance {
@@ -118,9 +117,9 @@ func GetControllerUtilsClient() controllerUtils.Client {
 	restmapper := getRESTMapper()
 
 	client := controllerUtils.Client{
-		Context: context.TODO(),
+		Context:    context.TODO(),
 		RESTMapper: restmapper,
-		Dynamic: dynamic,
+		Dynamic:    dynamic,
 	}
 	return client
 }
@@ -166,7 +165,7 @@ func getRESTMapper() meta.RESTMapper {
 	if err != nil {
 		klog.Fatalf("Error getting kubeconfig: %v", err)
 	}
-	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf)
+	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, http.DefaultClient)
 	if err != nil {
 		klog.Fatalf("Error creating REST Mapper: %v", err)
 	}
