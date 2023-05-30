@@ -7,9 +7,8 @@ testcases:
 - name: Setup demo namespace
   steps:
   - script: |
-      kubectl create ns demo
       helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo --version=0.4.0
+      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo --create-namespace
       kubectl -n demo wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
 - name: No VPA Anywhere Before Labels
   steps:
@@ -29,8 +28,10 @@ testcases:
 - name: Setup redis in statefulset-demo namespace
   steps:
   - script: |
+      helm repo add bitnami https://charts.bitnami.com/bitnami
+      helm repo update
       kubectl create ns statefulset-demo
-      helm install redis bitnami/redis --namespace statefulset-demo --version=16.12.1 --set architecture=replication
+      helm install redis bitnami/redis --namespace statefulset-demo --set architecture=replication
 - name: No VPA in statefulset-demo namespace Before Labels
   steps:
   - script: kubectl get vpa -n statefulset-demo
@@ -51,7 +52,7 @@ testcases:
   - script: |
       kubectl create ns demo-resource-policy
       helm repo add fairwinds-incubator https://charts.fairwinds.com/incubator
-      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo-resource-policy --version=0.4.0
+      helm install basic-demo fairwinds-incubator/basic-demo --namespace demo-resource-policy
       kubectl -n demo-resource-policy wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=basic-demo
 - name: VPA with Resource Policy in demo-resource-policy namespace
   steps:

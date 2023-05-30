@@ -22,6 +22,7 @@ import (
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
 	"k8s.io/client-go/dynamic"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -49,11 +50,10 @@ type DynamicClientInstance struct {
 	RESTMapper meta.RESTMapper
 }
 
-//ControllerUtilsClientInstance is a wrapper around the controller-utils client for testing purposes
+// ControllerUtilsClientInstance is a wrapper around the controller-utils client for testing purposes
 type ControllerUtilsClientInstance struct {
 	Client controllerUtils.Client
 }
-
 
 var kubeClient *ClientInstance
 var kubeClientVPA *VPAClientInstance
@@ -75,7 +75,6 @@ func GetControllerUtilsInstance() *ControllerUtilsClientInstance {
 	})
 	return controllerUtilsClient
 }
-
 
 // GetInstance returns a Kubernetes interface based on the current configuration
 func GetInstance() *ClientInstance {
@@ -118,9 +117,9 @@ func GetControllerUtilsClient() controllerUtils.Client {
 	restmapper := getRESTMapper()
 
 	client := controllerUtils.Client{
-		Context: context.TODO(),
+		Context:    context.TODO(),
 		RESTMapper: restmapper,
-		Dynamic: dynamic,
+		Dynamic:    dynamic,
 	}
 	return client
 }
@@ -166,7 +165,12 @@ func getRESTMapper() meta.RESTMapper {
 	if err != nil {
 		klog.Fatalf("Error getting kubeconfig: %v", err)
 	}
-	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf)
+	httpClient, err := rest.HTTPClientFor(kubeConf)
+	if err != nil {
+		klog.Fatal("error creating httpClient using kubeconfig: %s", err.Error())
+	}
+
+	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, httpClient)
 	if err != nil {
 		klog.Fatalf("Error creating REST Mapper: %v", err)
 	}

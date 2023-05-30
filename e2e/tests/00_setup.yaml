@@ -8,9 +8,9 @@ testcases:
 - name: Install metrics-server
   steps:
   - script: |
-      helm repo add bitnami https://charts.bitnami.com/bitnami
+      helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server
       helm repo update
-      helm -n metrics-server upgrade --install metrics-server bitnami/metrics-server --set apiService.create=true --set extraArgs[0]='--kubelet-insecure-tls=true' --create-namespace
+      helm upgrade --install metrics-server metrics-server/metrics-server -n metrics-server --create-namespace --set=args={'--kubelet-insecure-tls'}
 - name: Install VPA Recommender
   steps:
   - script: |
