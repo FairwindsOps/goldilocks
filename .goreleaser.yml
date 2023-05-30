@@ -33,7 +33,7 @@ release:
 
     ```
     sha256sum -c goldilocks_v{{ .Major }}.{{ .Minor }}.{{ .Patch }}_checksums.txt --ignore-missing
-    cosign verify-blob checksums.txt --signature=checksums.txt.sig  --key https://artifacts.fairwinds.com/cosign.pub
+    cosign verify-blob goldilocks_v{{ .Major }}.{{ .Minor }}.{{ .Patch }}_checksums.txt --signature=goldilocks_v{{ .Major }}.{{ .Minor }}.{{ .Patch }}_checksums.txt.sig  --key https://artifacts.fairwinds.com/cosign.pub
     ```
 
     ```
