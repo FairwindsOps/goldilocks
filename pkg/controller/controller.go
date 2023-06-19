@@ -181,7 +181,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.EventType = "create"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
-			klog.Infof("%s/%s has been added.", resource, evt.Key)
+			klog.V(2).Infof("%s/%s has been added.", resource, evt.Key)
 			wq.Add(evt)
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -195,7 +195,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.EventType = "delete"
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
-			klog.Infof("%s/%s has been deleted.", resource, evt.Key)
+			klog.V(2).Infof("%s/%s has been deleted.", resource, evt.Key)
 			wq.Add(evt)
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {

@@ -323,7 +323,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 			klog.Errorf("Error updating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, retryErr)
 			return retryErr
 		}
-		klog.Infof("Updated VPA/%s in Namespace/%s", vpa.Name, vpa.Namespace)
+		klog.V(2).Infof("Updated VPA/%s in Namespace/%s", vpa.Name, vpa.Namespace)
 	} else {
 		klog.Infof("Not updating VPA/%s in Namespace/%s due to dryrun.", vpa.Name, vpa.Namespace)
 	}
