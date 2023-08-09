@@ -160,6 +160,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
+	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
 
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
@@ -181,7 +182,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 			vpaName = cvpa.Name
 		}
 		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
-		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy)
+		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy, defaultMinReplicas)
 		if err != nil {
 			return err
 		}
@@ -201,7 +202,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy) error {
+func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {
 	controllerObj := controller.Unstructured.DeepCopyObject()
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
@@ -213,7 +214,7 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 		klog.V(5).Infof("%s/%s has custom vpa-resource-policy", controller.Kind, controller.Name)
 	}
 
-	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode, vpaResourcePolicy)
+	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode, vpaResourcePolicy, minReplicas)
 
 	if vpa == nil {
 		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", controller.Kind, controller.Name, controller.Name)
@@ -330,7 +331,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode, resourcePolicy *vpav1.PodResourcePolicy) vpav1.VerticalPodAutoscaler {
+func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode, resourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
@@ -360,6 +361,13 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 			UpdateMode: updateMode,
 		},
 		ResourcePolicy: resourcePolicy,
+	}
+
+	if minReplicas != nil {
+		if *minReplicas > 0 {
+			desiredVPA.Spec.UpdatePolicy.MinReplicas = minReplicas
+		}
+
 	}
 
 	return desiredVPA
@@ -411,4 +419,30 @@ func vpaResourcePolicyForResource(obj runtime.Object) (*vpav1.PodResourcePolicy,
 	}
 
 	return &resourcePol, explicit
+}
+
+// vpaMinReplicas sets the VPA minimum replicas required for eviction
+func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
+	explicit := false
+
+	minReplicasString := ""
+	accessor, _ := meta.Accessor(obj)
+	if val, ok := accessor.GetAnnotations()[utils.VpaMinReplicasAnnotation]; ok {
+		minReplicasString = val
+	}
+
+	if minReplicasString == "" {
+		return nil, explicit
+	}
+
+	explicit = true
+	minReplicas, err := strconv.ParseInt(minReplicasString, 10, 32)
+	if err != nil {
+		klog.Error(err.Error())
+		return nil, explicit
+	}
+
+	minReplicasInt32 := int32(minReplicas)
+
+	return &minReplicasInt32, explicit
 }
