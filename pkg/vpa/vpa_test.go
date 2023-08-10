@@ -211,7 +211,7 @@ func Test_createVPAWithResourcePolicy(t *testing.T) {
 	updateMode, _ := vpaUpdateModeForResource(&nsLabeledResourcePolicy)
 	resourcePolicy, _ := vpaResourcePolicyForResource(&nsLabeledResourcePolicy)
 	minReplicas, _ := vpaMinReplicasForResource(&nsLabeledResourcePolicy)
-	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode, resourcePolicy, minReplicas)
+	testVPA := rec.getVPAObject(nil, &nsLabeledResourcePolicy, controller, updateMode, resourcePolicy, minReplicas)
 
 	errCreate := rec.createVPA(testVPA)
 	newVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsLabeledResourcePolicy.Name).Get(context.TODO(), "goldilocks-test-vpa", metav1.GetOptions{})
