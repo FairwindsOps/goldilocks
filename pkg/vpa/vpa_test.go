@@ -274,8 +274,8 @@ func Test_updateVPA(t *testing.T) {
 	}
 	updateMode, _ := vpaUpdateModeForResource(testNS)
 	resourcePolicy, _ := vpaResourcePolicyForResource(testNS)
-	minReplicas, _ := vpaMinReplicasForResource(&nsTesting)
-	testVPA := rec.getVPAObject(nil, &nsTesting, controller, updateMode, resourcePolicy, minReplicas)
+	minReplicas, _ := vpaMinReplicasForResource(testNS)
+	testVPA := rec.getVPAObject(nil, testNS, controller, updateMode, resourcePolicy, minReplicas)
 
 	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
 	assert.NoError(t, err)
