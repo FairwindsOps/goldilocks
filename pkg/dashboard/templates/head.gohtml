@@ -1,5 +1,5 @@
 {{ define "head" }}
-<base href="{{ .Opts.BasePath }}">
+<base href="{{ opts.BasePath }}">
 <meta charset="utf-8" />
 <title>Goldilocks by Fairwinds</title>
 <meta
@@ -17,10 +17,10 @@
 <link rel="stylesheet" href="static/css/utopia.css" />
 <link rel="stylesheet" href="static/css/main.css" />
 <link rel="stylesheet" href="static/css/fontawesome-5.7.2.css" />
-
-{{- if .Opts.EnableCost }}
-<link rel="stylesheet" href="static/css/prism.css" />
 <script src="static/js/main.js" type="module"></script>
+
+{{- if opts.EnableCost }}
+<link rel="stylesheet" href="static/css/prism.css" />
 <script defer src="static/js/prism.js"></script>
 {{- end }}
 

@@ -34,7 +34,7 @@ func NamespaceList(opts Options) http.Handler {
 			return
 		}
 
-		tmpl, err := getTemplate("namespace_list",
+		tmpl, err := getTemplate("namespace_list", opts,
 			"filter",
 			"namespace_list",
 		)
@@ -53,10 +53,7 @@ func NamespaceList(opts Options) http.Handler {
 			Namespaces []struct {
 				Name string
 			}
-			Opts Options
-		}{
-			Opts: opts,
-		}
+		}{}
 
 		for _, ns := range namespacesList.Items {
 			item := struct {

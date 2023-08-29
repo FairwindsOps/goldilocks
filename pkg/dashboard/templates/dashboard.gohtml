@@ -3,10 +3,11 @@
 <head>
   {{ template "head" .Data }}
 
-  {{ if gt (len .Data.VpaData.Namespaces) 1 }}
+  {{ if gt (len .Data.VpaData.Namespaces) 1 }} 
   <script src="static/js/filter.js" type="module"></script>
- 
+  {{ end }}
 
+  {{- if opts.EnableCost }}
   <noscript>
     <style>
       #email-box, #api-token-box, #cost-settings-box {
@@ -16,11 +17,9 @@
   </noscript>
 
   <script>
-    window.INSIGHTS_HOST = "{{ .Data.Opts.InsightsHost }}"
+    window.INSIGHTS_HOST = "{{ opts.InsightsHost }}"
   </script>
-  {{ end }}
 
-  {{- if .Data.Opts.EnableCost }}
   <script defer src="static/js/email.js"></script>
   <script defer src="static/js/api-token.js"></script>
   <script defer src="static/js/cost_settings.js"></script>
@@ -35,7 +34,7 @@
   <div class="layoutSidebar__main">
     <main class="verticalRhythm --rhythm-3">
 
-      {{- if .Data.Opts.EnableCost }}
+      {{- if opts.EnableCost }}
       {{ template "email" . }}
       {{ template "api_token" . }}
       {{ template "cost_settings" . }}

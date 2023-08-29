@@ -59,7 +59,7 @@ func getTemplateBox() *packr.Box {
 }
 
 // getTemplate puts together a template. Individual pieces can be overridden before rendering.
-func getTemplate(name string, includedTemplates ...string) (*template.Template, error) {
+func getTemplate(name string, opts Options, includedTemplates ...string) (*template.Template, error) {
 	tmpl := template.New(name).Funcs(template.FuncMap{
 		"printResource":  helpers.PrintResource,
 		"getStatus":      helpers.GetStatus,
@@ -67,6 +67,10 @@ func getTemplate(name string, includedTemplates ...string) (*template.Template, 
 		"resourceName":   helpers.ResourceName,
 		"getUUID":        helpers.GetUUID,
 		"hasField":       helpers.HasField,
+
+		"opts": func() Options {
+			return opts
+		},
 	})
 
 	// join the default templates and included templates

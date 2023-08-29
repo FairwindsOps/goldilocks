@@ -42,8 +42,10 @@
             {{ $cName }}
           </h4>
 
+          {{ if opts.EnableCost }}
           {{ if gt $cSummary.ContainerCostInt 0 }}
           <span class="top-number">${{ $cSummary.ContainerCost }}/hour</span> 
+          {{ end }}
           {{ end }}
 
           <details open>
