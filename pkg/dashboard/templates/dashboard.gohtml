@@ -41,7 +41,9 @@
 
       <h1>Namespace Details</h1>
 
-      {{ template "filter" .Data.VpaData.Namespaces }}
+      {{ if gt (len .Data.VpaData.Namespaces) 1 }}
+        {{ template "filter" .Data.VpaData.Namespaces }}
+      {{ end }}
 
       <div
         class="verticalRhythm --rhythm-3"
