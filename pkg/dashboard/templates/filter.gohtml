@@ -1,6 +1,6 @@
 {{ define "filter" }}
 <noscript>
-    <p class="controls">{{ len . }} namespaces found</p>
+    <p class="controls">{{ len .Namespaces }} namespaces found</p>
 </noscript>
 
 <form
@@ -31,7 +31,7 @@
         3. An output that's always shown visually. We have to remove content from the above two to get them to announce the same content back to back. This would make the words pop in and out visually.
       Note that the elements used for dynamic screen reader announcements can't themselves be injected or they won't work. Must be pre-existing containers into which the announcment content is injected. 
     -->
-    {{ with $initialStatus := (len .) | printf "%d total namespaces found" }}
+    {{ with $initialStatus := (len .Namespaces) | printf "%d total namespaces found" }}
     <div class="control-block">
         <output aria-hidden="true">{{ $initialStatus }}</output>
         <output class="visually-hidden" aria-live="polite">{{ $initialStatus }}</output>

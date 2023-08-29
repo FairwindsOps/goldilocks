@@ -50,7 +50,7 @@ func GetRouter(setters ...Option) *mux.Router {
 		setter(opts)
 	}
 
-	router := mux.NewRouter().PathPrefix(opts.basePath).Subrouter()
+	router := mux.NewRouter().PathPrefix(opts.BasePath).Subrouter()
 
 	// health
 	router.Handle("/health", Health("OK"))
@@ -59,7 +59,7 @@ func GetRouter(setters ...Option) *mux.Router {
 	// assets
 	router.Handle("/favicon.ico", Asset("/images/favicon-32x32.png"))
 	fileServer := http.FileServer(GetAssetBox())
-	router.PathPrefix("/static/").Handler(http.StripPrefix(path.Join(opts.basePath, "/static/"), fileServer))
+	router.PathPrefix("/static/").Handler(http.StripPrefix(path.Join(opts.BasePath, "/static/"), fileServer))
 
 	// dashboard
 	router.Handle("/dashboard", Dashboard(*opts))
@@ -71,15 +71,15 @@ func GetRouter(setters ...Option) *mux.Router {
 	// root
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// catch all other paths that weren't matched
-		if r.URL.Path != "/" && r.URL.Path != opts.basePath && r.URL.Path != opts.basePath+"/" {
+		if r.URL.Path != "/" && r.URL.Path != opts.BasePath && r.URL.Path != opts.BasePath+"/" {
 			klog.Infof("404: %s", r.URL.Path)
 			http.NotFound(w, r)
 			return
 		}
 
-		klog.Infof("redirecting to %v", path.Join(opts.basePath, "/namespaces"))
+		klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
 		// default redirect on root path
-		http.Redirect(w, r, path.Join(opts.basePath, "/namespaces"), http.StatusMovedPermanently)
+		http.Redirect(w, r, path.Join(opts.BasePath, "/namespaces"), http.StatusMovedPermanently)
 	})
 
 	// api

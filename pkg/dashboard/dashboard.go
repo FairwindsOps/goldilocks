@@ -71,11 +71,11 @@ func Dashboard(opts Options) http.Handler {
 		}
 
 		data := struct {
-			VpaData      summary.Summary
-			InsightsHost string
+			VpaData summary.Summary
+			Opts    Options
 		}{
-			VpaData:      vpaData,
-			InsightsHost: opts.insightsHost,
+			VpaData: vpaData,
+			Opts:    opts,
 		}
 
 		writeTemplate(tmpl, opts, &data, w)
@@ -114,14 +114,14 @@ func API(opts Options) http.Handler {
 func getVPAData(opts Options, namespace, costPerCPU, costPerGB string) (summary.Summary, error) {
 
 	filterLabels := make(map[string]string)
-	if !opts.showAllVPAs {
-		filterLabels = opts.vpaLabels
+	if !opts.ShowAllVPAs {
+		filterLabels = opts.VpaLabels
 	}
 
 	summarizer := summary.NewSummarizer(
 		summary.ForNamespace(namespace),
 		summary.ForVPAsWithLabels(filterLabels),
-		summary.ExcludeContainers(opts.excludedContainers),
+		summary.ExcludeContainers(opts.ExcludedContainers),
 	)
 
 	vpaData, err := summarizer.GetSummary()

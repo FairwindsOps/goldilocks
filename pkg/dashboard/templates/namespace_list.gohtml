@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
-  {{ template "head" . }}
+  {{ template "head" .Data }}
 
-  {{ if gt (len .Data) 1 }}
+  {{ if gt (len .Data.Namespaces ) 1 }}
   <script src="static/js/filter.js" type="module"></script>
   {{ end }}
 </head>
@@ -17,16 +17,16 @@
     <main class="verticalRhythm">
       <h1>Namespaces</h1>
 
-      {{ if lt (len .Data) 1 }}
+      {{ if lt (len .Data.Namespaces) 1 }}
       <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
 
       {{ else }}
-        {{ if gt (len .Data) 1 }}
+        {{ if gt (len .Data.Namespaces) 1 }}
           {{ template "filter" .Data }}
         {{ end }}
 
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
-        {{ range .Data }}
+        {{ range .Data.Namespaces }}
         <li data-filter="{{ .Name }}">
           <a class="buttonLink --withIcon" href="{{ $.BasePath }}dashboard/{{ .Name }}">
             {{ .Name }}

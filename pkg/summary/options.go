@@ -10,25 +10,25 @@ type Option func(*options)
 
 // options for getting and caching the Summarizer's VPAs
 type options struct {
-	kubeClient         *kube.ClientInstance
-	vpaClient          *kube.VPAClientInstance
-	dynamicClient      *kube.DynamicClientInstance
+	kubeClient            *kube.ClientInstance
+	vpaClient             *kube.VPAClientInstance
+	dynamicClient         *kube.DynamicClientInstance
 	controllerUtilsClient *kube.ControllerUtilsClientInstance
-	namespace          string
-	vpaLabels          map[string]string
-	excludedContainers sets.Set[string]
+	namespace             string
+	vpaLabels             map[string]string
+	excludedContainers    sets.Set[string]
 }
 
 // defaultOptions for a Summarizer
 func defaultOptions() *options {
 	return &options{
-		kubeClient:         kube.GetInstance(),
-		vpaClient:          kube.GetVPAInstance(),
-		dynamicClient:      kube.GetDynamicInstance(),
+		kubeClient:            kube.GetInstance(),
+		vpaClient:             kube.GetVPAInstance(),
+		dynamicClient:         kube.GetDynamicInstance(),
 		controllerUtilsClient: kube.GetControllerUtilsInstance(),
-		namespace:          namespaceAllNamespaces,
-		vpaLabels:          utils.VPALabels,
-		excludedContainers: sets.Set[string]{},
+		namespace:             namespaceAllNamespaces,
+		vpaLabels:             utils.VPALabels,
+		excludedContainers:    sets.Set[string]{},
 	}
 }
 

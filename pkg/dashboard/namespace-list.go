@@ -16,7 +16,7 @@ import (
 func NamespaceList(opts Options) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var listOptions v1.ListOptions
-		if opts.onByDefault || opts.showAllVPAs {
+		if opts.OnByDefault || opts.ShowAllVPAs {
 			listOptions = v1.ListOptions{
 				LabelSelector: fmt.Sprintf("%s!=false", utils.VpaEnabledLabel),
 			}
@@ -48,9 +48,15 @@ func NamespaceList(opts Options) http.Handler {
 		// this helps to not leak additional information like
 		// annotations, labels, metadata about the Namespace to the
 		// client UI source code or javascript console
-		data := []struct {
-			Name string
-		}{}
+
+		data := struct {
+			Namespaces []struct {
+				Name string
+			}
+			Opts Options
+		}{
+			Opts: opts,
+		}
 
 		for _, ns := range namespacesList.Items {
 			item := struct {
@@ -58,7 +64,7 @@ func NamespaceList(opts Options) http.Handler {
 			}{
 				Name: ns.Name,
 			}
-			data = append(data, item)
+			data.Namespaces = append(data.Namespaces, item)
 		}
 
 		writeTemplate(tmpl, opts, &data, w)
