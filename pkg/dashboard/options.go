@@ -10,69 +10,77 @@ type Option func(*Options)
 
 // Options are options for getting and caching the Summarizer's VPAs
 type Options struct {
-	port               int
-	basePath           string
-	vpaLabels          map[string]string
-	excludedContainers sets.Set[string]
-	onByDefault        bool
-	showAllVPAs        bool
-	insightsHost       string
+	Port               int
+	BasePath           string
+	VpaLabels          map[string]string
+	ExcludedContainers sets.Set[string]
+	OnByDefault        bool
+	ShowAllVPAs        bool
+	InsightsHost       string
+	EnableCost         bool
 }
 
 // default options for the dashboard
 func defaultOptions() *Options {
 	return &Options{
-		port:               8080,
-		basePath:           "/",
-		vpaLabels:          utils.VPALabels,
-		excludedContainers: sets.Set[string]{},
-		onByDefault:        false,
-		showAllVPAs:        false,
+		Port:               8080,
+		BasePath:           "/",
+		VpaLabels:          utils.VPALabels,
+		ExcludedContainers: sets.Set[string]{},
+		OnByDefault:        false,
+		ShowAllVPAs:        false,
+		EnableCost:         true,
 	}
 }
 
 // OnPort is an Option for running the dashboard on a different port
 func OnPort(port int) Option {
 	return func(opts *Options) {
-		opts.port = port
+		opts.Port = port
 	}
 }
 
 // ExcludeContainers is an Option for excluding containers in the dashboard summary
 func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 	return func(opts *Options) {
-		opts.excludedContainers = excludedContainers
+		opts.ExcludedContainers = excludedContainers
 	}
 }
 
 // ForVPAsWithLabels Option for limiting the dashboard to certain VPAs matching the labels
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *Options) {
-		opts.vpaLabels = vpaLabels
+		opts.VpaLabels = vpaLabels
 	}
 }
 
 // OnByDefault is an option for listing all namespaces in the dashboard unless explicitly excluded
 func OnByDefault(onByDefault bool) Option {
 	return func(opts *Options) {
-		opts.onByDefault = onByDefault
+		opts.OnByDefault = onByDefault
 	}
 }
 
 func ShowAllVPAs(showAllVPAs bool) Option {
 	return func(opts *Options) {
-		opts.showAllVPAs = showAllVPAs
+		opts.ShowAllVPAs = showAllVPAs
 	}
 }
 
 func BasePath(basePath string) Option {
 	return func(opts *Options) {
-		opts.basePath = basePath
+		opts.BasePath = basePath
 	}
 }
 
 func InsightsHost(insightsHost string) Option {
 	return func(opts *Options) {
-		opts.insightsHost = insightsHost
+		opts.InsightsHost = insightsHost
+	}
+}
+
+func EnableCost(enableCost bool) Option {
+	return func(opts *Options) {
+		opts.EnableCost = enableCost
 	}
 }

@@ -104,7 +104,7 @@ func writeTemplate(tmpl *template.Template, opts Options, data interface{}, w ht
 		return
 	}
 	err = tmpl.Execute(buf, baseTemplateData{
-		BasePath: validateBasePath(opts.basePath),
+		BasePath: validateBasePath(opts.BasePath),
 		Data:     data,
 		JSON:     template.JS(jsonData),
 	})
