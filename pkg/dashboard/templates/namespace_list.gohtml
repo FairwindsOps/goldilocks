@@ -17,11 +17,10 @@
 
       {{ if lt (len .Data.Namespaces) 1 }}
       <p>No namespaces are labelled for use by Goldilocks. Try labelling one with <code class="language-shell">kubectl label ns NAMESPACE_NAME goldilocks.fairwinds.com/enabled=true</code></p>
-
       {{ else }}
-        
-      {{ template "filter" .Data.Namespaces }}
-
+        {{ if gt (len .Data.Namespaces) 1 }}
+          {{ template "filter" .Data.Namespaces }}
+        {{ end }}
 
       <ul aria-live="off" class="namespaceList" id="js-filter-container" role="list">
         {{ range .Data.Namespaces }}
