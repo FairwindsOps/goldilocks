@@ -118,7 +118,7 @@ dd {
 
 dl {
   display: grid;
-  grid-gap: var(--gap-3);
+  grid-gap: var(--gap-2);
   grid-template-columns: repeat(auto-fill, 45ch);
   justify-content: space-evenly;
 }

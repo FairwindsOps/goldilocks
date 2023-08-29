@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
+	"github.com/fairwindsops/goldilocks/pkg/utils"
+	autoscalingV2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -27,8 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
-
-	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
 const (
@@ -51,7 +51,15 @@ type workloadSummary struct {
 	ControllerName string                      `json:"controllerName"`
 	ControllerType string                      `json:"controllerType"`
 	Containers     map[string]ContainerSummary `json:"containers"`
-	BasePath       string
+
+	HPA *workloadHPA `json:"hpa"`
+}
+
+type workloadHPA struct {
+	Name        string   `json:"name"`
+	MetricType  []string `json:"metricType"`
+	MinReplicas int      `json:"minReplicas"`
+	MaxReplicas int      `json:"maxReplicas"`
 }
 
 type ContainerSummary struct {
@@ -73,6 +81,12 @@ type ContainerSummary struct {
 	BurstableCostInt  int
 }
 
+type Workload struct {
+	controllerUtils.Workload
+
+	hpa *autoscalingV2.HorizontalPodAutoscaler
+}
+
 // Summarizer represents a source of generating a summary of VPAs
 type Summarizer struct {
 	options
@@ -81,7 +95,7 @@ type Summarizer struct {
 	vpas []vpav1.VerticalPodAutoscaler
 
 	// cached map of vpa name -> workload
-	workloadForVPANamed map[string]*controllerUtils.Workload
+	workloadForVPANamed map[string]*Workload
 }
 
 // NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
@@ -161,6 +175,32 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		if !ok {
 			klog.Errorf("no matching Workloads found for VPA/%s", vpa.Name)
 			continue
+		}
+
+		// add the HPA summary if it exists
+		if s.workloadForVPANamed[vpa.Name].hpa != nil {
+			hpa := workloadHPA{Name: s.workloadForVPANamed[vpa.Name].hpa.ObjectMeta.Name}
+			for _, resource := range s.workloadForVPANamed[vpa.Name].hpa.Spec.Metrics {
+				if resource.Resource != nil {
+					if resource.Resource.Name == "cpu" {
+						klog.V(6).Infof("found matching HPA with a cpu target type: %s/%s", vpa.Namespace, vpa.Name)
+						hpa.MetricType = append(hpa.MetricType, "cpu")
+					} else if resource.Resource.Name == "memory" {
+						klog.V(6).Infof("found matching HPA with a memory target type: %s/%s", vpa.Namespace, vpa.Name)
+						hpa.MetricType = append(hpa.MetricType, "memory")
+					} else {
+						hpa.MetricType = append(hpa.MetricType, "other")
+					}
+				}
+				if resource.External != nil {
+					hpa.MetricType = append(hpa.MetricType, "external")
+				}
+			}
+
+			hpa.MinReplicas = int(*s.workloadForVPANamed[vpa.Name].hpa.Spec.MinReplicas)
+			hpa.MaxReplicas = int(s.workloadForVPANamed[vpa.Name].hpa.Spec.MaxReplicas)
+
+			wSummary.HPA = &hpa
 		}
 
 		if vpa.Status.Recommendation == nil {
@@ -303,13 +343,13 @@ func (s *Summarizer) updateWorkloads() error {
 	klog.V(10).Infof("Found workloads in namespace '%s': %v", s.namespace, workloads)
 
 	// map goldilocks-workload.name -> &controllerUtils.Workload{} for easy vpa lookup.
-	s.workloadForVPANamed = map[string]*controllerUtils.Workload{}
+	s.workloadForVPANamed = map[string]*Workload{}
 	for _, w := range workloads {
 		for _, v := range s.vpas {
 			w := w
 			if vpaMatchesWorkload(v, w) {
 				vpaName := v.Name
-				s.workloadForVPANamed[vpaName] = &w
+				s.workloadForVPANamed[vpaName] = &w // TODO replace nil with HPA info
 			}
 		}
 	}
@@ -318,7 +358,7 @@ func (s *Summarizer) updateWorkloads() error {
 }
 
 // vpaMatchesWorkload returns true if the VPA's target matches the workload
-func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workload) bool {
+func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w Workload) bool {
 	// check if the VPA's target matches the workload's target
 	if v.Spec.TargetRef.Kind != w.TopController.GetKind() {
 		return false
@@ -332,11 +372,34 @@ func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workloa
 	return true
 }
 
-func (s Summarizer) listWorkloads() ([]controllerUtils.Workload, error) {
+func (s Summarizer) listWorkloads() ([]Workload, error) {
 	workloads, err := s.controllerUtilsClient.Client.GetAllTopControllersSummary(s.namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	return workloads, nil
+	returnWorkloads := []Workload{}
+
+	// go through all the workloads and look for an HPA attached to them
+	for _, workload := range workloads {
+		hpas, err := s.kubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers(s.namespace).List(context.TODO(), metav1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		w := Workload{
+			workload,
+			nil,
+		}
+		for _, hpa := range hpas.Items {
+			if hpa.Spec.ScaleTargetRef.Kind == workload.TopController.GroupVersionKind().Kind && hpa.Spec.ScaleTargetRef.Name == workload.TopController.GetName() {
+				klog.V(6).Infof("found HPA for %s %s in %s namespace", workload.TopController.GroupVersionKind().Kind, workload.TopController.GetName(), s.namespace)
+				w.hpa = &hpa
+			}
+		}
+
+		returnWorkloads = append(returnWorkloads, w)
+	}
+
+	return returnWorkloads, nil
 }

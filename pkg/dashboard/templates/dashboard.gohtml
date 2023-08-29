@@ -63,6 +63,44 @@
 
         <dl>
           <div class="dl-entry">
+            <dt id="hpa">HPA - *</dt>
+            <dd>
+              <blockquote>
+                Indicates if a Horizontal Pod Autoscaler or HPA is attached to the pod.
+
+                <ul>
+                  <li>
+                    Memory indicates that the HPA is scaling on the memory usage metric.
+                  </li>
+                  <li>
+                    CPU indicates that the HPA is scaling on the cpu usage metric.
+                  </li>
+                  <li>
+                    External indicates that the HPA is scaling on an external metric.
+                  </li>
+                  <li>
+                    Other indicates an HPA that does not scale on cpu, memory or external metrics.
+                  </li>
+                </ul>
+                <cite>
+                  <a
+                    class="--link-1"
+                    href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+                    rel="noreferrer noopener"
+                    target="_blank"
+                  >
+                    Kubernetes Documentation:
+                    <br>Horizontal Pod Autoscaling <i
+                      aria-label="(Opens in new window)"
+                      class="fas fa-fw fa-external-link-alt"
+                    ></i>
+                  </a>
+                </cite>
+              </blockquote>
+            </dd>
+          </div>
+
+          <div class="dl-entry">
             <dt id="qos">QoS</dt>
             <dd>
               <blockquote>

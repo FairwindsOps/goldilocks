@@ -26,7 +26,10 @@
     <div class="detailInfo --deployment verticalRhythm">
       <h3>
         <span class="badge detailBadge --deployment">{{ $workload.ControllerType }}</span>
-        {{ $workload.ControllerName }}
+        {{- if ne $workload.HPA nil }}
+        <span class="badge detailBadge">HPA: {{ range $workload.HPA.MetricType }}{{.}} {{end}}(min {{ $workload.HPA.MinReplicas }}/ max {{$workload.HPA.MaxReplicas}})</span>
+        {{ end }}
+        
       </h3>
 
       <details
