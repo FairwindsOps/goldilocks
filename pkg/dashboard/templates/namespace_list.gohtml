@@ -3,7 +3,9 @@
 <head>
   {{ template "head" .Data }}
 
+  {{ if gt (len .Data.Namespaces ) 1 }}
   <script src="static/js/filter.js" type="module"></script>
+  {{ end }}
 </head>
 
 <body class="layoutSidebar">
