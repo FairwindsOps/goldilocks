@@ -55,7 +55,7 @@ func Dashboard(opts Options) http.Handler {
 			return
 		}
 
-		tmpl, err := getTemplate("dashboard",
+		tmpl, err := getTemplate("dashboard", opts,
 			"container",
 			"dashboard",
 			"filter",
@@ -72,10 +72,8 @@ func Dashboard(opts Options) http.Handler {
 
 		data := struct {
 			VpaData summary.Summary
-			Opts    Options
 		}{
 			VpaData: vpaData,
-			Opts:    opts,
 		}
 
 		writeTemplate(tmpl, opts, &data, w)

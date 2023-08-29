@@ -22,11 +22,13 @@
   <div class="layoutCluster --start">
     <h5>Guaranteed QoS</h5>
 
-    {{if lt $.GuaranteedCostInt 0}}
-      <p class="lower-number lower-number--negative">-${{$.GuaranteedCost}}/hour</p>
-    {{else}}
-      <p class="lower-number lower-number--positive">+${{$.GuaranteedCost}}/hour</p>
-    {{end}}
+    {{ if opts.EnableCost }}
+    {{ if lt $.GuaranteedCostInt 0 }}
+      <p class="lower-number lower-number--negative">-${{ $.GuaranteedCost }}/hour</p>
+    {{ else }}
+      <p class="lower-number lower-number--positive">+${{ $.GuaranteedCost }}/hour</p>
+    {{ end }}
+    {{ end }}
   </div>
 
   <table class="compTable callout">
@@ -114,11 +116,13 @@
   <div class="layoutCluster --start">
     <h5>Burstable QoS</h5>
 
-    {{if lt $.BurstableCostInt 0}}
-      <p class="lower-number lower-number--negative">-${{$.BurstableCost}}/hour</p>
-    {{else}}
-      <p class="lower-number lower-number--positive">+${{$.BurstableCost}}/hour</p>
-    {{end}}
+    {{ if opts.EnableCost }}
+    {{ if lt $.BurstableCostInt 0 }}
+      <p class="lower-number lower-number--negative">-${{ $.BurstableCost }}/hour</p>
+    {{ else }}
+      <p class="lower-number lower-number--positive">+${{ $.BurstableCost }}/hour</p>
+    {{ end }}
+    {{ end }}
   </div>
 
   <table class="compTable callout">
