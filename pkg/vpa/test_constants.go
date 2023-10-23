@@ -15,7 +15,10 @@
 package vpa
 
 import (
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -178,6 +181,32 @@ var testDeploymentUnstructured = &unstructured.Unstructured{
 			"name": "test-deploy",
 		},
 		"spec": map[string]interface{}{},
+	},
+}
+
+var testConflictingVPA = vpav1.VerticalPodAutoscaler{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "conflicting-vpa",
+	},
+	Spec: vpav1.VerticalPodAutoscalerSpec{
+		TargetRef: &autoscalingv1.CrossVersionObjectReference{
+			APIVersion: testDeploymentUnstructured.GetAPIVersion(),
+			Kind:       testDeploymentUnstructured.GroupVersionKind().Kind,
+			Name:       testDeploymentUnstructured.GetName(),
+		},
+	},
+}
+
+var testConflictingHPA = autoscalingv2.HorizontalPodAutoscaler{
+	ObjectMeta: metav1.ObjectMeta{
+		Name: "conflicting-hpa",
+	},
+	Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+		ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+			APIVersion: testDeploymentUnstructured.GetAPIVersion(),
+			Kind:       testDeploymentUnstructured.GroupVersionKind().Kind,
+			Name:       testDeploymentUnstructured.GetName(),
+		},
 	},
 }
 

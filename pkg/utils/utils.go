@@ -17,6 +17,7 @@ package utils
 import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 var (
@@ -96,4 +97,20 @@ func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
 		rl[v1.ResourceMemory] = mem
 	}
 	return rl
+}
+
+// VPACreatedByGoldilocks checks if a given VPA is created by Goldilocks.
+func VPACreatedByGoldilocks(vpa *vpav1.VerticalPodAutoscaler) bool {
+	if vpa == nil {
+		return false
+	}
+	if vpa.Labels == nil {
+		return false
+	}
+	for key, value := range VPALabels {
+		if vpa.Labels[key] != value {
+			return false
+		}
+	}
+	return true
 }

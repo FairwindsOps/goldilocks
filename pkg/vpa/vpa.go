@@ -22,23 +22,21 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/client-go/util/retry"
-	"k8s.io/klog/v2/klogr"
-
-	autoscaling "k8s.io/api/autoscaling/v1"
-
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/client-go/util/retry"
+	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/klogr"
 
 	controllerLog "github.com/fairwindsops/controller-utils/pkg/log"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/klog/v2"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -104,13 +102,19 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return r.cleanUpManagedVPAsInNamespace(nsName, vpas)
 	}
 
+	hpas, err := r.listHPAs(nsName)
+	if err != nil {
+		klog.Error(err.Error())
+		return err
+	}
+
 	controllers, err := r.listControllers(nsName)
 	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
 
-	return r.reconcileControllersAndVPAs(namespace, vpas, controllers)
+	return r.reconcileControllersAndVPAs(namespace, vpas, hpas, controllers)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
@@ -120,9 +124,11 @@ func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1
 	}
 	klog.Infof("Deleting all goldilocks managed VPAs in Namespace/%s", namespace)
 	for _, vpa := range vpas {
-		err := r.deleteVPA(vpa)
-		if err != nil {
-			return err
+		if utils.VPACreatedByGoldilocks(&vpa) {
+			err := r.deleteVPA(vpa)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -157,7 +163,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
+func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, hpas []autoscalingv2.HorizontalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
 	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
@@ -165,8 +171,14 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
-		var cvpa *vpav1.VerticalPodAutoscaler
+		// If exists a CPU/memory based HPA or VPA targeting this controller, it's conflicting
+		if r.hasConflictingHPA(ns, controller, hpas) || r.hasConflictingVPA(ns, controller, vpas) {
+			// Do not create VPA for this controller and clean up its existing Goldilocks managed VPA if exists
+			break
+		}
+
 		// search for the matching vpa (will have the same name)
+		var cvpa *vpav1.VerticalPodAutoscaler
 		for idx, vpa := range vpas {
 			if fmt.Sprintf("goldilocks-%s", controller.Name) == vpa.Name {
 				// found the vpa associated with this controller
@@ -189,7 +201,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	}
 
 	for _, vpa := range vpas {
-		if !vpaHasAssociatedController[vpa.Name] {
+		if !vpaHasAssociatedController[vpa.Name] && utils.VPACreatedByGoldilocks(&vpa) {
 			// these vpas do not have a matching controller, delete them
 			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, ns.Name)
 			err := r.deleteVPA(vpa)
@@ -260,10 +272,7 @@ func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 }
 
 func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, error) {
-	vpaListOptions := metav1.ListOptions{
-		LabelSelector: labels.Set(utils.VPALabels).String(),
-	}
-	existingVPAs, err := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(namespace).List(context.TODO(), vpaListOptions)
+	existingVPAs, err := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -276,6 +285,22 @@ func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, e
 	}
 
 	return existingVPAs.Items, nil
+}
+
+func (r Reconciler) listHPAs(namespace string) ([]autoscalingv2.HorizontalPodAutoscaler, error) {
+	existingHPAs, err := r.KubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	klog.V(2).Infof("There are %d hpas in Namespace/%s", len(existingHPAs.Items), namespace)
+	if klog.V(9).Enabled() {
+		for _, hpa := range existingHPAs.Items {
+			klog.V(9).Infof("Found HPA/%s in Namespace/%s", hpa.Name, namespace)
+		}
+	}
+
+	return existingHPAs.Items, nil
 }
 
 func (r Reconciler) deleteVPA(vpa vpav1.VerticalPodAutoscaler) error {
@@ -352,7 +377,7 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 
 	// update the spec on the VPA
 	desiredVPA.Spec = vpav1.VerticalPodAutoscalerSpec{
-		TargetRef: &autoscaling.CrossVersionObjectReference{
+		TargetRef: &autoscalingv1.CrossVersionObjectReference{
 			APIVersion: controller.APIVersion,
 			Kind:       controller.Kind,
 			Name:       controller.Name,
@@ -371,6 +396,31 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	}
 
 	return desiredVPA
+}
+
+func (r Reconciler) hasConflictingHPA(ns *corev1.Namespace, controller Controller, hpas []autoscalingv2.HorizontalPodAutoscaler) bool {
+	for _, hpa := range hpas {
+		if controller.APIVersion == hpa.Spec.ScaleTargetRef.APIVersion &&
+			controller.Kind == hpa.Spec.ScaleTargetRef.Kind &&
+			controller.Name == hpa.Spec.ScaleTargetRef.Name {
+			klog.V(2).Infof("Controller in namespace %s %s/%s has a conflicting HPA %s, not managing its VPA", ns.Name, controller.Kind, controller.Name, hpa.Name)
+			return true
+		}
+	}
+	return false
+}
+
+func (r Reconciler) hasConflictingVPA(ns *corev1.Namespace, controller Controller, vpas []vpav1.VerticalPodAutoscaler) bool {
+	for _, vpa := range vpas {
+		if !utils.VPACreatedByGoldilocks(&vpa) &&
+			controller.APIVersion == vpa.Spec.TargetRef.APIVersion &&
+			controller.Kind == vpa.Spec.TargetRef.Kind &&
+			controller.Name == vpa.Spec.TargetRef.Name {
+			klog.V(2).Infof("Controller in namespace %s %s/%s has a conflicting VPA %s, not managing its VPA", ns.Name, controller.Kind, controller.Name, vpa.Name)
+			return true
+		}
+	}
+	return false
 }
 
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode

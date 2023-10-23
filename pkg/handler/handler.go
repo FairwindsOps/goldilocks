@@ -17,7 +17,9 @@ package handler
 import (
 	"strings"
 
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
 
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -37,6 +39,10 @@ func OnUpdate(obj interface{}, event utils.Event) {
 		OnPodChanged(obj.(*corev1.Pod), event)
 	case *corev1.Namespace:
 		OnNamespaceChanged(obj.(*corev1.Namespace), event)
+	case *vpav1.VerticalPodAutoscaler:
+		OnVPAChanged(obj.(*vpav1.VerticalPodAutoscaler), event)
+	case *autoscalingv2.HorizontalPodAutoscaler:
+		OnHPAChanged(obj.(*autoscalingv2.HorizontalPodAutoscaler), event)
 	default:
 		klog.Errorf("Object has unknown type of %T", t)
 	}
@@ -49,6 +55,10 @@ func onDelete(event utils.Event) {
 		OnNamespaceChanged(&corev1.Namespace{}, event)
 	case "pod":
 		OnPodChanged(&corev1.Pod{}, event)
+	case "vpa":
+		OnVPAChanged(&vpav1.VerticalPodAutoscaler{}, event)
+	case "hpa":
+		OnHPAChanged(&autoscalingv2.HorizontalPodAutoscaler{}, event)
 	default:
 		klog.Errorf("object has unknown resource type %s", event.ResourceType)
 	}

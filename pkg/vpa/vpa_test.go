@@ -545,9 +545,7 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	// No VPA objects left after deleted deployment
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
-
+	assert.Empty(t, vpaList.Items)
 }
 
 func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
@@ -567,6 +565,11 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
+
+	// Create a non-goldilocks managed VPA
+	_, err = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).Create(context.TODO(), &testConflictingVPA, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
 	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
 	assert.NoError(t, err)
 
@@ -590,11 +593,10 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	err = GetInstance().ReconcileNamespace(&updatedNSConverted)
 	assert.NoError(t, err)
 
-	// There should be zero vpa objects
+	// There should be only non-goldilocks managed VPAs left
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
+	assertVPAListContains(t, vpaList.Items, testConflictingVPA.Name)
 }
 
 func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
@@ -712,4 +714,129 @@ func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
 	assert.Equal(t, "goldilocks-test-sts", vpaList.Items[0].ObjectMeta.Name)
+}
+
+func Test_ReconcileNamespaceConflictingVPA(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).Create(context.TODO(), &testConflictingVPA, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should not create any VPA
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	// should only get testConflictingVPA in this list
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assertVPAListContains(t, vpaList.Items, testConflictingVPA.GetName())
+}
+
+func Test_ReconcileNamespaceNotConflictingVPA(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	testVPAUnrelated := testConflictingVPA.DeepCopy()
+	testVPAUnrelated.Spec.TargetRef.Name = "some-other-deployment"
+
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).Create(context.TODO(), testVPAUnrelated, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should still create VPA because the existing VPA points to some other deployment
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assertVPAListContains(t, vpaList.Items, testVPAUnrelated.GetName(), "goldilocks-test-deploy")
+}
+
+func Test_ReconcileConflictingHPA(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = GetInstance().KubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers(nsName).Create(context.TODO(), &testConflictingHPA, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should not create VPA because the existing HPA conflicts with VPA
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Empty(t, vpaList.Items)
+}
+
+func Test_ReconcileNotConflictingHPA(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.ObjectMeta.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	notConflictingHPA := testConflictingHPA.DeepCopy()
+	notConflictingHPA.Spec.ScaleTargetRef.Name = "some-other-deployment"
+
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = GetInstance().KubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers(nsName).Create(context.TODO(), notConflictingHPA, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// This should not create VPA because the existing HPA conflicts with VPA
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assertVPAListContains(t, vpaList.Items, "goldilocks-test-deploy")
+}
+
+func assertVPAListContains(t *testing.T, vpas []vpav1.VerticalPodAutoscaler, names ...string) {
+	t.Helper()
+
+	gotNames := make(map[string]struct{}, len(vpas))
+	for _, vpa := range vpas {
+		gotNames[vpa.Name] = struct{}{}
+	}
+	wantNames := make(map[string]struct{}, len(names))
+	for _, name := range names {
+		wantNames[name] = struct{}{}
+	}
+	assert.Equal(t, wantNames, gotNames)
 }

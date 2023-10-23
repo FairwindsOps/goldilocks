@@ -48,7 +48,8 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	gvapps := schema.GroupVersion{Group: "apps", Version: "v1"}
 	gvcore := schema.GroupVersion{Group: "", Version: "v1"}
 	gvbatch := schema.GroupVersion{Group: "batch", Version: "v1"}
-	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore, gvbatch})
+	gvautoscaling := schema.GroupVersion{Group: "autoscaling", Version: "v2"}
+	restMapper := meta.NewDefaultRESTMapper([]schema.GroupVersion{gvapps, gvcore, gvbatch, gvautoscaling})
 	gvk := gvapps.WithKind("Deployment")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvapps.WithKind("DaemonSet")
@@ -64,6 +65,8 @@ func GetMockDynamicClient() *DynamicClientInstance {
 	gvk = gvbatch.WithKind("CronJob")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvk = gvbatch.WithKind("Job")
+	restMapper.Add(gvk, meta.RESTScopeNamespace)
+	gvk = gvautoscaling.WithKind("HorizontalPodAutoscaler")
 	restMapper.Add(gvk, meta.RESTScopeNamespace)
 	gvrToListKind := map[schema.GroupVersionResource]string{
 		{
@@ -106,6 +109,11 @@ func GetMockDynamicClient() *DynamicClientInstance {
 			Version:  "v1",
 			Resource: "jobs",
 		}: "JobList",
+		{
+			Group:    "autoscaling",
+			Version:  "v2",
+			Resource: "horizontalpodautoscalers",
+		}: "HorizontalPodAutoscalerList",
 	}
 	fc := fakedyn.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), gvrToListKind)
 	kc := DynamicClientInstance{

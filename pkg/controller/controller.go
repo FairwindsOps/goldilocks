@@ -21,12 +21,14 @@ import (
 
 	"k8s.io/klog/v2"
 
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	rt "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
+	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
@@ -117,6 +119,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 func NewController(stop <-chan bool) {
 	klog.Info("Starting controller.")
 	kubeClient := kube.GetInstance()
+	vpaClient := kube.GetVPAInstance()
 
 	klog.Infof("Creating watcher for Pods.")
 	PodInformer := cache.NewSharedIndexInformer(
@@ -158,11 +161,50 @@ func NewController(stop <-chan bool) {
 	defer close(nsTerm)
 	go NSWatcher.Watch(nsTerm)
 
+	klog.Infof("Creating watcher for VPA.")
+	VPAInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return vpaClient.Client.AutoscalingV1().VerticalPodAutoscalers("").List(context.TODO(), metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return vpaClient.Client.AutoscalingV1().VerticalPodAutoscalers("").Watch(context.TODO(), metav1.ListOptions{})
+			},
+		},
+		&vpav1.VerticalPodAutoscaler{},
+		0,
+		cache.Indexers{},
+	)
+
+	VPAWatcher := createController(kubeClient.Client, VPAInformer, "vpa")
+	vpaTerm := make(chan struct{})
+	defer close(vpaTerm)
+	go VPAWatcher.Watch(vpaTerm)
+
+	klog.Infof("Creating watcher for HPA.")
+	HPAInformer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+				return kubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers("").List(context.TODO(), metav1.ListOptions{})
+			},
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return kubeClient.Client.AutoscalingV2().HorizontalPodAutoscalers("").Watch(context.TODO(), metav1.ListOptions{})
+			},
+		},
+		&autoscalingv2.HorizontalPodAutoscaler{},
+		0,
+		cache.Indexers{},
+	)
+
+	HPAWatcher := createController(kubeClient.Client, HPAInformer, "hpa")
+	hpaTerm := make(chan struct{})
+	defer close(hpaTerm)
+	go HPAWatcher.Watch(hpaTerm)
+
 	if <-stop {
 		klog.Info("Shutting down controller.")
 		return
 	}
-
 }
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {

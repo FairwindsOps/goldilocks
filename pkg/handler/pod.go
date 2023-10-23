@@ -15,14 +15,13 @@
 package handler
 
 import (
-	"strings"
-
 	"github.com/davecgh/go-spew/spew"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
+
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 	"github.com/fairwindsops/goldilocks/pkg/vpa"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/klog/v2"
 )
 
 func OnPodChanged(pod *corev1.Pod, event utils.Event) {
@@ -34,20 +33,10 @@ func OnPodChanged(pod *corev1.Pod, event utils.Event) {
 		klog.V(5).Info(spew.Sdump(event))
 		return
 	}
-	switch strings.ToLower(event.EventType) {
-	case "delete":
-		klog.V(3).Infof("Pod %s deleted. Deleting the VPA for it if it had one.", pod.ObjectMeta.Name)
-		err := vpa.GetInstance().ReconcileNamespace(namespace)
-		if err != nil {
-			klog.Errorf("Error reconciling: %v", err)
-		}
-	case "create", "update":
-		klog.V(3).Infof("Pod %s updated. Reconcile", pod.ObjectMeta.Name)
-		err := vpa.GetInstance().ReconcileNamespace(namespace)
-		if err != nil {
-			klog.Errorf("Error reconciling: %v", err)
-		}
-	default:
-		klog.V(3).Infof("Update type %s is not valid, skipping.", event.EventType)
+
+	klog.V(3).Infof("Pod %s/%s changed with %q. Reconciling namespace.", pod.Namespace, pod.Name, event.EventType)
+	err = vpa.GetInstance().ReconcileNamespace(namespace)
+	if err != nil {
+		klog.Errorf("Error reconciling: %v", err)
 	}
 }
