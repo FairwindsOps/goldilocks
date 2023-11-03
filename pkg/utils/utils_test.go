@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -83,7 +83,7 @@ var testDifferenceCases = []struct {
 
 func TestFormatResourceList(t *testing.T) {
 	for _, tc := range testFormatResourceCases {
-		res := FormatResourceList(tc.testData)
+		res := FormatResourceList(tc.testData, tc.useMemoryBinarySI)
 		resource := res[tc.resourceType]
 		got := resource.String()
 		assert.Equal(t, tc.expected, got)
@@ -91,10 +91,11 @@ func TestFormatResourceList(t *testing.T) {
 }
 
 var testFormatResourceCases = []struct {
-	description  string
-	testData     v1.ResourceList
-	resourceType v1.ResourceName
-	expected     string
+	description       string
+	testData          v1.ResourceList
+	resourceType      v1.ResourceName
+	useMemoryBinarySI bool
+	expected          string
 }{
 	{
 		description: "Unmodified cpu",
@@ -117,7 +118,17 @@ var testFormatResourceCases = []struct {
 		testData: v1.ResourceList{
 			"memory": resource.MustParse("123456k"),
 		},
-		resourceType: "memory",
-		expected:     "124M",
+		resourceType:      "memory",
+		useMemoryBinarySI: false,
+		expected:          "124M",
+	},
+	{
+		description: "Memory in too large of units",
+		testData: v1.ResourceList{
+			"memory": resource.MustParse("123456k"),
+		},
+		resourceType:      "memory",
+		useMemoryBinarySI: true,
+		expected:          "119Mi",
 	},
 }

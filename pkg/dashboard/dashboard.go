@@ -120,6 +120,7 @@ func getVPAData(opts Options, namespace, costPerCPU, costPerGB string) (summary.
 		summary.ForNamespace(namespace),
 		summary.ForVPAsWithLabels(filterLabels),
 		summary.ExcludeContainers(opts.ExcludedContainers),
+		summary.UseMemoryBinarySI(opts.UseMemoryBinarySI),
 	)
 
 	vpaData, err := summarizer.GetSummary()
@@ -149,6 +150,7 @@ func getVPAData(opts Options, namespace, costPerCPU, costPerGB string) (summary.
 			}
 		}
 	}
+
 	return vpaData, nil
 }
 

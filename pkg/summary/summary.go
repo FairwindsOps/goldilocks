@@ -212,12 +212,12 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				if c.Name == containerRecommendation.ContainerName {
 					cSummary = ContainerSummary{
 						ContainerName:  containerRecommendation.ContainerName,
-						UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound),
-						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
-						Target:         utils.FormatResourceList(containerRecommendation.Target),
-						UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget),
-						Limits:         utils.FormatResourceList(c.Resources.Limits),
-						Requests:       utils.FormatResourceList(c.Resources.Requests),
+						UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound, s.useMemoryBinarySI),
+						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound, s.useMemoryBinarySI),
+						Target:         utils.FormatResourceList(containerRecommendation.Target, s.useMemoryBinarySI),
+						UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget, s.useMemoryBinarySI),
+						Limits:         utils.FormatResourceList(c.Resources.Limits, s.useMemoryBinarySI),
+						Requests:       utils.FormatResourceList(c.Resources.Requests, s.useMemoryBinarySI),
 					}
 					klog.V(6).Infof("Resources for %s/%s/%s: Requests: %v Limits: %v", wSummary.ControllerType, wSummary.ControllerName, c.Name, cSummary.Requests, cSummary.Limits)
 					wSummary.Containers[cSummary.ContainerName] = cSummary

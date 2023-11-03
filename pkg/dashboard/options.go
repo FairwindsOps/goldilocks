@@ -18,6 +18,7 @@ type Options struct {
 	ShowAllVPAs        bool
 	InsightsHost       string
 	EnableCost         bool
+	UseMemoryBinarySI  bool
 }
 
 // default options for the dashboard
@@ -30,6 +31,7 @@ func defaultOptions() *Options {
 		OnByDefault:        false,
 		ShowAllVPAs:        false,
 		EnableCost:         true,
+		UseMemoryBinarySI:  false,
 	}
 }
 
@@ -82,5 +84,11 @@ func InsightsHost(insightsHost string) Option {
 func EnableCost(enableCost bool) Option {
 	return func(opts *Options) {
 		opts.EnableCost = enableCost
+	}
+}
+
+func UseMemoryBinarySI(useMemoryBinarySI bool) Option {
+	return func(opts *Options) {
+		opts.UseMemoryBinarySI = useMemoryBinarySI
 	}
 }

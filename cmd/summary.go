@@ -30,12 +30,14 @@ import (
 var excludeContainers string
 var outputFile string
 var namespace string
+var summaryUseMemoryBinarySI bool
 
 func init() {
 	rootCmd.AddCommand(summaryCmd)
 	summaryCmd.PersistentFlags().StringVarP(&excludeContainers, "exclude-containers", "e", "", "Comma delimited list of containers to exclude from recommendations.")
 	summaryCmd.PersistentFlags().StringVarP(&outputFile, "output-file", "f", "", "File to write output from audit.")
 	summaryCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "", "Limit the summary to only a single Namespace.")
+	summaryCmd.PersistentFlags().BoolVarP(&summaryUseMemoryBinarySI, "binary-si", "b", false, "Use binary SI units for memory (base 2) instead of decimal SI units (base 10).")
 }
 
 var summaryCmd = &cobra.Command{
@@ -56,6 +58,9 @@ By default the summary will be about all VPAs in all namespaces.`,
 		if excludeContainers != "" {
 			opts = append(opts, summary.ExcludeContainers(sets.New[string](strings.Split(excludeContainers, ",")...)))
 		}
+
+		// use binary SI units for memory
+		summary.UseMemoryBinarySI(summaryUseMemoryBinarySI)
 
 		summarizer := summary.NewSummarizer(opts...)
 		data, err := summarizer.GetSummary()

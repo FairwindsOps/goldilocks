@@ -27,11 +27,12 @@ import (
 )
 
 var (
-	serverPort   int
-	showAllVPAs  bool
-	basePath     string
-	insightsHost string
-	enableCost   bool
+	serverPort        int
+	showAllVPAs       bool
+	basePath          string
+	insightsHost      string
+	enableCost        bool
+	useMemoryBinarySI bool
 )
 
 func init() {
@@ -43,6 +44,7 @@ func init() {
 	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served.")
 	dashboardCmd.PersistentFlags().BoolVar(&enableCost, "enable-cost", true, "If set to false, the cost integration will be disabled on the dashboard.")
 	dashboardCmd.PersistentFlags().StringVar(&insightsHost, "insights-host", "https://insights.fairwinds.com", "Insights host for retrieving optional cost data.")
+	dashboardCmd.PersistentFlags().BoolVar(&useMemoryBinarySI, "binary-si", false, "Use binary SI units for memory (base 2) instead of decimal SI units (base 10).")
 }
 
 var dashboardCmd = &cobra.Command{
@@ -59,6 +61,7 @@ var dashboardCmd = &cobra.Command{
 			dashboard.ShowAllVPAs(showAllVPAs),
 			dashboard.InsightsHost(insightsHost),
 			dashboard.EnableCost(enableCost),
+			dashboard.UseMemoryBinarySI(useMemoryBinarySI),
 		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v", serverPort, validBasePath)

@@ -17,6 +17,7 @@ type options struct {
 	namespace             string
 	vpaLabels             map[string]string
 	excludedContainers    sets.Set[string]
+	useMemoryBinarySI     bool
 }
 
 // defaultOptions for a Summarizer
@@ -50,5 +51,12 @@ func ExcludeContainers(excludedContainers sets.Set[string]) Option {
 func ForVPAsWithLabels(vpaLabels map[string]string) Option {
 	return func(opts *options) {
 		opts.vpaLabels = vpaLabels
+	}
+}
+
+// UseMemoryBinarySI is an Option for using binary SI units for memory (base 2) instead of decimal SI units (base 10)
+func UseMemoryBinarySI(useMemoryBinarySI bool) Option {
+	return func(opts *options) {
+		opts.useMemoryBinarySI = useMemoryBinarySI
 	}
 }

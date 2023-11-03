@@ -77,9 +77,37 @@ func Difference(a, b []string) (diff []string) {
 	return
 }
 
+const (
+	Kibibyte = 1024
+	Mebibyte = Kibibyte * 1024
+	Gibibyte = Mebibyte * 1024
+	Tebibyte = Gibibyte * 1024
+)
+
+func FormatToBinarySI(actual resource.Quantity, scale resource.Scale) resource.Quantity {
+	var scaleValue int64
+	switch scale {
+	case resource.Kilo:
+		scaleValue = Kibibyte
+	case resource.Mega:
+		scaleValue = Mebibyte
+	case resource.Giga:
+		scaleValue = Gibibyte
+	case resource.Tera:
+		scaleValue = Tebibyte
+	default:
+		scaleValue = Mebibyte
+	}
+	value := actual.Value() / scaleValue
+	if actual.Value()%scaleValue != 0 {
+		value++
+	}
+	return *resource.NewQuantity(value*scaleValue, resource.BinarySI)
+}
+
 // FormatResourceList scales the units of a ResourceList so that they are
 // human readable
-func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
+func FormatResourceList(rl v1.ResourceList, useBinarySI bool) v1.ResourceList {
 	memoryScales := []resource.Scale{
 		resource.Kilo,
 		resource.Mega,
@@ -87,11 +115,18 @@ func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
 		resource.Tera,
 	}
 	if mem, exists := rl[v1.ResourceMemory]; exists {
-		i := 0
-		maxAllowableStringLen := 5
-		for len(mem.String()) > maxAllowableStringLen && i < len(memoryScales)-1 {
+		maxLength := 5
+		if len(mem.String()) <= maxLength {
+			return rl
+		}
+		for i := 0; i < len(memoryScales); i++ {
 			mem.RoundUp(memoryScales[i])
-			i++
+			if len(mem.String()) <= maxLength {
+				if useBinarySI {
+					mem = FormatToBinarySI(mem, memoryScales[i])
+				}
+				break
+			}
 		}
 		rl[v1.ResourceMemory] = mem
 	}
