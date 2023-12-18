@@ -13,3 +13,4 @@ hack/kind/autoscaler
 __debug_bin
 node_modules
 /dist
+docs/README.md
