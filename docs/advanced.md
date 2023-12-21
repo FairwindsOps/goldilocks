@@ -113,7 +113,7 @@ spec:
       mode: "Off"
 ```
 
-The `resourcePolicy` section can be defined by using the following annotation on a namespace `goldilocks.fairwinds.com/vpa-update-mode=vpa-resource-policy=<json formatted section>`
+The `resourcePolicy` section can be defined by using the following annotation on a namespace `goldilocks.fairwinds.com/vpa-resource-policy=<json formatted section>`
 
 Example of an annotation
 
