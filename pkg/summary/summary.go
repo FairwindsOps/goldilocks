@@ -202,7 +202,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				kubeClient := kube.GetInstance()
 
 				workloadPodSpecUnstructuredMetadata, _, _ := unstructured.NestedMap(workload.TopController.UnstructuredContent(), "metadata")
-				workloadPodSpecUnstructured, workloadPodSpecFound, _ = unstructured.NestedMap(workload.TopController.UnstructuredContent(), "spec", "workloadRef")
+				workloadPodSpecUnstructured, _, _ = unstructured.NestedMap(workload.TopController.UnstructuredContent(), "spec", "workloadRef")
 
 				namespace := workloadPodSpecUnstructuredMetadata["namespace"].(string)
 				deployment, err := kube.GetDeployment(kubeClient.Client.AppsV1(), namespace, workloadPodSpecUnstructured["name"].(string))
