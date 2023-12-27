@@ -28,6 +28,7 @@ import (
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
 
+	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
@@ -195,6 +196,31 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				klog.Errorf("unable to parse spec.template.spec from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
 				continue CONTAINER_REC_LOOP
 			}
+
+			// On argoRollout controller you can referance Deployment
+			if workload.TopController.GetKind() == "Rollout" {
+				kubeClient := kube.GetInstance()
+
+				workloadPodSpecUnstructuredMetadata, _, _ := unstructured.NestedMap(workload.TopController.UnstructuredContent(), "metadata")
+				workloadPodSpecUnstructured, workloadPodSpecFound, _ = unstructured.NestedMap(workload.TopController.UnstructuredContent(), "spec", "workloadRef")
+
+				namespace := workloadPodSpecUnstructuredMetadata["namespace"].(string)
+				deployment, err := kube.GetDeployment(kubeClient.Client.AppsV1(), namespace, workloadPodSpecUnstructured["name"].(string))
+				if err != nil {
+					klog.Errorf("Error getting Deployment: %v\n", err)
+				}
+
+				unstructuredDeployment, err := runtime.DefaultUnstructuredConverter.ToUnstructured(deployment)
+				if err != nil {
+					klog.Errorf("unable to convert Deployment to Unstructured: %v", err)
+				}
+
+				workloadPodSpecUnstructured, workloadPodSpecFound, err = unstructured.NestedMap(unstructuredDeployment, "spec", "template", "spec")
+				if err != nil {
+					klog.Errorf("unable to parse spec.template.spec from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+				}
+			}
+
 			if !workloadPodSpecFound {
 				klog.Errorf("no spec.template.spec field from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
 				continue CONTAINER_REC_LOOP

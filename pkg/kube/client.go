@@ -28,10 +28,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
+	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	autoscalingv1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	appsv1clientset "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 // ClientInstance is a wrapper around the kubernetes interface for testing purposes
@@ -186,4 +188,15 @@ func GetNamespace(kubeClient *ClientInstance, nsName string) (*corev1.Namespace,
 		return nil, err
 	}
 	return namespace, nil
+}
+
+// GetDeployment returns a deployment object when given a name and namespace
+func GetDeployment(client appsv1clientset.AppsV1Interface, namespace, deploymentName string) (*v1.Deployment, error) {
+	deployment, err := client.Deployments(namespace).Get(context.TODO(), deploymentName, metav1.GetOptions{})
+	if err != nil {
+		klog.Errorf("failed to get Deployment: %v", err)
+		return nil, err
+	}
+
+	return deployment, nil
 }
