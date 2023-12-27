@@ -198,7 +198,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			}
 
 			// On argoRollout controller you can referance Deployment
-			if workload.TopController.GetKind() == "Rollout" {
+			if workload.TopController.GetKind() == "Rollout" && !workloadPodSpecFound {
 				kubeClient := kube.GetInstance()
 
 				workloadPodSpecUnstructuredMetadata, _, _ := unstructured.NestedMap(workload.TopController.UnstructuredContent(), "metadata")
