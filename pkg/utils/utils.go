@@ -88,7 +88,7 @@ func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
 	}
 	if mem, exists := rl[v1.ResourceMemory]; exists {
 		i := 0
-		maxAllowableStringLen := 5
+		maxAllowableStringLen := 6
 		for len(mem.String()) > maxAllowableStringLen && i < len(memoryScales)-1 {
 			mem.RoundUp(memoryScales[i])
 			i++
