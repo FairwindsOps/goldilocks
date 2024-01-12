@@ -32,6 +32,7 @@ var (
 	basePath     string
 	insightsHost string
 	enableCost   bool
+	enableCPULimitRecommendation  bool
 )
 
 func init() {
@@ -42,6 +43,7 @@ func init() {
 	dashboardCmd.PersistentFlags().BoolVar(&showAllVPAs, "show-all", false, "Display every VPA, even if it isn't managed by Goldilocks")
 	dashboardCmd.PersistentFlags().StringVar(&basePath, "base-path", "/", "Path on which the dashboard is served.")
 	dashboardCmd.PersistentFlags().BoolVar(&enableCost, "enable-cost", true, "If set to false, the cost integration will be disabled on the dashboard.")
+	dashboardCmd.PersistentFlags().BoolVar(&enableCPULimitRecommendation, "enable-cpu-limit-recommendation", true, "If set to false, the dashboard will not display cpu limit recommendations")
 	dashboardCmd.PersistentFlags().StringVar(&insightsHost, "insights-host", "https://insights.fairwinds.com", "Insights host for retrieving optional cost data.")
 }
 
@@ -59,6 +61,7 @@ var dashboardCmd = &cobra.Command{
 			dashboard.ShowAllVPAs(showAllVPAs),
 			dashboard.InsightsHost(insightsHost),
 			dashboard.EnableCost(enableCost),
+			dashboard.EnableCPULimitRecommendation(enableCPULimitRecommendation),
 		)
 		http.Handle("/", router)
 		klog.Infof("Starting goldilocks dashboard server on port %d and basePath %v", serverPort, validBasePath)

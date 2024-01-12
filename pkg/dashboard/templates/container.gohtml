@@ -57,7 +57,7 @@
         </td>
         <td>{{ printResource $cpuTarget }}</td>
       </tr>
-
+      {{ if opts.EnableCPULimitRecommendation }}
       <tr>
         <th scope="row">CPU Limit</th>
         <td>{{ printResource $cpuLimit}}</td>
@@ -70,6 +70,7 @@
         </td>
         <td>{{ printResource $cpuTarget }}</td>
       </tr>
+      {{end}}
 
       <tr>
         <th scope="row">Memory Request</th>
@@ -99,6 +100,7 @@
     </tbody>
   </table>
 
+  {{if opts.EnableCPULimitRecommendation}}
   <details>
     <summary>YAML for Recommended Settings</summary>
 
@@ -110,6 +112,18 @@
     cpu: {{ printResource $cpuTarget}}
     memory: {{ printResource $memTarget }}</code></pre>
   </details>
+  {{else}}
+    <details>
+      <summary>YAML for Recommended Settings</summary>
+
+      <pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuTarget }}
+    memory: {{ printResource $memTarget }}
+  limits:
+    memory: {{ printResource $memTarget }}</code></pre>
+    </details>
+  {{end}}
 </section>
 
 <section class="detailInfo --qos verticalRhythm">
@@ -151,7 +165,7 @@
         </td>
         <td>{{ printResource $cpuLowerBound }}</td>
       </tr>
-
+      {{if opts.EnableCPULimitRecommendation}}
       <tr>
         <th scope="row">CPU Limit</th>
         <td>{{ printResource $cpuLimit}}</td>
@@ -164,6 +178,7 @@
         </td>
         <td>{{ printResource $cpuUpperBound }}</td>
       </tr>
+      {{end}}
 
       <tr>
         <th scope="row">Memory Request</th>
@@ -193,6 +208,7 @@
     </tbody>
   </table>
 
+  {{if opts.EnableCPULimitRecommendation}}
   <details>
     <summary>YAML for Recommended Settings</summary>
 
@@ -204,5 +220,18 @@
     cpu: {{ printResource $cpuUpperBound}}
     memory: {{ printResource $memUpperBound }}</code></pre>
   </details>
+  {{ else }}
+  <details>
+    <summary>YAML for Recommended Settings</summary>
+
+    <pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuLowerBound }}
+    memory: {{ printResource $memLowerBound }}
+  limits:
+    memory: {{ printResource $memUpperBound }}</code></pre>
+  </details>
+  {{ end }}
 </section>
+{{ end }}
 {{ end }}

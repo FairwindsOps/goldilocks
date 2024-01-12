@@ -18,6 +18,7 @@ type Options struct {
 	ShowAllVPAs        bool
 	InsightsHost       string
 	EnableCost         bool
+	EnableCPULimitRecommendation bool
 }
 
 // default options for the dashboard
@@ -82,5 +83,10 @@ func InsightsHost(insightsHost string) Option {
 func EnableCost(enableCost bool) Option {
 	return func(opts *Options) {
 		opts.EnableCost = enableCost
+	}
+}
+func EnableCPULimitRecommendation(enableCPULimitRecommendation bool) Option {
+	return func(opts *Options) {
+		opts.EnableCPULimitRecommendation = enableCPULimitRecommendation
 	}
 }
