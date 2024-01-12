@@ -20,7 +20,7 @@
 
 <section class="detailInfo --qos verticalRhythm">
   <div class="layoutCluster --start">
-    <h5>Guaranteed QoS</h5>
+    <h5>Recommendations</h5>
 
     {{ if opts.EnableCost }}
     {{ if lt $.GuaranteedCostInt 0 }}
@@ -33,7 +33,7 @@
 
   <table class="compTable callout">
     <caption class="visually-hidden">
-      Compare Current Config to Guaranteed QoS Recommendations
+      Compare Current Config to Recommended settings
     </caption>
 
     <thead>
@@ -41,12 +41,13 @@
         <td></td>
         <th scope="col">Current</th>
         <td></td>
-        <th scope="col">Guaranteed</th>
+        <th scope="col">Recommended</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <th scope="row">CPU Request</th>
+
         <td>{{ printResource $cpuRequest}}</td>
         <td>
           <i
@@ -126,6 +127,7 @@
   {{end}}
 </section>
 
+{{ if opts.EnableBurstableRecommendation }}
 <section class="detailInfo --qos verticalRhythm">
   <div class="layoutCluster --start">
     <h5>Burstable QoS</h5>
