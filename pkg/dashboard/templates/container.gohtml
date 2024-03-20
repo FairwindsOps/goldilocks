@@ -20,7 +20,7 @@
 
 <section class="detailInfo --qos verticalRhythm">
   <div class="layoutCluster --start">
-    <h5>Guaranteed QoS</h5>
+    <h5>Recommendations</h5>
 
     {{ if opts.EnableCost }}
     {{ if lt $.GuaranteedCostInt 0 }}
@@ -33,7 +33,7 @@
 
   <table class="compTable callout">
     <caption class="visually-hidden">
-      Compare Current Config to Guaranteed QoS Recommendations
+      Compare Current Config to Recommended settings
     </caption>
 
     <thead>
@@ -41,12 +41,13 @@
         <td></td>
         <th scope="col">Current</th>
         <td></td>
-        <th scope="col">Guaranteed</th>
+        <th scope="col">Recommended</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <th scope="row">CPU Request</th>
+
         <td>{{ printResource $cpuRequest}}</td>
         <td>
           <i
@@ -57,7 +58,7 @@
         </td>
         <td>{{ printResource $cpuTarget }}</td>
       </tr>
-
+      {{ if opts.EnableCPULimitRecommendation }}
       <tr>
         <th scope="row">CPU Limit</th>
         <td>{{ printResource $cpuLimit}}</td>
@@ -70,6 +71,7 @@
         </td>
         <td>{{ printResource $cpuTarget }}</td>
       </tr>
+      {{end}}
 
       <tr>
         <th scope="row">Memory Request</th>
@@ -99,6 +101,7 @@
     </tbody>
   </table>
 
+  {{if opts.EnableCPULimitRecommendation}}
   <details>
     <summary>YAML for Recommended Settings</summary>
 
@@ -110,8 +113,21 @@
     cpu: {{ printResource $cpuTarget}}
     memory: {{ printResource $memTarget }}</code></pre>
   </details>
+  {{else}}
+    <details>
+      <summary>YAML for Recommended Settings</summary>
+
+      <pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuTarget }}
+    memory: {{ printResource $memTarget }}
+  limits:
+    memory: {{ printResource $memTarget }}</code></pre>
+    </details>
+  {{end}}
 </section>
 
+{{ if opts.EnableBurstableRecommendation }}
 <section class="detailInfo --qos verticalRhythm">
   <div class="layoutCluster --start">
     <h5>Burstable QoS</h5>
@@ -151,7 +167,7 @@
         </td>
         <td>{{ printResource $cpuLowerBound }}</td>
       </tr>
-
+      {{if opts.EnableCPULimitRecommendation}}
       <tr>
         <th scope="row">CPU Limit</th>
         <td>{{ printResource $cpuLimit}}</td>
@@ -164,6 +180,7 @@
         </td>
         <td>{{ printResource $cpuUpperBound }}</td>
       </tr>
+      {{end}}
 
       <tr>
         <th scope="row">Memory Request</th>
@@ -193,6 +210,7 @@
     </tbody>
   </table>
 
+  {{if opts.EnableCPULimitRecommendation}}
   <details>
     <summary>YAML for Recommended Settings</summary>
 
@@ -204,5 +222,18 @@
     cpu: {{ printResource $cpuUpperBound}}
     memory: {{ printResource $memUpperBound }}</code></pre>
   </details>
+  {{ else }}
+  <details>
+    <summary>YAML for Recommended Settings</summary>
+
+    <pre class="fix-yaml"><code class="language-yaml">resources:
+  requests:
+    cpu: {{ printResource $cpuLowerBound }}
+    memory: {{ printResource $memLowerBound }}
+  limits:
+    memory: {{ printResource $memUpperBound }}</code></pre>
+  </details>
+  {{ end }}
 </section>
+{{ end }}
 {{ end }}

@@ -120,4 +120,12 @@ var testFormatResourceCases = []struct {
 		resourceType: "memory",
 		expected:     "124M",
 	},
+	{
+		description: "Memory expressed as more than 6 digits (eg 1100Mi) should be persisted and not rounded up",
+		testData: v1.ResourceList{
+			"memory": resource.MustParse("1100Mi"),
+		},
+		resourceType: "memory",
+		expected:     "1100Mi",
+	},
 }
