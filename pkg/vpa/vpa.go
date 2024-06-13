@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/client-go/util/retry"
 	"k8s.io/klog/v2/klogr"
+	"github.com/samber/lo"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -167,7 +168,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
 		// Check if the controller kind is in the ignore list
-		if contains(ignoreControllerKind, controller.Kind) {
+		if lo.Contains(ignoreControllerKind, controller.Kind) {
 			continue
 		}
 
@@ -206,16 +207,6 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	}
 
 	return nil
-}
-
-// Helper function to check if a string is in a slice, used for checking if a controller kind is in the ignore list
-func contains(slice []string, item string) bool {
-	for _, a := range slice {
-		if a == item {
-			return true
-		}
-	}
-	return false
 }
 
 func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {
