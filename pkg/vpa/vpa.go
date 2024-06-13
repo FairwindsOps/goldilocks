@@ -51,6 +51,7 @@ type Reconciler struct {
 	DryRun                bool
 	IncludeNamespaces     []string
 	ExcludeNamespaces     []string
+	ignoreControllerKind  []string
 }
 
 type Controller struct {
@@ -110,7 +111,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return err
 	}
 
-	return r.reconcileControllersAndVPAs(namespace, vpas, controllers)
+	return r.reconcileControllersAndVPAs(namespace, vpas, controllers, r.ignoreControllerKind)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
@@ -157,7 +158,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
+func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller, ignoreControllerKind []string) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
 	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
@@ -165,6 +166,11 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
+		// Check if the controller kind is in the ignore list
+		if contains(ignoreControllerKind, controller.Kind) {
+			continue
+		}
+
 		var cvpa *vpav1.VerticalPodAutoscaler
 		// search for the matching vpa (will have the same name)
 		for idx, vpa := range vpas {
@@ -200,6 +206,16 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	}
 
 	return nil
+}
+
+// Helper function to check if a string is in a slice, used for checking if a controller kind is in the ignore list
+func contains(slice []string, item string) bool {
+	for _, a := range slice {
+		if a == item {
+			return true
+		}
+	}
+	return false
 }
 
 func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {

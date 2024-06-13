@@ -28,6 +28,7 @@ import (
 
 var onByDefault bool
 var includeNamespaces []string
+var ignoreControllerKind []string
 var excludeNamespaces []string
 var dryRun bool
 
@@ -37,6 +38,7 @@ func init() {
 	controllerCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "If true, don't mutate resources, just list what would have been created.")
 	controllerCmd.PersistentFlags().StringSliceVar(&includeNamespaces, "include-namespaces", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&excludeNamespaces, "exclude-namespaces", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
+	controllerCmd.PersistentFlags().StringSliceVar(&ignoreControllerKind, "ignore-controller-kind", []string{}, "Comma delimited list of controller kinds to ignore from automatic VPA creation.")
 }
 
 var controllerCmd = &cobra.Command{
