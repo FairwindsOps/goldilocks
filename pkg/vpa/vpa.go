@@ -159,7 +159,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller, ignoreControllerKind []string) error {
+func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
 	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
