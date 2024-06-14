@@ -52,7 +52,7 @@ type Reconciler struct {
 	DryRun                bool
 	IncludeNamespaces     []string
 	ExcludeNamespaces     []string
-	ignoreControllerKind  []string
+	IgnoreControllerKind  []string
 }
 
 type Controller struct {
