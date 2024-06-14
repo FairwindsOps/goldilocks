@@ -112,7 +112,7 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 		return err
 	}
 
-	return r.reconcileControllersAndVPAs(namespace, vpas, controllers, r.ignoreControllerKind)
+	return r.reconcileControllersAndVPAs(namespace, vpas, controllers)
 }
 
 func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
