@@ -168,7 +168,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
 		// Check if the controller kind is in the ignore list
-		if lo.Contains(ignoreControllerKind, controller.Kind) {
+		if lo.Contains(r.IgnoreControllerKind, controller.Kind) {
 			continue
 		}
 
