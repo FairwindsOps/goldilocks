@@ -17,6 +17,7 @@ package dashboard
 import (
 	"net/http"
 	"path"
+	"strings"
 
 	"k8s.io/klog/v2"
 
@@ -50,7 +51,7 @@ func GetRouter(setters ...Option) *mux.Router {
 		setter(opts)
 	}
 
-	router := mux.NewRouter().PathPrefix(opts.BasePath).Subrouter()
+	router := mux.NewRouter().PathPrefix(strings.TrimSuffix(opts.BasePath, "/")).Subrouter().StrictSlash(true)
 
 	// health
 	router.Handle("/health", Health("OK"))
