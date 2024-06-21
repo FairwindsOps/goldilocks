@@ -29,8 +29,6 @@ var (
 	markdownBox = (*packr.Box)(nil)
 )
 
-var opts *Options
-
 // GetMarkdownBox returns a binary-friendly set of markdown files with error details
 func GetMarkdownBox() *packr.Box {
 	if markdownBox == (*packr.Box)(nil) {
@@ -48,12 +46,12 @@ func GetAssetBox() *packr.Box {
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(setters ...Option) *mux.Router {
-	opts = defaultOptions()
+	opts := defaultOptions()
 	for _, setter := range setters {
 		setter(opts)
 	}
 
-	router := mux.NewRouter().PathPrefix(strings.TrimSuffix(opts.BasePath, "/")).Subrouter()
+	router := mux.NewRouter().PathPrefix(strings.TrimSuffix(opts.BasePath, "/")).Subrouter().StrictSlash(true)
 
 	// health
 	router.Handle("/health", Health("OK"))
@@ -72,23 +70,20 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.Handle("/namespaces", NamespaceList(*opts))
 
 	// root
-	router.HandleFunc("", rootHandler)
-	router.HandleFunc("/", rootHandler)
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// catch all other paths that weren't matched
+		if r.URL.Path != "/" && r.URL.Path != opts.BasePath && r.URL.Path != opts.BasePath+"/" {
+			klog.Infof("404: %s", r.URL.Path)
+			http.NotFound(w, r)
+			return
+			}
+
+		klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
+		// default redirect on root path
+		http.Redirect(w, r, path.Join(opts.BasePath, "/namespaces"), http.StatusMovedPermanently)
+	})
 
 	// api
 	router.Handle("/api/{namespace:[a-zA-Z0-9-]+}", API(*opts))
 	return router
-}
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	// catch all other paths that weren't matched
-	if r.URL.Path != opts.BasePath && r.URL.Path != strings.TrimSuffix(opts.BasePath, "/") {
-		klog.Infof("404: %s", r.URL.Path)
-		http.NotFound(w, r)
-		return
-	}
-
-	klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
-	// default redirect on root path
-	http.Redirect(w, r, path.Join(opts.BasePath, "/namespaces"), http.StatusMovedPermanently)
 }
