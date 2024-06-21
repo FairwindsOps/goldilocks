@@ -17,6 +17,7 @@ package dashboard
 import (
 	"net/http"
 	"path"
+	"strings"
 
 	"k8s.io/klog/v2"
 
@@ -27,6 +28,8 @@ import (
 var (
 	markdownBox = (*packr.Box)(nil)
 )
+
+var opts *Options
 
 // GetMarkdownBox returns a binary-friendly set of markdown files with error details
 func GetMarkdownBox() *packr.Box {
@@ -45,12 +48,13 @@ func GetAssetBox() *packr.Box {
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(setters ...Option) *mux.Router {
-	opts := defaultOptions()
+	opts = defaultOptions()
 	for _, setter := range setters {
 		setter(opts)
 	}
 
-	router := mux.NewRouter().PathPrefix(opts.BasePath).Subrouter().StrictSlash(false)
+	router := mux.NewRouter().PathPrefix(strings.TrimSuffix(opts.BasePath, "/")).Subrouter()
+
 	// health
 	router.Handle("/health", Health("OK"))
 	router.Handle("/healthz", Healthz())
@@ -68,20 +72,23 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.Handle("/namespaces", NamespaceList(*opts))
 
 	// root
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// catch all other paths that weren't matched
-		if r.URL.Path != "/" && r.URL.Path != opts.BasePath && r.URL.Path != opts.BasePath+"/" {
-			klog.Infof("404: %s", r.URL.Path)
-			http.NotFound(w, r)
-			return
-		}
-
-		klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
-		// default redirect on root path
-		http.Redirect(w, r, path.Join(opts.BasePath, "/namespaces"), http.StatusMovedPermanently)
-	})
+	router.HandleFunc("", rootHandler)
+	router.HandleFunc("/", rootHandler)
 
 	// api
 	router.Handle("/api/{namespace:[a-zA-Z0-9-]+}", API(*opts))
 	return router
+}
+
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	// catch all other paths that weren't matched
+	if r.URL.Path != opts.BasePath && r.URL.Path != strings.TrimSuffix(opts.BasePath, "/") {
+		klog.Infof("404: %s", r.URL.Path)
+		http.NotFound(w, r)
+		return
+	}
+
+	klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
+	// default redirect on root path
+	http.Redirect(w, r, path.Join(opts.BasePath, "/namespaces"), http.StatusMovedPermanently)
 }
