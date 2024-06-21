@@ -75,5 +75,9 @@ func validateBasePath(path string) string {
 		path = "/" + path
 	}
 
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+	}
+
 	return path
 }
