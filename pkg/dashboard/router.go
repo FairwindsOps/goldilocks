@@ -76,7 +76,7 @@ func GetRouter(setters ...Option) *mux.Router {
 			klog.Infof("404: %s", r.URL.Path)
 			http.NotFound(w, r)
 			return
-			}
+		}
 
 		klog.Infof("redirecting to %v", path.Join(opts.BasePath, "/namespaces"))
 		// default redirect on root path
