@@ -50,6 +50,7 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.OnByDefault = onByDefault
 		vpaReconciler.IncludeNamespaces = includeNamespaces
 		vpaReconciler.ExcludeNamespaces = excludeNamespaces
+		vpaReconciler.IgnoreControllerKind = ignoreControllerKind
 
 		klog.V(4).Infof("Starting controller with Reconciler: %+v", vpaReconciler)
 
