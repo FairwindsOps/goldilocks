@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/fairwindsops/controller-utils v0.3.2
+	github.com/fairwindsops/controller-utils v0.3.3
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v1.8.0
@@ -52,7 +52,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/oauth2 v0.12.0 // indirect
+	golang.org/x/oauth2 v0.13.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
