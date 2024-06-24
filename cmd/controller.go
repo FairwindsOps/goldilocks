@@ -28,6 +28,7 @@ import (
 
 var onByDefault bool
 var includeNamespaces []string
+var ignoreControllerKind []string
 var excludeNamespaces []string
 var dryRun bool
 
@@ -37,6 +38,7 @@ func init() {
 	controllerCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "If true, don't mutate resources, just list what would have been created.")
 	controllerCmd.PersistentFlags().StringSliceVar(&includeNamespaces, "include-namespaces", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&excludeNamespaces, "exclude-namespaces", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
+	controllerCmd.PersistentFlags().StringSliceVar(&ignoreControllerKind, "ignore-controller-kind", []string{}, "Comma delimited list of controller kinds to exclude from recommendations.")
 }
 
 var controllerCmd = &cobra.Command{
@@ -48,6 +50,7 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.OnByDefault = onByDefault
 		vpaReconciler.IncludeNamespaces = includeNamespaces
 		vpaReconciler.ExcludeNamespaces = excludeNamespaces
+		vpaReconciler.IgnoreControllerKind = ignoreControllerKind
 
 		klog.V(4).Infof("Starting controller with Reconciler: %+v", vpaReconciler)
 

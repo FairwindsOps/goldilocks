@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/client-go/util/retry"
 	"k8s.io/klog/v2/klogr"
+	"github.com/samber/lo"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -51,6 +52,7 @@ type Reconciler struct {
 	DryRun                bool
 	IncludeNamespaces     []string
 	ExcludeNamespaces     []string
+	IgnoreControllerKind  []string
 }
 
 type Controller struct {
@@ -165,6 +167,11 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
 	vpaHasAssociatedController := map[string]bool{}
 	for _, controller := range controllers {
+		// Check if the controller kind is in the ignore list
+		if lo.Contains(r.IgnoreControllerKind, controller.Kind) {
+			continue
+		}
+
 		var cvpa *vpav1.VerticalPodAutoscaler
 		// search for the matching vpa (will have the same name)
 		for idx, vpa := range vpas {

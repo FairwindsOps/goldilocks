@@ -56,6 +56,7 @@ You can set the default behavior for VPA creation using some flags. When specifi
 * `--on-by-default` - create VPAs in all namespaces
 * `--include-namespaces` - create VPAs in these namespaces, in addition to any that are labeled
 * `--exclude-namespaces` - when `--on-by-default` is set, exclude this comma-separated list of namespaces
+* `--ignore-controller-kind` - comma-separated list of controller kinds to ignore from automatic VPA creation. For example: `--ignore-controller-kind=Job,CronJob`
 
 #### Enable Namespaces
 

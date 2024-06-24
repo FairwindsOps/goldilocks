@@ -48,3 +48,13 @@ testcases:
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual ""
+- name: Ignore Controller Kind
+  steps:
+  - script: |
+      yq w ../../hack/manifests/controller/deployment.yaml -- spec.template.spec.containers[0].command[2] '--ignore-controller-kind=Deployment' | kubectl -n goldilocks apply -f -
+  - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-excluded -oname
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual ""
