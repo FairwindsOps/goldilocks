@@ -164,3 +164,10 @@ Containers can be excluded for individual workloads by applying a label to any o
 Example label:
 
 `kubectl label deployment myapp goldilocks.fairwinds.com/exclude-containers=linkerd-proxy,istio-proxy`
+
+
+## API Usage
+
+Goldilocks has an API endpoint that returns the VPA Summary.
+
+You can access the API at `/api/:namespace`.
