@@ -8,11 +8,21 @@
   </h2>
 
   {{ if not .IsOnlyNamespace }}
-  <a
-    class="detailLink --namespace"
-    href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
-  >Limit results to the {{ $.Namespace }} namespace</a>
+  <div>
+    <a
+      class="detailLink --namespace"
+      href="{{ $.BasePath }}dashboard/{{ $.Namespace }}"
+    >Limit results to the {{ $.Namespace }} namespace</a>
+  </div>
   {{ end }}
+
+  <div>
+    <a
+      class="detailLink --namespace"
+      href="{{ $.BasePath }}api/{{ $.Namespace }}"
+      target="_blank"
+    >Get summary in JSON</a>
+  </div>
 
   <details open>
     <summary>Workloads</summary>
