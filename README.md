@@ -13,6 +13,8 @@
     </a>
 </div>
 
+![Alt](https://repobeats.axiom.co/api/embed/3c642cc7434a78f51085145eb58656f0fb7e6dc1.svg "Repobeats analytics image")
+
 Goldilocks is a utility that can help you identify a starting point for resource requests and limits.
 
 # Documentation
