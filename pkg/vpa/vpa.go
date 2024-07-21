@@ -436,6 +436,8 @@ func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaMinReplicasAnnotation]; ok {
 		minReplicasString = val
+	} else if val, ok := accessor.GetLabels()[utils.VpaMinReplicasAnnotation]; ok {
+		minReplicasString = val
 	}
 
 	if minReplicasString == "" {
