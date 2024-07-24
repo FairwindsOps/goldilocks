@@ -411,6 +411,8 @@ func vpaResourcePolicyForResource(obj runtime.Object) (*vpav1.PodResourcePolicy,
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaResourcePolicyAnnotation]; ok {
 		resourcePolicyStr = val
+	} else if val, ok := accessor.GetLabels()[utils.VpaResourcePolicyAnnotation]; ok {
+		resourcePolicyStr = val
 	}
 
 	if resourcePolicyStr == "" {
