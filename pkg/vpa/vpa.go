@@ -411,6 +411,8 @@ func vpaResourcePolicyForResource(obj runtime.Object) (*vpav1.PodResourcePolicy,
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaResourcePolicyAnnotation]; ok {
 		resourcePolicyStr = val
+	} else if val, ok := accessor.GetLabels()[utils.VpaResourcePolicyAnnotation]; ok {
+		resourcePolicyStr = val
 	}
 
 	if resourcePolicyStr == "" {
@@ -435,6 +437,8 @@ func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
 	minReplicasString := ""
 	accessor, _ := meta.Accessor(obj)
 	if val, ok := accessor.GetAnnotations()[utils.VpaMinReplicasAnnotation]; ok {
+		minReplicasString = val
+	} else if val, ok := accessor.GetLabels()[utils.VpaMinReplicasAnnotation]; ok {
 		minReplicasString = val
 	}
 
