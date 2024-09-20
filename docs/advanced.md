@@ -126,6 +126,11 @@ Example of an annotation
       "memory": "2048Mi" } }, { "containerName": "istio-proxy", "mode": "Off" }
       ] }
 ```
+#### VPA Custom Recommender
+
+If you want a specific namespace to use a custom VPA recommender,
+then you can label the workload with `goldilocks.fairwinds.com/vpa-recommenders=<recommender-name>`
+to add a recommender to the VPA specs for that namespace.
 
 #### Workload Specifications
 
