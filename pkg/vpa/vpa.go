@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/samber/lo"
 	"k8s.io/client-go/util/retry"
+	"github.com/samber/lo"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -237,9 +237,6 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 				Name: recommenderName,
 			},
 		}
-	} else if vpa != nil {
-		// Preserve existing recommenders if any
-		desiredVPA.Spec.Recommenders = vpa.Spec.Recommenders
 	}
 
 	if vpa == nil {
@@ -367,7 +364,6 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 				Name:      "goldilocks-" + controller.Name,
 				Namespace: ns.Name,
 			},
-			Spec: vpav1.VerticalPodAutoscalerSpec{},
 		}
 	} else {
 		// or use the existing VPA as a template to update from
@@ -377,32 +373,24 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	// update the labels on the VPA
 	desiredVPA.Labels = utils.VPALabels
 
-	// Update or set the managed fields in Spec
-	if desiredVPA.Spec.TargetRef == nil {
-		desiredVPA.Spec.TargetRef = &autoscaling.CrossVersionObjectReference{}
-	}
-	desiredVPA.Spec.TargetRef.APIVersion = controller.APIVersion
-	desiredVPA.Spec.TargetRef.Kind = controller.Kind
-	desiredVPA.Spec.TargetRef.Name = controller.Name
-
-	if desiredVPA.Spec.UpdatePolicy == nil {
-		desiredVPA.Spec.UpdatePolicy = &vpav1.PodUpdatePolicy{}
-	}
-	desiredVPA.Spec.UpdatePolicy.UpdateMode = updateMode
-
-	if resourcePolicy != nil {
-		desiredVPA.Spec.ResourcePolicy = resourcePolicy
-	} else if existingVPA != nil {
-		// Preserve existing ResourcePolicy if not overridden
-		desiredVPA.Spec.ResourcePolicy = existingVPA.Spec.ResourcePolicy
+	// update the spec on the VPA
+	desiredVPA.Spec = vpav1.VerticalPodAutoscalerSpec{
+		TargetRef: &autoscaling.CrossVersionObjectReference{
+			APIVersion: controller.APIVersion,
+			Kind:       controller.Kind,
+			Name:       controller.Name,
+		},
+		UpdatePolicy: &vpav1.PodUpdatePolicy{
+			UpdateMode: updateMode,
+		},
+		ResourcePolicy: resourcePolicy,
 	}
 
-	if minReplicas != nil && *minReplicas > 0 {
-		desiredVPA.Spec.UpdatePolicy.MinReplicas = minReplicas
+	if minReplicas != nil {
+		if *minReplicas > 0 {
+			desiredVPA.Spec.UpdatePolicy.MinReplicas = minReplicas
+		}
 	}
-
-	// No change to desiredVPA.Spec.Recommenders
-	// It will be preserved from existingVPA if present
 
 	return desiredVPA
 }
@@ -486,9 +474,12 @@ func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
 }
 
 func vpaRecommenderNameForNamespace(ns *corev1.Namespace) (string, error) {
-	recommenderName, ok := ns.Labels["goldilocks.fairwinds.com/vpa-recommenders"]
-	if !ok || recommenderName == "" {
-		return "", nil
+	recommenderName := ""
+	if val, ok := ns.Labels["goldilocks.fairwinds.com/vpa-recommenders"]; ok {
+		recommenderName = val
+	} else if val, ok := ns.Annotations["goldilocks.fairwinds.com/vpa-recommenders"]; ok {
+		recommenderName = val
 	}
+
 	return recommenderName, nil
 }

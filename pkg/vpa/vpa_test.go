@@ -16,7 +16,6 @@ package vpa
 
 import (
 	"context"
-	autoscaling "k8s.io/api/autoscaling/v1"
 	"strings"
 	"testing"
 
@@ -761,111 +760,4 @@ func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
 	assert.Equal(t, "goldilocks-test-sts", vpaList.Items[0].ObjectMeta.Name)
-}
-
-func Test_ReconcileVPAWithCustomRecommenders(t *testing.T) {
-	setupVPAForTests(t)
-	rec := GetInstance()
-	VPAClient := rec.VPAClient
-	DynamicClient := rec.DynamicClient.Client
-
-	// Use the existing namespace nsLabeledTrue and its unstructured version
-	nsName := nsLabeledTrue.ObjectMeta.Name
-	nsUnstructured := nsLabeledTrueUnstructured
-
-	// Create the namespace in the dynamic client
-	_, err := DynamicClient.Resource(schema.GroupVersionResource{
-		Group:    "",
-		Version:  "v1",
-		Resource: "namespaces",
-	}).Create(context.TODO(), nsUnstructured, metav1.CreateOptions{})
-	assert.NoError(t, err)
-
-	// Create a deployment in the namespace
-	deploymentName := "test-deployment"
-	testDeployment := &unstructured.Unstructured{
-		Object: map[string]interface{}{
-			"apiVersion": "apps/v1",
-			"kind":       "Deployment",
-			"metadata": map[string]interface{}{
-				"name":      deploymentName,
-				"namespace": nsName,
-			},
-			"spec": map[string]interface{}{
-				"replicas": int64(1),
-				"selector": map[string]interface{}{
-					"matchLabels": map[string]interface{}{
-						"app": "test",
-					},
-				},
-				"template": map[string]interface{}{
-					"metadata": map[string]interface{}{
-						"labels": map[string]interface{}{
-							"app": "test",
-						},
-					},
-					"spec": map[string]interface{}{
-						"containers": []interface{}{
-							map[string]interface{}{
-								"name":  "test-container",
-								"image": "nginx",
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	// Create the deployment in the dynamic client
-	_, err = DynamicClient.Resource(schema.GroupVersionResource{
-		Group:    "apps",
-		Version:  "v1",
-		Resource: "deployments",
-	}).Namespace(nsName).Create(context.TODO(), testDeployment, metav1.CreateOptions{})
-	assert.NoError(t, err)
-
-	// Manually create a VPA with a custom Recommenders field
-	customRecommenders := []*vpav1.VerticalPodAutoscalerRecommenderSelector{
-		{
-			Name: "my-custom-recommender",
-		},
-	}
-	vpaName := "goldilocks-" + deploymentName
-	updateModeOff := vpav1.UpdateModeOff
-	initialVPA := &vpav1.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      vpaName,
-			Namespace: nsName,
-			Labels:    utils.VPALabels,
-		},
-		Spec: vpav1.VerticalPodAutoscalerSpec{
-			TargetRef: &autoscaling.CrossVersionObjectReference{
-				APIVersion: "apps/v1",
-				Kind:       "Deployment",
-				Name:       deploymentName,
-			},
-			UpdatePolicy: &vpav1.PodUpdatePolicy{
-				UpdateMode: &updateModeOff,
-			},
-			Recommenders: customRecommenders,
-		},
-	}
-
-	// Create the VPA using the VPA client
-	_, err = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).
-		Create(context.TODO(), initialVPA, metav1.CreateOptions{})
-	assert.NoError(t, err)
-
-	// Run the reconciliation process
-	err = rec.ReconcileNamespace(&nsLabeledTrue)
-	assert.NoError(t, err)
-
-	// Retrieve the VPA after reconciliation
-	reconciledVPA, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).
-		Get(context.TODO(), vpaName, metav1.GetOptions{})
-	assert.NoError(t, err)
-
-	// Assert that the Recommenders field is preserved
-	assert.Equal(t, initialVPA.Spec.Recommenders, reconciledVPA.Spec.Recommenders, "Recommenders field should be preserved after reconciliation")
 }
