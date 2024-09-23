@@ -129,7 +129,7 @@ Example of an annotation
 #### VPA Custom Recommender
 
 If you want a specific namespace to use a custom VPA recommender,
-then you can label the workload with `goldilocks.fairwinds.com/vpa-recommenders=<recommender-name>`
+then you can label or annotate the workload with `goldilocks.fairwinds.com/vpa-recommenders=<recommender-name>`
 to add a recommender to the VPA specs for that namespace.
 
 #### Workload Specifications
