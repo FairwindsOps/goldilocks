@@ -51,7 +51,7 @@ jobs:
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
             tar xzf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint $(go env GOPATH)/bin/golangci-lint
             go mod tidy
-            golangci-lint run -v --timeout 2m0s      
+            golangci-lint run -v --timeout 2m0s
       - run:
           name: Run Tests
           command: make test
