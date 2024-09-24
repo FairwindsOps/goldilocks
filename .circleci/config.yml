@@ -61,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v1.18.2
+      - image: goreleaser/goreleaser:v2.3.2
     steps:
       - checkout
       - setup_remote_docker
@@ -78,7 +78,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v1.18.2
+      - image: goreleaser/goreleaser:v2.3.2
     steps:
       - checkout
       - setup_remote_docker
