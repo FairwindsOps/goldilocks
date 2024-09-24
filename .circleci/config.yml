@@ -44,8 +44,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 1.52.2
-            GOLANGCI_LINT_CHECKSUM: c9cf72d12058a131746edd409ed94ccd578fbd178899d1ed41ceae3ce5f54501
+            GOLANGCI_LINT_VERSION: 1.61.0
+            GOLANGCI_LINT_CHECKSUM: 818fb5dc7c3854245e44faabc04e86184096f00826f73446f090716750a2b739
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
