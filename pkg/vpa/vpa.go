@@ -22,9 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/client-go/util/retry"
-	"k8s.io/klog/v2/klogr"
 	"github.com/samber/lo"
+	"k8s.io/client-go/util/retry"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -40,6 +39,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/klog/v2"
+	"k8s.io/klog/v2/textlogger"
 )
 
 // Reconciler checks if VPA objects should be created or deleted
@@ -63,7 +63,7 @@ type Controller struct {
 }
 
 var singleton *Reconciler
-var controllerUtilsLogr = klogr.New()
+var controllerUtilsLogr = textlogger.NewLogger(textlogger.NewConfig())
 
 // GetInstance returns a Reconciler singleton
 func GetInstance() *Reconciler {
