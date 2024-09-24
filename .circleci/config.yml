@@ -71,7 +71,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: goreleaser --snapshot --skip-sign
+      - run: goreleaser --snapshot --skip=sign
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
