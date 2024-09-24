@@ -40,7 +40,7 @@ import (
 type KubeResourceWatcher struct {
 	kubeClient kubernetes.Interface
 	informer   cache.SharedIndexInformer
-	wq         workqueue.RateLimitingInterface
+	wq         workqueue.TypedRateLimitingInterface[any]
 }
 
 // Watch tells the KubeResourceWatcher to start waiting for events
