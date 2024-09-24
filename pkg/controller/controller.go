@@ -167,7 +167,7 @@ func NewController(stop <-chan bool) {
 
 func createController(kubeClient kubernetes.Interface, informer cache.SharedIndexInformer, resource string) *KubeResourceWatcher {
 	klog.Infof("Creating controller for resource type %s", resource)
-	wq := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
+	wq := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[any](), resource)
 
 	_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
