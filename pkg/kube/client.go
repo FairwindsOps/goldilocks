@@ -167,7 +167,7 @@ func getRESTMapper() meta.RESTMapper {
 	}
 	httpClient, err := rest.HTTPClientFor(kubeConf)
 	if err != nil {
-		klog.Fatal("error creating httpClient using kubeconfig: %s", err.Error())
+		klog.Fatalf("error creating httpClient using kubeconfig: %s", err.Error())
 	}
 
 	restmapper, err := apiutil.NewDynamicRESTMapper(kubeConf, httpClient)
