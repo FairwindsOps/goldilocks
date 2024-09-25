@@ -73,7 +73,7 @@ jobs:
           command: |
             docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - run: echo 'export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"' >> $BASH_ENV
-      - run: goreleaser
+      - run: goreleaser --skip=sign
   snapshot:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
