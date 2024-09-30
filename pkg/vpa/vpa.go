@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"strings"
 
-	"k8s.io/client-go/util/retry"
 	"github.com/samber/lo"
+	"k8s.io/client-go/util/retry"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
