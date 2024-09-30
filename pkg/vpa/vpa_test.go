@@ -310,6 +310,54 @@ func Test_updateVPA(t *testing.T) {
 	assert.Equal(t, updateModeAuto, *currVPA.Spec.UpdatePolicy.UpdateMode)
 }
 
+func Test_updateVPAWithRecommenders(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+
+	// First test the dryrun
+	rec := GetInstance()
+	rec.DryRun = true
+
+	testNS := nsTesting.DeepCopy()
+	testNS.Labels["goldilocks.fairwinds.com/vpa-update-mode"] = "off"
+
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "test-vpa",
+		Unstructured: nil,
+	}
+	updateMode, _ := vpaUpdateModeForResource(testNS)
+	resourcePolicy, _ := vpaResourcePolicyForResource(testNS)
+	minReplicas, _ := vpaMinReplicasForResource(testNS)
+	testVPA := rec.getVPAObject(nil, testNS, controller, updateMode, resourcePolicy, minReplicas)
+
+	// Add custom Recommenders to the VPA
+	testVPA.Spec.Recommenders = []*vpav1.VerticalPodAutoscalerRecommenderSelector{
+		{
+			Name: "my-custom-recommender",
+		},
+	}
+
+	_, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Create(context.TODO(), &testVPA, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// Dry run update
+	errUpdateDryRun := rec.updateVPA(testVPA)
+	assert.NoError(t, errUpdateDryRun)
+	currVPA, _ := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Get(context.TODO(), "goldilocks-test-vpa", metav1.GetOptions{})
+	assert.EqualValues(t, &testVPA, currVPA)
+
+	// Live update
+	rec.DryRun = false
+	errUpdate := rec.updateVPA(testVPA)
+	assert.NoError(t, errUpdate)
+	currVPA, _ = VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(testNS.Name).Get(context.TODO(), "goldilocks-test-vpa", metav1.GetOptions{})
+
+	// Assert that the Recommenders field is preserved
+	assert.Equal(t, testVPA.Spec.Recommenders, currVPA.Spec.Recommenders, "Recommenders field should be preserved after update")
+}
+
 func Test_listVPA(t *testing.T) {
 	setupVPAForTests(t)
 	rec := GetInstance()
