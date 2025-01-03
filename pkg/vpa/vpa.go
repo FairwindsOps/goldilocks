@@ -221,7 +221,23 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 		klog.V(5).Infof("%s/%s has custom vpa-resource-policy", controller.Kind, controller.Name)
 	}
 
+	// Fetch the recommender name from the namespace label
+	recommenderName, err := vpaRecommenderNameForNamespace(ns)
+	if err != nil {
+		klog.Errorf("Error parsing recommender name for Namespace/%s: %v", ns.Name, err)
+		return err
+	}
+
 	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode, vpaResourcePolicy, minReplicas)
+
+	// Set the recommender if recommenderName is not empty
+	if recommenderName != "" {
+		desiredVPA.Spec.Recommenders = []*vpav1.VerticalPodAutoscalerRecommenderSelector{
+			{
+				Name: recommenderName,
+			},
+		}
+	}
 
 	if vpa == nil {
 		klog.V(5).Infof("%s/%s does not have a VPA currently, creating VPA/%s", controller.Kind, controller.Name, controller.Name)
@@ -374,7 +390,6 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 		if *minReplicas > 0 {
 			desiredVPA.Spec.UpdatePolicy.MinReplicas = minReplicas
 		}
-
 	}
 
 	return desiredVPA
@@ -456,4 +471,15 @@ func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
 	minReplicasInt32 := int32(minReplicas)
 
 	return &minReplicasInt32, explicit
+}
+
+func vpaRecommenderNameForNamespace(ns *corev1.Namespace) (string, error) {
+	recommenderName := ""
+	if val, ok := ns.Labels["goldilocks.fairwinds.com/vpa-recommenders"]; ok {
+		recommenderName = val
+	} else if val, ok := ns.Annotations["goldilocks.fairwinds.com/vpa-recommenders"]; ok {
+		recommenderName = val
+	}
+
+	return recommenderName, nil
 }
