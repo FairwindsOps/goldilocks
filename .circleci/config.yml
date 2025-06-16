@@ -44,8 +44,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 1.64.8
-            GOLANGCI_LINT_CHECKSUM: b6270687afb143d019f387c791cd2a6f1cb383be9b3124d241ca11bd3ce2e54e
+            GOLANGCI_LINT_VERSION: 1.63.4
+            GOLANGCI_LINT_CHECKSUM: 01abb14a4df47b5ca585eff3c34b105023cba92ec34ff17212dbb83855581690
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
@@ -61,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2..2
+      - image: goreleaser/goreleaser:v2.10.2
     steps:
       - checkout
       - setup_remote_docker
