@@ -1,26 +1,19 @@
 package dashboard
 
 import (
+	"embed"
 	"net/http"
 
-	"github.com/gobuffalo/packr/v2"
 	"k8s.io/klog/v2"
 )
 
-var assetBox = (*packr.Box)(nil)
-
-// getAssetBox returns a binary-friendly set of assets packaged from disk
-func getAssetBox() *packr.Box {
-	if assetBox == (*packr.Box)(nil) {
-		assetBox = packr.New("Assets", "assets")
-	}
-	return assetBox
-}
+//go:embed all:assets
+var assetsFS embed.FS
 
 // Asset replies with the contents of the loaded asset from disk
 func Asset(assetPath string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		asset, err := getAssetBox().Find(assetPath)
+		asset, err := assetsFS.ReadFile(assetPath)
 		if err != nil {
 			klog.Errorf("Error getting asset: %v", err)
 			http.Error(w, "Error getting asset", http.StatusInternalServerError)
@@ -31,10 +24,4 @@ func Asset(assetPath string) http.Handler {
 			klog.Errorf("Error writing asset: %v", err)
 		}
 	})
-}
-
-// StaticAssets replies with a FileServer for all assets, the prefix is used to strip the URL path
-func StaticAssets(prefix string) http.Handler {
-	klog.V(3).Infof("stripping prefix: %s", prefix)
-	return http.StripPrefix(prefix, http.FileServer(getAssetBox()))
 }

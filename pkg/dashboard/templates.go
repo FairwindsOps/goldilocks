@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -9,11 +10,8 @@ import (
 	"strings"
 
 	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
-	"github.com/gobuffalo/packr/v2"
 	"k8s.io/klog/v2"
 )
-
-var templateBox = (*packr.Box)(nil)
 
 // templates
 const (
@@ -50,13 +48,8 @@ type baseTemplateData struct {
 	JSON template.JS
 }
 
-// getTemplateBox returns a binary-friendly set of templates for rendering the dash
-func getTemplateBox() *packr.Box {
-	if templateBox == (*packr.Box)(nil) {
-		templateBox = packr.New("Templates", "templates")
-	}
-	return templateBox
-}
+//go:embed all:templates
+var templatedFS embed.FS
 
 // getTemplate puts together a template. Individual pieces can be overridden before rendering.
 func getTemplate(name string, opts Options, includedTemplates ...string) (*template.Template, error) {
@@ -83,9 +76,8 @@ func getTemplate(name string, opts Options, includedTemplates ...string) (*templ
 
 // parseTemplateFiles combines the template with the included templates into one parsed template
 func parseTemplateFiles(tmpl *template.Template, includedTemplates []string) (*template.Template, error) {
-	templateBox := getTemplateBox()
 	for _, fname := range includedTemplates {
-		templateFile, err := templateBox.Find(fmt.Sprintf("%s.gohtml", fname))
+		templateFile, err := templatedFS.ReadFile(fmt.Sprintf("templates/%s.gohtml", fname))
 		if err != nil {
 			return nil, err
 		}
