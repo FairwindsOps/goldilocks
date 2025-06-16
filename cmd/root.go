@@ -70,11 +70,11 @@ var rootCmd = &cobra.Command{
 		os.Exit(1)
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		if os.Stderr != nil {
-			os.Stderr.WriteString("\n\nWant more? Automate Goldilocks for free with Fairwinds Insights!\n🚀 https://fairwinds.com/insights-signup/goldilocks 🚀 \n")
-		} else {
-			fmt.Println("\n\nWant more? Automate Goldilocks for free with Fairwinds Insights!\n🚀 https://fairwinds.com/insights-signup/goldilocks 🚀")
-		}
+		//if os.Stderr != nil {
+		//	os.Stderr.WriteString("\n\nWant more? Automate Goldilocks for free with Fairwinds Insights!\n🚀 https://fairwinds.com/insights-signup/goldilocks 🚀 \n")
+		//} else {
+		fmt.Println("\n\nWant more? Automate Goldilocks for free with Fairwinds Insights!\n🚀 https://fairwinds.com/insights-signup/goldilocks 🚀")
+		//}
 		os.Exit(exitCode)
 
 	},
