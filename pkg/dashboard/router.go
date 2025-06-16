@@ -26,19 +26,19 @@ import (
 )
 
 var (
-	markdownBox = (*packr.Box)(nil)
+	markdownBox *packr.Box
 )
 
 // GetMarkdownBox returns a binary-friendly set of markdown files with error details
 func GetMarkdownBox() *packr.Box {
-	if markdownBox == (*packr.Box)(nil) {
+	if markdownBox == nil {
 		markdownBox = packr.New("Markdown", "../../docs")
 	}
 	return markdownBox
 }
 
 func GetAssetBox() *packr.Box {
-	if assetBox == (*packr.Box)(nil) {
+	if assetBox == nil {
 		assetBox = packr.New("Assets", "assets")
 	}
 	return assetBox

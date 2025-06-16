@@ -52,7 +52,7 @@ type baseTemplateData struct {
 
 // getTemplateBox returns a binary-friendly set of templates for rendering the dash
 func getTemplateBox() *packr.Box {
-	if templateBox == (*packr.Box)(nil) {
+	if templateBox == nil {
 		templateBox = packr.New("Templates", "templates")
 	}
 	return templateBox
