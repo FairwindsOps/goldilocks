@@ -44,7 +44,9 @@ func OnPodChanged(pod *corev1.Pod, event utils.Event) {
 			klog.Errorf("Error reconciling: %v", err)
 		}
 	case "create", "update":
-		klog.V(3).Infof("Pod %s updated. Reconcile", pod.ObjectMeta.Name)
+		if pod != nil {
+			klog.V(3).Infof("Pod %s updated. Reconcile", pod.Name)
+		}
 		err := vpa.GetInstance().ReconcileNamespace(namespace)
 		if err != nil {
 			klog.Errorf("Error reconciling: %v", err)
