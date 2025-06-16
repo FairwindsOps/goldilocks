@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var templateBox = (*packr.Box)(nil)
+var templateBox *packr.Box
 
 // templates
 const (

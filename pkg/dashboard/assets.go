@@ -7,11 +7,11 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var assetBox = (*packr.Box)(nil)
+var assetBox *packr.Box
 
 // getAssetBox returns a binary-friendly set of assets packaged from disk
 func getAssetBox() *packr.Box {
-	if assetBox == (*packr.Box)(nil) {
+	if assetBox == nil {
 		assetBox = packr.New("Assets", "assets")
 	}
 	return assetBox
