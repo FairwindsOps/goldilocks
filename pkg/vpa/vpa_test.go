@@ -425,14 +425,14 @@ func Test_checkNamespaceLists(t *testing.T) {
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = false
-	vpaReconciler.IncludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
+	vpaReconciler.IncludeNamespaces = []string{nsNotLabeled.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
 	got = vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, true, got)
 
 	vpaReconciler.OnByDefault = true
 	vpaReconciler.IncludeNamespaces = []string{}
-	vpaReconciler.ExcludeNamespaces = []string{nsNotLabeled.ObjectMeta.Name}
+	vpaReconciler.ExcludeNamespaces = []string{nsNotLabeled.Name}
 	got = vpaReconciler.namespaceIsManaged(&nsNotLabeled)
 	assert.Equal(t, false, got)
 
@@ -444,14 +444,14 @@ func Test_checkNamespaceLists(t *testing.T) {
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
-	vpaReconciler.IncludeNamespaces = []string{nsLabeledFalse.ObjectMeta.Name}
+	vpaReconciler.IncludeNamespaces = []string{nsLabeledFalse.Name}
 	vpaReconciler.ExcludeNamespaces = []string{}
 	got = vpaReconciler.namespaceIsManaged(&nsLabeledFalse)
 	assert.Equal(t, false, got)
 
 	vpaReconciler.OnByDefault = false
 	vpaReconciler.IncludeNamespaces = []string{}
-	vpaReconciler.ExcludeNamespaces = []string{nsLabeledTrue.ObjectMeta.Name}
+	vpaReconciler.ExcludeNamespaces = []string{nsLabeledTrue.Name}
 	got = vpaReconciler.namespaceIsManaged(&nsLabeledTrue)
 	assert.Equal(t, true, got)
 }
@@ -462,7 +462,7 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledFalse.ObjectMeta.Name
+	nsName := nsLabeledFalse.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledFalseUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -488,7 +488,7 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	setupVPAForTests(t)
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := GetInstance().DynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -507,7 +507,7 @@ func Test_ReconcileNamespaceWithLabels(t *testing.T) {
 	vpaList, err := GetInstance().VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	if assert.Equal(t, 1, len(vpaList.Items)) {
-		assert.Equal(t, "goldilocks-test-deploy", vpaList.Items[0].ObjectMeta.Name)
+		assert.Equal(t, "goldilocks-test-deploy", vpaList.Items[0].Name)
 	}
 }
 
@@ -517,7 +517,7 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -556,7 +556,7 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -603,7 +603,7 @@ func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -630,7 +630,7 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -668,7 +668,7 @@ func Test_ReconcileNamespaceDaemonset(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -685,7 +685,7 @@ func Test_ReconcileNamespaceDaemonset(t *testing.T) {
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
-	assert.Equal(t, "goldilocks-test-ds", vpaList.Items[0].ObjectMeta.Name)
+	assert.Equal(t, "goldilocks-test-ds", vpaList.Items[0].Name)
 }
 
 func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
@@ -694,7 +694,7 @@ func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
 	DynamicClient := GetInstance().DynamicClient.Client
 
 	// Create ns
-	nsName := nsLabeledTrue.ObjectMeta.Name
+	nsName := nsLabeledTrue.Name
 	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
 	assert.NoError(t, err)
 
@@ -711,5 +711,5 @@ func Test_ReconcileNamespaceStatefulSet(t *testing.T) {
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList.Items))
-	assert.Equal(t, "goldilocks-test-sts", vpaList.Items[0].ObjectMeta.Name)
+	assert.Equal(t, "goldilocks-test-sts", vpaList.Items[0].Name)
 }

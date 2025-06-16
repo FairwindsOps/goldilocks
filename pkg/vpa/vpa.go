@@ -92,7 +92,7 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic 
 // ReconcileNamespace makes a vpa for every pod controller type in the namespace.
 func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 	controllerLog.SetLogger(controllerUtilsLogr)
-	nsName := namespace.ObjectMeta.Name
+	nsName := namespace.Name
 	vpas, err := r.listVPAs(nsName)
 	if err != nil {
 		klog.Error(err.Error())
