@@ -2,7 +2,6 @@ package dashboard
 
 import (
 	"bytes"
-	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -12,9 +11,6 @@ import (
 	"github.com/fairwindsops/goldilocks/pkg/dashboard/helpers"
 	"k8s.io/klog/v2"
 )
-
-//go:embed all:templates
-var templates embed.FS
 
 // templates
 const (

@@ -26,16 +26,24 @@ import (
 
 // OnNamespaceChanged is a handler that should be called when a namespace chanages.
 func OnNamespaceChanged(namespace *corev1.Namespace, event utils.Event) {
-	klog.V(7).Infof("Processing namespace: %s", namespace.ObjectMeta.Name)
+	if namespace != nil {
+		klog.V(7).Infof("Processing namespace: %s", namespace.ObjectMeta.Name)
+	} else {
+		klog.V(7).Info("Processing namespace: <nil>")
+	}
 
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		klog.Info("Nothing to do on namespace deletion. The VPAs will be deleted as part of the ns.")
 	case "create", "update":
-		klog.Infof("Namespace %s updated. Check the labels.", namespace.ObjectMeta.Name)
-		err := vpa.GetInstance().ReconcileNamespace(namespace)
-		if err != nil {
-			klog.Errorf("Error reconciling: %v", err)
+		if namespace != nil {
+			klog.Infof("Namespace %s updated. Check the labels.", namespace.ObjectMeta.Name)
+			err := vpa.GetInstance().ReconcileNamespace(namespace)
+			if err != nil {
+				klog.Errorf("Error reconciling: %v", err)
+			}
+		} else {
+			klog.Warning("Received create/update event for a nil namespace. Skipping reconciliation.")
 		}
 	default:
 		klog.Infof("Update type %s is not valid, skipping.", event.EventType)
