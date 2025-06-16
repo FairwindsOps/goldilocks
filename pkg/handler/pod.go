@@ -37,7 +37,7 @@ func OnPodChanged(pod *corev1.Pod, event utils.Event) {
 	switch strings.ToLower(event.EventType) {
 	case "delete":
 		if pod != nil {
-			klog.V(3).Infof("Pod %s deleted. Deleting the VPA for it if it had one.", pod.ObjectMeta.Name)
+			klog.V(3).Infof("Pod %s deleted. Deleting the VPA for it if it had one.", pod.Name)
 		}
 		err := vpa.GetInstance().ReconcileNamespace(namespace)
 		if err != nil {
