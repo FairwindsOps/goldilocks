@@ -44,7 +44,7 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 1.61.0
+            GOLANGCI_LINT_VERSION: 2.1.6
             GOLANGCI_LINT_CHECKSUM: 77cb0af99379d9a21d5dc8c38364d060e864a01bd2f3e30b5e8cc550c3a54111
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
