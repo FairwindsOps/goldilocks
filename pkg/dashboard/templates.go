@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-var templateBox *packr.Box
+var templateBox = (*packr.Box)(nil)
 
 // templates
 const (
@@ -52,7 +52,7 @@ type baseTemplateData struct {
 
 // getTemplateBox returns a binary-friendly set of templates for rendering the dash
 func getTemplateBox() *packr.Box {
-	if templateBox == nil {
+	if templateBox == (*packr.Box)(nil) {
 		templateBox = packr.New("Templates", "templates")
 	}
 	return templateBox
