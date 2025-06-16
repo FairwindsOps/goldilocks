@@ -44,14 +44,14 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 2.1.6
-            GOLANGCI_LINT_CHECKSUM: e55e0eb515936c0fbd178bce504798a9bd2f0b191e5e357768b18fd5415ee541
+            GOLANGCI_LINT_VERSION: 2.0.0
+            GOLANGCI_LINT_CHECKSUM: 50ebc01988429e07d29a556417aaf1ef4df441a7e88645617cf5db3033c0e37b
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
             tar xzf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint $(go env GOPATH)/bin/golangci-lint
             go mod tidy
-           
+            golangci-lint run -v --timeout 2m0s
       - run:
           name: Run Tests
           command: make test
@@ -61,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2.10.2
+      - image: goreleaser/goreleaser:v2..2
     steps:
       - checkout
       - setup_remote_docker
