@@ -152,7 +152,7 @@ func Test_getVPAObject(t *testing.T) {
 
 			// expected .spec.target
 			// workload target matches the vpa name minus the prefix goldilocks-
-			targetName := strings.Replace(vpa.Name, "goldilocks-", "", -1)
+			targetName := strings.ReplaceAll(vpa.Name, "goldilocks-", "")
 			assert.Equal(t, targetName, vpa.Spec.TargetRef.Name)
 			// update mode is correct for the namespace
 			assert.Equal(t, test.updateMode, *vpa.Spec.UpdatePolicy.UpdateMode)
