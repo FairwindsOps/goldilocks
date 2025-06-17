@@ -151,7 +151,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 		}
 	}
 	for _, excluded := range r.ExcludeNamespaces {
-		if namespace.ObjectMeta.Name == excluded {
+		if namespace.Name == excluded {
 			return false
 		}
 	}
