@@ -1,9 +1,7 @@
 goldilocks
 cover*
 goreleaser.deb
-*-packr.go
 dist
-packrd
 coverage.txt
 *.out
 debug

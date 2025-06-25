@@ -15,34 +15,14 @@
 package dashboard
 
 import (
+	"io/fs"
 	"net/http"
 	"path"
 	"strings"
 
-	"k8s.io/klog/v2"
-
-	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
+	"k8s.io/klog/v2"
 )
-
-var (
-	markdownBox = (*packr.Box)(nil)
-)
-
-// GetMarkdownBox returns a binary-friendly set of markdown files with error details
-func GetMarkdownBox() *packr.Box {
-	if markdownBox == (*packr.Box)(nil) {
-		markdownBox = packr.New("Markdown", "../../docs")
-	}
-	return markdownBox
-}
-
-func GetAssetBox() *packr.Box {
-	if assetBox == (*packr.Box)(nil) {
-		assetBox = packr.New("Assets", "assets")
-	}
-	return assetBox
-}
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(setters ...Option) *mux.Router {
@@ -58,8 +38,18 @@ func GetRouter(setters ...Option) *mux.Router {
 	router.Handle("/healthz", Healthz())
 
 	// assets
-	router.Handle("/favicon.ico", Asset("/images/favicon-32x32.png"))
-	fileServer := http.FileServer(GetAssetBox())
+	router.Handle("/favicon.ico", Asset("assets/images/favicon-32x32.png"))
+
+	subAssetsFS, err := fs.Sub(assetsFS, "assets")
+	if err != nil {
+		klog.Fatalf("error creating sub filesystem for assets: %v", err)
+	}
+
+	if subAssetsFS == nil {
+		klog.Fatal("subAssetsFS is nil, this should not happen")
+	}
+
+	fileServer := http.FileServerFS(subAssetsFS)
 	router.PathPrefix("/static/").Handler(http.StripPrefix(path.Join(opts.BasePath, "/static/"), fileServer))
 
 	// dashboard

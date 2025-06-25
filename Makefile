@@ -24,7 +24,6 @@ clean:
 	$(GOCLEAN)
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
-	packr2 clean
 	rm -rf e2e/results/*
 	rm *-report*
 	rm coverage.txt
