@@ -39,9 +39,13 @@ Use "goldilocks [command] --help" for more information about a command.
 ### Installation
 
 Visit the [releases page](https://github.com/FairwindsOps/goldilocks/releases) to find the release
-that's right for your environment. For example, on Linux:
+that's right for your environment (set `RELEASE` variable accordingly). For example, on Linux with `RELEASE` 4.0.0:
 ```
-curl -L "https://github.com/FairwindsOps/goldilocks/releases/download/v4.0.0/goldilocks_4.0.0_linux_amd64.tar.gz" > goldilocks.tar.gz
+RELEASE="4.0.0"
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')"
+
+curl -L "https://github.com/FairwindsOps/goldilocks/releases/download/v${RELEASE}/goldilocks_${RELEASE}_${OS}_${ARCH}.tar.gz" > goldilocks.tar.gz
 tar -xvf goldilocks.tar.gz
 sudo mv goldilocks /usr/local/bin/
 ```
