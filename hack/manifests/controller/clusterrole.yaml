@@ -50,3 +50,12 @@ rules:
       - 'get'
       - 'list'
       - 'watch'
+  - apiGroups:
+      - 'monitoring.coreos.com'
+    resources:
+      - 'alertmanagers'
+      - 'prometheuses'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
