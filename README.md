@@ -34,13 +34,6 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap,
 and network with fellow Kubernetes users.
 [Chat with us on Slack](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-2na8gtwb4-DGQ4qgmQbczQyB2NlFlYQQ)
-or
-[join the user group](https://www.fairwinds.com/open-source-software-user-group) to get involved!
-
-<a href="https://insights.fairwinds.com/auth/register/">
-  <img src="https://www.fairwinds.com/hubfs/Doc_Banners/Fairwinds_OSS_User_Group_740x125_v6.png"
-  alt="Love Fairwinds Open Source? Automate Fairwinds Open Source for free with Fairwinds Insights. Click to learn more" />
-</a>
 
 ## Other Projects from Fairwinds
 
@@ -55,9 +48,5 @@ Or [check out the full list](https://www.fairwinds.com/open-source-software?utm_
 If you're interested in running Goldilocks in multiple clusters,
 tracking the results over time, integrating with Slack, Datadog, and Jira,
 or unlocking other functionality, check out
-[Fairwinds Insights](https://fairwinds.com/pricing),
+[Fairwinds Insights](https://fairwinds.com/insights),
 a platform for auditing and enforcing policy in Kubernetes clusters.
-
-<a href="https://fairwinds.com/pricing">
-  <img src="https://www.fairwinds.com/hubfs/Doc_Banners/Fairwinds_Goldilocks_Ad.png" alt="Fairwinds Insights" />
-</a>
