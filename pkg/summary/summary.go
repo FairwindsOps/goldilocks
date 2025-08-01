@@ -195,16 +195,21 @@ func (s Summarizer) GetSummary() (Summary, error) {
 				klog.Errorf("unable to parse spec.template.spec from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
 				continue CONTAINER_REC_LOOP
 			}
-			if !workloadPodSpecFound {
-				klog.Errorf("no spec.template.spec field from unstructured workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
-				continue CONTAINER_REC_LOOP
-			}
 
 			var workloadPodSpec corev1.PodSpec
-			err = runtime.DefaultUnstructuredConverter.FromUnstructured(workloadPodSpecUnstructured, &workloadPodSpec)
-			if err != nil {
-				klog.Errorf("unable to convert unstructured pod spec to PodSpec struct. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
-				continue CONTAINER_REC_LOOP
+			if workloadPodSpecFound {
+				err = runtime.DefaultUnstructuredConverter.FromUnstructured(workloadPodSpecUnstructured, &workloadPodSpec)
+				if err != nil {
+					klog.Errorf("unable to convert unstructured pod spec to PodSpec struct. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+					continue CONTAINER_REC_LOOP
+				}
+			} else {
+				// fallback to the workload's pod spec
+				if workload.PodSpec == nil {
+					klog.Errorf("no pod spec found for workload. Namespace: '%s', Kind: '%s', Name: '%s'", workload.TopController.GetNamespace(), workload.TopController.GetKind(), workload.TopController.GetName())
+					continue CONTAINER_REC_LOOP
+				}
+				workloadPodSpec = *workload.PodSpec
 			}
 
 			for _, c := range workloadPodSpec.Containers {
