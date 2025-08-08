@@ -402,8 +402,9 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 		requestStr = val
 	}
 	if requestStr != "" {
+		requestStrLower := strings.ToLower(requestStr)
 		for _, mode := range allowedUpdateModes {
-			if requestStr == string(mode) {
+			if requestStrLower == strings.ToLower(string(mode)) {
 				requestedVPAMode = mode
 				explicit = true
 				break
