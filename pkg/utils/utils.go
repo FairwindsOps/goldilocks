@@ -144,7 +144,7 @@ func IsRetryableError(err error) bool {
 
 	// Check for network errors
 	if netErr, ok := err.(net.Error); ok {
-		return netErr.Timeout() || netErr.Temporary()
+		return netErr.Timeout()
 	}
 
 	return false
@@ -210,7 +210,7 @@ func RetryWithExponentialBackoff(ctx context.Context, operation func(ctx context
 	})
 
 	if err != nil {
-		if err == wait.ErrWaitTimeout {
+		if wait.Interrupted(err) {
 			return fmt.Errorf("operation %s failed after %d attempts, last error: %v", operationName, retryCount, lastErr)
 		}
 		return err

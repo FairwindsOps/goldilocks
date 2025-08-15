@@ -631,7 +631,7 @@ func (r *Reconciler) IsReconciliationInProgress() bool {
 func (r *Reconciler) WaitForReconciliationToComplete() {
 	// Acquire and immediately release a read lock to wait for active reconciliation
 	r.reconciliationMutex.RLock()
-	r.reconciliationMutex.RUnlock()
+	defer r.reconciliationMutex.RUnlock()
 }
 
 
