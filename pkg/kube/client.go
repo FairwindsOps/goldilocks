@@ -17,6 +17,7 @@ package kube
 import (
 	"context"
 	"sync"
+	"time"
 
 	"k8s.io/client-go/kubernetes"
 	// Empty imports needed for supported auth methods in kubeconfig. See client-go documentation
@@ -116,8 +117,10 @@ func GetControllerUtilsClient() controllerUtils.Client {
 	dynamic := getKubeClientDynamic()
 	restmapper := getRESTMapper()
 
+	// Use background context for controller utils client
+	// Individual operations will create their own timeouts as needed
 	client := controllerUtils.Client{
-		Context:    context.TODO(),
+		Context:    context.Background(),
 		RESTMapper: restmapper,
 		Dynamic:    dynamic,
 	}
@@ -179,8 +182,10 @@ func getRESTMapper() meta.RESTMapper {
 
 // GetNamespace returns a namespace object when given a name.
 func GetNamespace(kubeClient *ClientInstance, nsName string) (*corev1.Namespace, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(context.TODO(), nsName, metav1.GetOptions{})
+	namespace, err := kubeClient.Client.CoreV1().Namespaces().Get(ctx, nsName, metav1.GetOptions{})
 	if err != nil {
 		klog.Errorf("Error getting namespace from name %s: %v", nsName, err)
 		return nil, err

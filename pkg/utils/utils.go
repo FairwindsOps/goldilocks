@@ -15,8 +15,17 @@
 package utils
 
 import (
+	"context"
+	"fmt"
+	"net"
+	"strings"
+	"time"
+
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -96,4 +105,124 @@ func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
 		rl[v1.ResourceMemory] = mem
 	}
 	return rl
+}
+
+// IsRetryableError determines if an error should trigger a retry with backoff
+func IsRetryableError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// Check for API server errors that indicate etcd issues
+	if errors.IsTimeout(err) {
+		return true
+	}
+	if errors.IsServerTimeout(err) {
+		return true
+	}
+	if errors.IsServiceUnavailable(err) {
+		return true
+	}
+	if errors.IsInternalError(err) {
+		return true
+	}
+
+	// Check for connection errors and watch stream failures
+	errorStr := strings.ToLower(err.Error())
+	if strings.Contains(errorStr, "context deadline exceeded") ||
+		strings.Contains(errorStr, "context canceled") ||
+		strings.Contains(errorStr, "connection refused") ||
+		strings.Contains(errorStr, "connection reset") ||
+		strings.Contains(errorStr, "transport: authentication handshake failed") ||
+		strings.Contains(errorStr, "etcd") ||
+		strings.Contains(errorStr, "timeout") ||
+		strings.Contains(errorStr, "unable to decode an event from the watch stream") ||
+		strings.Contains(errorStr, "watch stream") ||
+		strings.Contains(errorStr, "too many requests") {
+		return true
+	}
+
+	// Check for network errors
+	if netErr, ok := err.(net.Error); ok {
+		return netErr.Timeout() || netErr.Temporary()
+	}
+
+	return false
+}
+
+// IsRBACError determines if an error is due to RBAC permissions (not a control plane issue)
+func IsRBACError(err error) bool {
+	if err == nil {
+		return false
+	}
+	
+	// Check for Kubernetes RBAC errors
+	if errors.IsForbidden(err) {
+		return true
+	}
+	if errors.IsUnauthorized(err) {
+		return true
+	}
+	
+	// Check for common RBAC error message patterns
+	errorStr := err.Error()
+	return strings.Contains(errorStr, "is forbidden:") ||
+		strings.Contains(errorStr, "cannot list resource") ||
+		strings.Contains(errorStr, "cannot get resource") ||
+		strings.Contains(errorStr, "cannot create resource") ||
+		strings.Contains(errorStr, "cannot update resource") ||
+		strings.Contains(errorStr, "cannot delete resource") ||
+		strings.Contains(errorStr, "User \"system:serviceaccount:") ||
+		// Additional patterns from controller-utils library RBAC errors
+		strings.Contains(errorStr, "forbidden: User \"system:serviceaccount:")
+}
+
+// RetryWithExponentialBackoff retries a function with exponential backoff for etcd-related failures
+func RetryWithExponentialBackoff(ctx context.Context, operation func(ctx context.Context) error, operationName string) error {
+	backoff := wait.Backoff{
+		Duration: 1 * time.Second,   // Initial delay
+		Factor:   2.0,               // Exponential factor
+		Jitter:   0.1,               // Add jitter to avoid thundering herd
+		Steps:    5,                 // Maximum retry attempts
+		Cap:      30 * time.Second,  // Maximum delay between retries
+	}
+
+	var lastErr error
+	retryCount := 0
+
+	err := wait.ExponentialBackoffWithContext(ctx, backoff, func(ctx context.Context) (bool, error) {
+		retryCount++
+		lastErr = operation(ctx)
+		if lastErr == nil {
+			if retryCount > 1 {
+				klog.Infof("Operation %s succeeded after %d attempts", operationName, retryCount)
+			}
+			return true, nil // Success, stop retrying
+		}
+
+		if !IsRetryableError(lastErr) {
+			klog.V(2).Infof("Operation %s failed with non-retryable error: %v", operationName, lastErr)
+			return false, lastErr // Non-retryable error, stop immediately
+		}
+
+		klog.V(2).Infof("Operation %s failed (attempt %d), will retry: %v", operationName, retryCount, lastErr)
+		return false, nil // Retryable error, continue
+	})
+
+	if err != nil {
+		if err == wait.ErrWaitTimeout {
+			return fmt.Errorf("operation %s failed after %d attempts, last error: %v", operationName, retryCount, lastErr)
+		}
+		return err
+	}
+
+	return nil
+}
+
+// CreateContextWithTimeout creates a context with appropriate timeout for API operations
+func CreateContextWithTimeout(parentCtx context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+	if timeout <= 0 {
+		timeout = 30 * time.Second // Default timeout
+	}
+	return context.WithTimeout(parentCtx, timeout)
 }

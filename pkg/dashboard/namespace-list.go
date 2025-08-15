@@ -1,9 +1,9 @@
 package dashboard
 
 import (
-	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
@@ -27,7 +27,9 @@ func NamespaceList(opts Options) http.Handler {
 				}).String(),
 			}
 		}
-		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(context.TODO(), listOptions)
+		ctx, cancel := utils.CreateContextWithTimeout(r.Context(), 30*time.Second)
+		defer cancel()
+		namespacesList, err := kube.GetInstance().Client.CoreV1().Namespaces().List(ctx, listOptions)
 		if err != nil {
 			klog.Errorf("Error getting namespace list: %v", err)
 			http.Error(w, "Error getting namespace list", http.StatusInternalServerError)

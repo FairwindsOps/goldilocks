@@ -17,6 +17,7 @@ package summary
 import (
 	"context"
 	"strings"
+	"time"
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
@@ -282,7 +283,9 @@ func (s *Summarizer) updateVPAs() error {
 }
 
 func (s Summarizer) listVPAs(listOptions metav1.ListOptions) ([]vpav1.VerticalPodAutoscaler, error) {
-	vpas, err := s.vpaClient.Client.AutoscalingV1().VerticalPodAutoscalers(s.namespace).List(context.TODO(), listOptions)
+	ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	vpas, err := s.vpaClient.Client.AutoscalingV1().VerticalPodAutoscalers(s.namespace).List(ctx, listOptions)
 	if err != nil {
 		return nil, err
 	}

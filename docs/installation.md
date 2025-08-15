@@ -13,6 +13,10 @@ meta:
 * metrics-server (a requirement of vpa)
 * golang 1.17+
 
+### Large Cluster Considerations
+
+For large clusters (1000+ namespaces or high workload density), Goldilocks includes automatic rate limiting and backoff mechanisms to prevent etcd timeouts and control plane pressure. The controller will automatically detect and adapt to control plane load without requiring additional configuration.
+
 ### Installing Vertical Pod Autoscaler
 
 There are multiple ways to install VPA for use with Goldilocks:

@@ -50,6 +50,8 @@ sudo mv goldilocks /usr/local/bin/
 
 This starts the goldilocks controller. Used by the Docker container, it will create vpas for properly labelled namespaces.
 
+The controller includes intelligent rate limiting and backoff mechanisms to handle etcd timeouts and control plane pressure automatically. When watch stream failures or API timeouts are detected, the controller implements exponential backoff to reduce load on the control plane.
+
 #### Flags
 You can set the default behavior for VPA creation using some flags. When specified, labels will always take precedence over the command line flags.
 

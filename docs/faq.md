@@ -92,3 +92,31 @@ This shows a healthy metrics service:
 NAME                     SERVICE                         AVAILABLE   AGE
 v1beta1.metrics.k8s.io   metrics-server/metrics-server   True        36s
 ```
+
+## I'm seeing etcd timeout errors or control plane pressure issues, what gives?
+
+If you're experiencing etcd timeouts or control plane pressure in large clusters, Goldilocks includes intelligent rate limiting and backoff mechanisms. These issues typically manifest as:
+
+* Watch stream connection failures
+* Context deadline exceeded errors
+* etcd server unavailable messages
+* Frequent informer restarts
+
+The controller automatically detects these conditions and implements exponential backoff (1s, 2s, 4s, 8s, 15s, 30s max) to reduce load on the control plane. You'll see log messages like:
+
+```
+CONTROL PLANE PRESSURE DETECTED: Recorded watch failure #2, will pause for 4s on next operation
+CONTROL PLANE BACKOFF: Pausing watcher startup for 4s due to control plane pressure
+```
+
+### Troubleshooting Control Plane Issues
+
+1. **Check controller logs** for backoff messages and error patterns
+2. **Monitor cluster resource usage** - high CPU/memory on control plane nodes
+3. **Review etcd metrics** if available (latency, request rate)
+4. **Consider scaling down** other controllers or reducing their poll frequency during peak usage
+
+The rate limiting is automatic and doesn't require configuration changes. If issues persist, consider:
+* Reducing the number of monitored namespaces
+* Increasing control plane resources
+* Checking for other high-load controllers in the cluster

@@ -19,11 +19,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/samber/lo"
 	"k8s.io/client-go/util/retry"
+	"golang.org/x/time/rate"
 
 	autoscaling "k8s.io/api/autoscaling/v1"
 
@@ -53,6 +57,11 @@ type Reconciler struct {
 	IncludeNamespaces     []string
 	ExcludeNamespaces     []string
 	IgnoreControllerKind  []string
+	operationMutex        sync.Mutex     // Protects bulk operations
+	operationSemaphore    chan struct{}  // Limits concurrent VPA operations
+	activeOperationsWG    sync.WaitGroup // Tracks active VPA operations
+	reconciliationMutex   sync.RWMutex   // Coordinates between reconciliation and new events
+	rateLimiter           *rate.Limiter  // Limits control plane API calls to 10/second
 }
 
 type Controller struct {
@@ -65,6 +74,20 @@ type Controller struct {
 var singleton *Reconciler
 var controllerUtilsLogr = textlogger.NewLogger(textlogger.NewConfig())
 
+// getControlPlaneRateLimit returns the rate limit for control plane API calls from environment variable
+// Defaults to 10 calls per second if not set or invalid
+func getControlPlaneRateLimit() rate.Limit {
+	if rateLimitStr := os.Getenv("GOLDILOCKS_CONTROL_PLANE_RATE_LIMIT"); rateLimitStr != "" {
+		if rateLimit, err := strconv.ParseFloat(rateLimitStr, 64); err == nil && rateLimit > 0 {
+			klog.Infof("🏃 Control plane rate limit set to %.1f calls/second via GOLDILOCKS_CONTROL_PLANE_RATE_LIMIT", rateLimit)
+			return rate.Limit(rateLimit)
+		}
+		klog.Warningf("Invalid GOLDILOCKS_CONTROL_PLANE_RATE_LIMIT value '%s', using default 10 calls/second", rateLimitStr)
+	}
+	klog.Infof("🏃 Control plane rate limit set to default 10 calls/second")
+	return 10
+}
+
 // GetInstance returns a Reconciler singleton
 func GetInstance() *Reconciler {
 	if singleton == nil {
@@ -73,6 +96,8 @@ func GetInstance() *Reconciler {
 			VPAClient:             kube.GetVPAInstance(),
 			DynamicClient:         kube.GetDynamicInstance(),
 			ControllerUtilsClient: kube.GetControllerUtilsInstance(),
+			operationSemaphore:    make(chan struct{}, 3), // Allow max 3 concurrent VPA operations
+			rateLimiter:           rate.NewLimiter(getControlPlaneRateLimit(), 1), // Configurable rate limit, burst of 1
 		}
 	}
 	return singleton
@@ -85,14 +110,31 @@ func SetInstance(k8s *kube.ClientInstance, vpa *kube.VPAClientInstance, dynamic 
 		VPAClient:             vpa,
 		DynamicClient:         dynamic,
 		ControllerUtilsClient: controller,
+		operationSemaphore:    make(chan struct{}, 3), // Allow max 3 concurrent VPA operations
+		rateLimiter:           rate.NewLimiter(getControlPlaneRateLimit(), 1), // Configurable rate limit, burst of 1
 	}
 	return singleton
 }
 
 // ReconcileNamespace makes a vpa for every pod controller type in the namespace.
-func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
+func (r *Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
+	// Acquire a write lock to prevent new events from being processed during reconciliation
+	r.reconciliationMutex.Lock()
+	defer r.reconciliationMutex.Unlock()
+	
+	// Wait for any ongoing VPA operations to complete before starting new reconciliation
+	r.activeOperationsWG.Wait()
+	
+	// Acquire the mutex to prevent concurrent bulk operations that could overwhelm etcd
+	r.operationMutex.Lock()
+	defer r.operationMutex.Unlock()
+
 	controllerLog.SetLogger(controllerUtilsLogr)
 	nsName := namespace.Name
+	
+	
+	klog.V(2).Infof("Starting reconciliation for namespace/%s", nsName)
+	
 	vpas, err := r.listVPAs(nsName)
 	if err != nil {
 		klog.Error(err.Error())
@@ -108,29 +150,61 @@ func (r Reconciler) ReconcileNamespace(namespace *corev1.Namespace) error {
 
 	controllers, err := r.listControllers(nsName)
 	if err != nil {
-		klog.Error(err.Error())
-		return err
+		// Check if this is an RBAC error - just log and continue with empty list
+		if utils.IsRBACError(err) {
+			klog.V(2).Infof("RBAC permissions prevent controller discovery in namespace %s: %v", nsName, err)
+			// Continue with empty controller list - we can still clean up existing VPAs
+			controllers = []Controller{}
+		} else {
+			klog.Error(err.Error())
+			return err
+		}
+	}
+	
+	// Add debug logging to understand what's happening with cloudflare-operator-system
+	if nsName == "cloudflare-operator-system" {
+		klog.V(3).Infof("🔍 DEBUG: cloudflare-operator-system processed - found %d controllers, error: %v", len(controllers), err)
 	}
 
-	return r.reconcileControllersAndVPAs(namespace, vpas, controllers)
+	err = r.reconcileControllersAndVPAs(namespace, vpas, controllers)
+	if err != nil {
+		return err
+	}
+	
+	// Wait for all VPA operations started during this reconciliation to complete
+	r.activeOperationsWG.Wait()
+	
+	klog.V(2).Infof("Completed reconciliation for namespace/%s with all VPA operations finished", nsName)
+	return nil
 }
 
-func (r Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
+func (r *Reconciler) cleanUpManagedVPAsInNamespace(namespace string, vpas []vpav1.VerticalPodAutoscaler) error {
 	if len(vpas) < 1 {
 		klog.V(4).Infof("No goldilocks managed VPAs found in Namespace/%s, skipping cleanup", namespace)
 		return nil
 	}
 	klog.Infof("Deleting all goldilocks managed VPAs in Namespace/%s", namespace)
 	for _, vpa := range vpas {
+		// Track this operation in the wait group
+		r.activeOperationsWG.Add(1)
+		
+		// Acquire semaphore to limit concurrent VPA operations
+		r.operationSemaphore <- struct{}{}
 		err := r.deleteVPA(vpa)
+		<-r.operationSemaphore // Release semaphore
+		
+		// Mark this operation as complete
+		r.activeOperationsWG.Done()
+		
 		if err != nil {
 			return err
 		}
+		
 	}
 	return nil
 }
 
-func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
+func (r *Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	for k, v := range namespace.Labels {
 		klog.V(4).Infof("Namespace/%s found label: %s=%s", namespace.Name, k, v)
 		if strings.ToLower(k) != utils.VpaEnabledLabel {
@@ -159,7 +233,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 	return r.OnByDefault
 }
 
-func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
+func (r *Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
 	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
@@ -189,27 +263,51 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 			vpaName = cvpa.Name
 		}
 		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
+		
+		// Track this operation in the wait group
+		r.activeOperationsWG.Add(1)
+		
+		// Acquire semaphore to limit concurrent VPA operations
+		r.operationSemaphore <- struct{}{}
 		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy, defaultMinReplicas)
+		<-r.operationSemaphore // Release semaphore
+		
+		// Mark this operation as complete
+		r.activeOperationsWG.Done()
+		
 		if err != nil {
 			return err
 		}
+		
 	}
 
 	for _, vpa := range vpas {
 		if !vpaHasAssociatedController[vpa.Name] {
 			// these vpas do not have a matching controller, delete them
 			klog.V(2).Infof("Deleting dangling VPA/%s in Namespace/%s", vpa.Name, ns.Name)
+			
+			// Track this operation in the wait group
+			r.activeOperationsWG.Add(1)
+			
+			// Acquire semaphore to limit concurrent VPA operations
+			r.operationSemaphore <- struct{}{}
 			err := r.deleteVPA(vpa)
+			<-r.operationSemaphore // Release semaphore
+			
+			// Mark this operation as complete
+			r.activeOperationsWG.Done()
+			
 			if err != nil {
 				return err
 			}
+			
 		}
 	}
 
 	return nil
 }
 
-func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {
+func (r *Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {
 	controllerObj := controller.Unstructured.DeepCopyObject()
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
@@ -242,8 +340,16 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 	return nil
 }
 
-func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
+func (r *Reconciler) listControllers(namespace string) ([]Controller, error) {
 	controllers := []Controller{}
+	
+	// Rate limit this API call
+	ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := r.waitForRateLimit(ctx, fmt.Sprintf("list controllers in %s", namespace)); err != nil {
+		return nil, err
+	}
+	
 	allTopControllers, err := r.ControllerUtilsClient.Client.GetAllTopControllersSummary(namespace)
 	if err != nil {
 		return nil, err
@@ -266,11 +372,26 @@ func (r Reconciler) listControllers(namespace string) ([]Controller, error) {
 	return controllers, nil
 }
 
-func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, error) {
+func (r *Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, error) {
 	vpaListOptions := metav1.ListOptions{
 		LabelSelector: labels.Set(utils.VPALabels).String(),
 	}
-	existingVPAs, err := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(namespace).List(context.TODO(), vpaListOptions)
+
+	var existingVPAs *vpav1.VerticalPodAutoscalerList
+	ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Rate limit this API call
+	if err := r.waitForRateLimit(ctx, fmt.Sprintf("list VPAs in %s", namespace)); err != nil {
+		return nil, err
+	}
+	
+	err := utils.RetryWithExponentialBackoff(ctx, func(ctx context.Context) error {
+		var listErr error
+		existingVPAs, listErr = r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(namespace).List(ctx, vpaListOptions)
+		return listErr
+	}, fmt.Sprintf("list VPAs in namespace %s", namespace))
+
 	if err != nil {
 		return nil, err
 	}
@@ -285,25 +406,49 @@ func (r Reconciler) listVPAs(namespace string) ([]vpav1.VerticalPodAutoscaler, e
 	return existingVPAs.Items, nil
 }
 
-func (r Reconciler) deleteVPA(vpa vpav1.VerticalPodAutoscaler) error {
+func (r *Reconciler) deleteVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	if r.DryRun {
 		klog.Infof("Not deleting VPA/%s due to dryrun.", vpa.Name)
 		return nil
 	}
 
-	errDelete := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Delete(context.TODO(), vpa.Name, metav1.DeleteOptions{})
-	if errDelete != nil {
-		klog.Errorf("Error deleting VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, errDelete)
-		return errDelete
+	ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	
+	// Rate limit this API call
+	if err := r.waitForRateLimit(ctx, fmt.Sprintf("delete VPA %s/%s", vpa.Namespace, vpa.Name)); err != nil {
+		return err
+	}
+
+	err := utils.RetryWithExponentialBackoff(ctx, func(ctx context.Context) error {
+		return r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Delete(ctx, vpa.Name, metav1.DeleteOptions{})
+	}, fmt.Sprintf("delete VPA %s/%s", vpa.Namespace, vpa.Name))
+
+	if err != nil {
+		klog.Errorf("Error deleting VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, err)
+		return err
 	}
 	klog.Infof("Deleted VPA/%s in Namespace/%s", vpa.Name, vpa.Namespace)
 	return nil
 }
 
-func (r Reconciler) createVPA(vpa vpav1.VerticalPodAutoscaler) error {
+func (r *Reconciler) createVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	if !r.DryRun {
 		klog.V(9).Infof("Creating VPA/%s: %v", vpa.Name, vpa)
-		_, err := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Create(context.TODO(), &vpa, metav1.CreateOptions{})
+
+		ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		
+		// Rate limit this API call
+		if err := r.waitForRateLimit(ctx, fmt.Sprintf("create VPA %s/%s", vpa.Namespace, vpa.Name)); err != nil {
+			return err
+		}
+
+		err := utils.RetryWithExponentialBackoff(ctx, func(ctx context.Context) error {
+			_, createErr := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Create(ctx, &vpa, metav1.CreateOptions{})
+			return createErr
+		}, fmt.Sprintf("create VPA %s/%s", vpa.Namespace, vpa.Name))
+
 		if err != nil {
 			klog.Errorf("Error creating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, err)
 			return err
@@ -315,21 +460,34 @@ func (r Reconciler) createVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
+func (r *Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	if !r.DryRun {
 		klog.V(9).Infof("Updating VPA/%s: %v", vpa.Name, vpa)
-		// attempt to update the vpa using retries and backoffs
-		// [See: https://github.com/kubernetes/client-go/blob/master/examples/create-update-delete-deployment/main.go#L125]
-		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			// Note: Normally we're supposed to be getting the current VPA object, then updating that object between
-			//       each retry attempt, but since goldilocks should be the only controller that is manipulating
-			//       these VPA objects then it's safe to use the desired VPA that is originally passed to this function.
-			_, err := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Update(context.TODO(), &vpa, metav1.UpdateOptions{})
+
+		ctx, cancel := utils.CreateContextWithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		
+		// Rate limit this API call
+		if err := r.waitForRateLimit(ctx, fmt.Sprintf("update VPA %s/%s", vpa.Namespace, vpa.Name)); err != nil {
 			return err
-		})
-		if retryErr != nil {
-			klog.Errorf("Error updating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, retryErr)
+		}
+
+		// Use enhanced retry with exponential backoff for etcd failures
+		err := utils.RetryWithExponentialBackoff(ctx, func(ctx context.Context) error {
+			// For conflict errors, use the original retry logic
+			retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				// Note: Normally we're supposed to be getting the current VPA object, then updating that object between
+				//       each retry attempt, but since goldilocks should be the only controller that is manipulating
+				//       these VPA objects then it's safe to use the desired VPA that is originally passed to this function.
+				_, updateErr := r.VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace).Update(ctx, &vpa, metav1.UpdateOptions{})
+				return updateErr
+			})
 			return retryErr
+		}, fmt.Sprintf("update VPA %s/%s", vpa.Namespace, vpa.Name))
+
+		if err != nil {
+			klog.Errorf("Error updating VPA/%s in Namespace/%s: %v", vpa.Name, vpa.Namespace, err)
+			return err
 		}
 		klog.V(2).Infof("Updated VPA/%s in Namespace/%s", vpa.Name, vpa.Namespace)
 	} else {
@@ -338,7 +496,7 @@ func (r Reconciler) updateVPA(vpa vpav1.VerticalPodAutoscaler) error {
 	return nil
 }
 
-func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode, resourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) vpav1.VerticalPodAutoscaler {
+func (r *Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *corev1.Namespace, controller Controller, updateMode *vpav1.UpdateMode, resourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) vpav1.VerticalPodAutoscaler {
 	var desiredVPA vpav1.VerticalPodAutoscaler
 
 	// create a brand new vpa with the correct information
@@ -456,4 +614,33 @@ func vpaMinReplicasForResource(obj runtime.Object) (*int32, bool) {
 	minReplicasInt32 := int32(minReplicas)
 
 	return &minReplicasInt32, explicit
+}
+
+// IsReconciliationInProgress returns true if VPA reconciliation is currently active
+func (r *Reconciler) IsReconciliationInProgress() bool {
+	// Try to acquire a read lock - if we can't, reconciliation is in progress
+	acquired := r.reconciliationMutex.TryRLock()
+	if acquired {
+		r.reconciliationMutex.RUnlock()
+		return false
+	}
+	return true
+}
+
+// WaitForReconciliationToComplete blocks until any active reconciliation completes
+func (r *Reconciler) WaitForReconciliationToComplete() {
+	// Acquire and immediately release a read lock to wait for active reconciliation
+	r.reconciliationMutex.RLock()
+	r.reconciliationMutex.RUnlock()
+}
+
+
+
+// waitForRateLimit enforces the 10 calls/second rate limit for control plane operations
+func (r *Reconciler) waitForRateLimit(ctx context.Context, operation string) error {
+	if err := r.rateLimiter.Wait(ctx); err != nil {
+		klog.V(3).Infof("⏳ RATE LIMIT: %s operation delayed due to rate limiting: %v", operation, err)
+		return err
+	}
+	return nil
 }
