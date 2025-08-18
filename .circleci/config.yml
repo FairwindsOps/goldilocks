@@ -18,7 +18,7 @@ references:
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/run.sh
-    command_runner_image: quay.io/reactiveops/ci-images:v12-buster
+    command_runner_image: quay.io/reactiveops/ci-images:v14.1-bullseye
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     attach-workspace: true
@@ -35,7 +35,7 @@ jobs:
   test:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.24.4
+      - image: cimg/go:1.24.6
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -61,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2.10.2
+      - image: goreleaser/goreleaser:v2.12.0-nightly
     steps:
       - checkout
       - setup_remote_docker
@@ -78,7 +78,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v2.10.2
+      - image: goreleaser/goreleaser:v2.12.0-nightly
     steps:
       - checkout
       - setup_remote_docker
