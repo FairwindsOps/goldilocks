@@ -630,8 +630,12 @@ func (r *Reconciler) IsReconciliationInProgress() bool {
 // WaitForReconciliationToComplete blocks until any active reconciliation completes
 func (r *Reconciler) WaitForReconciliationToComplete() {
 	// Acquire and immediately release a read lock to wait for active reconciliation
-	r.reconciliationMutex.RLock()
-	defer r.reconciliationMutex.RUnlock()
+	// Using an anonymous function to ensure immediate unlock without empty critical section
+	func() {
+		r.reconciliationMutex.RLock()
+		defer r.reconciliationMutex.RUnlock()
+		// The lock acquisition itself is the synchronization point we need
+	}()
 }
 
 
