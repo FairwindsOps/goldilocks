@@ -380,6 +380,14 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	return desiredVPA
 }
 
+var allowedUpdateModes = []vpav1.UpdateMode{
+	vpav1.UpdateModeOff,
+	vpav1.UpdateModeInitial,
+	vpav1.UpdateModeRecreate,
+	vpav1.UpdateModeAuto,
+	vpav1.UpdateModeInPlaceOrRecreate,
+}
+
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
 // key/value and uses that key/value to return the proper UpdateMode type
 func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
@@ -394,9 +402,17 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 		requestStr = val
 	}
 	if requestStr != "" {
-		requestStr = strings.ToUpper(requestStr[0:1]) + strings.ToLower(requestStr[1:])
-		requestedVPAMode = vpav1.UpdateMode(requestStr)
-		explicit = true
+		requestStrLower := strings.ToLower(requestStr)
+		for _, mode := range allowedUpdateModes {
+			if requestStrLower == strings.ToLower(string(mode)) {
+				requestedVPAMode = mode
+				explicit = true
+				break
+			}
+		}
+		if !explicit {
+			klog.Warningf("Invalid vpa-update-mode value: %s, defaulting to Off", requestStr)
+		}
 	}
 
 	return &requestedVPAMode, explicit
