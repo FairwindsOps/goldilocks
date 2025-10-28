@@ -38,7 +38,7 @@ func OnUpdate(obj interface{}, event utils.Event) {
 	case *corev1.Namespace:
 		OnNamespaceChanged(obj.(*corev1.Namespace), event)
 	default:
-		klog.Errorf("Object has unknown type of %T", t)
+		klog.V(2).Infof("Object has unknown type of %T", t)
 	}
 }
 
@@ -50,6 +50,6 @@ func onDelete(event utils.Event) {
 	case "pod":
 		OnPodChanged(&corev1.Pod{}, event)
 	default:
-		klog.Errorf("object has unknown resource type %s", event.ResourceType)
+		klog.V(2).Infof("object has unknown resource type %s", event.ResourceType)
 	}
 }
