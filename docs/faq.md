@@ -9,7 +9,7 @@ We get a lot of questions about how Goldilocks works and where it gets the recom
 
 ## How does Goldilocks generate recommendations?
 
-Goldilocks doesn't do any recommending of resource requests/limits by itself. It utilizes a Kubernetes project called [Vertical Pod Autoscaler (VPA)](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler). More specifically, it uses the [Recommender](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/recommender/README.md) portion of the VPA.
+Goldilocks doesn't do any recommending of resource requests/limits by itself. It utilizes a Kubernetes project called [Vertical Pod Autoscaler (VPA)](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler). More specifically, it uses the [Recommender](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/components.md#recommender) portion of the VPA.
 
 According to the VPA documentation:
 
