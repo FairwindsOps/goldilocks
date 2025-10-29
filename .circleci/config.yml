@@ -35,7 +35,7 @@ jobs:
   test:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.24.6
+      - image: cimg/go:1.25.3
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -44,8 +44,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 2.1.6
-            GOLANGCI_LINT_CHECKSUM: e55e0eb515936c0fbd178bce504798a9bd2f0b191e5e357768b18fd5415ee541
+            GOLANGCI_LINT_VERSION: 2.5.0
+            GOLANGCI_LINT_CHECKSUM: c77313a77e19b06123962c411d9943cc0d092bbec76b956104d18964e274902e
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
@@ -103,20 +103,20 @@ workflows:
           requires:
             - test
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.24"
-          kind_node_image: "kindest/node:v1.24.7@sha256:577c630ce8e509131eab1aea12c022190978dd2f745aac5eb1fe65c0807eb315"
+          name: "End-To-End Kubernetes 1.31"
+          kind_node_image: "kindest/node:v1.31.6@sha256:28b7cbb993dfe093c76641a0c95807637213c9109b761f1d422c2400e22b8e87"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.25"
-          kind_node_image: "kindest/node:v1.25.3@sha256:f52781bc0d7a19fb6c405c2af83abfeb311f130707a0e219175677e366cc45d1"
+          name: "End-To-End Kubernetes 1.32"
+          kind_node_image: "kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.26"
-          kind_node_image: "kindest/node:v1.26.6@sha256:6e2d8b28a5b601defe327b98bd1c2d1930b49e5d8c512e1895099e4504007adb"
+          name: "End-To-End Kubernetes 1.33"
+          kind_node_image: "kindest/node:v1.33.1@sha256:8d866994839cd096b3590681c55a6fa4a071fdaf33be7b9660e5697d2ed13002"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.27"
-          kind_node_image: "kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72"
+          name: "End-To-End Kubernetes 1.34"
+          kind_node_image: "kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a"
           <<: *e2e_configuration
   release:
     jobs:
