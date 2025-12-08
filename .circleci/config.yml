@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@12
+  rok8s: fairwinds/rok8s-scripts@14
   oss-docs: fairwinds/oss-docs@0
 
 references:
@@ -61,7 +61,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2.12.7
+      - image: goreleaser/goreleaser:v2.13.1
     steps:
       - checkout
       - setup_remote_docker
@@ -78,7 +78,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v2.12.7
+      - image: goreleaser/goreleaser:v2.13.1
     steps:
       - checkout
       - setup_remote_docker
