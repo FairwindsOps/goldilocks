@@ -115,9 +115,33 @@ var testFormatResourceCases = []struct {
 	{
 		description: "Memory in too large of units",
 		testData: v1.ResourceList{
-			"memory": resource.MustParse("123456k"),
+			"memory": resource.MustParse("123456Ki"),
 		},
 		resourceType: "memory",
-		expected:     "124M",
+		expected:     "121Mi",
 	},
+	{
+		description: "Round up complex byte values to Mi",
+		testData: v1.ResourceList{
+			"memory": resource.MustParse("1038683533"),
+		},
+		resourceType: "memory",
+		expected:     "991Mi",
+	},
+    {
+        description: "Normalize Decimal G to Binary Mi",
+        testData:    v1.ResourceList{
+            v1.ResourceMemory: resource.MustParse("1G"),
+        },
+		resourceType: "memory",
+        expected: "954Mi",
+    },
+    {
+        description: "Normalize Decimal k to Binary Ki",
+        testData: v1.ResourceList{
+            v1.ResourceMemory: resource.MustParse("100k"),
+        },
+        resourceType: "memory",
+        expected: "98Ki",
+    },
 }

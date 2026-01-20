@@ -77,22 +77,39 @@ func Difference(a, b []string) (diff []string) {
 	return
 }
 
-// FormatResourceList scales the units of a ResourceList so that they are
-// human readable
+// FormatResourceList ensures that memory resources are displayed in BinarySI
+// (Ki, Mi, Gi) format to avoid confusion with Decimal units (k, M, G).
+// It rounds values to the nearest unit for readability (Ki for small values, Mi for larger ones).
 func FormatResourceList(rl v1.ResourceList) v1.ResourceList {
-	memoryScales := []resource.Scale{
-		resource.Kilo,
-		resource.Mega,
-		resource.Giga,
-		resource.Tera,
-	}
 	if mem, exists := rl[v1.ResourceMemory]; exists {
-		i := 0
-		maxAllowableStringLen := 5
-		for len(mem.String()) > maxAllowableStringLen && i < len(memoryScales)-1 {
-			mem.RoundUp(memoryScales[i])
-			i++
+		mem.Format = resource.BinarySI
+		val := mem.Value()
+
+		const Ki = int64(1024)
+		const Mi = int64(1024 * 1024)
+
+		// Determine the rounding unit (step)
+		var step int64
+		if val < Mi {
+			// For small values (< 1 MiB), round to nearest Ki
+			step = Ki
+		} else {
+			// For standard values (>= 1 MiB), round to nearest Mi
+			step = Mi
 		}
+
+		if step > 0 && val > 0 {
+			// Rounding formula: (val + step - 1) / step * step
+			rounded := ((val + step - 1) / step) * step
+			mem.Set(rounded)
+		}
+
+        // Force the internal string cache to be regenerated.
+		// When mem.Set() is called, the internal string representation (private field 's') is cleared.
+		// Calling .String() forces it to be recomputed and stored.
+		// This is required for DeepEqual comparisons in unit tests to pass, as they compare private fields.
+        _ = mem.String()
+
 		rl[v1.ResourceMemory] = mem
 	}
 	return rl
