@@ -15,6 +15,7 @@ import (
 // GetMockClient returns a fake client instance for mocking
 func GetMockClient() *ClientInstance {
 	kc := ClientInstance{
+		//nolint:staticcheck // SA1019: NewSimpleClientset is deprecated; NewClientset requires applyconfig codegen (--with-applyconfig) which we do not use
 		Client: fake.NewSimpleClientset(),
 	}
 	SetInstance(kc)
