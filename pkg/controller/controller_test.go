@@ -25,7 +25,7 @@ import (
 func Test_objectMeta(t *testing.T) {
 	tests := []struct {
 		name string
-		obj  interface{}
+		obj  any
 		want metav1.ObjectMeta
 	}{
 		{

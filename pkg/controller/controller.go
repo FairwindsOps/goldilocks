@@ -170,7 +170,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 	wq := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultTypedControllerRateLimiter[any](), resource)
 
 	_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
+		AddFunc: func(obj any) {
 			var evt utils.Event
 			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
@@ -184,7 +184,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			klog.V(2).Infof("%s/%s has been added.", resource, evt.Key)
 			wq.Add(evt)
 		},
-		DeleteFunc: func(obj interface{}) {
+		DeleteFunc: func(obj any) {
 			var evt utils.Event
 			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(obj)
@@ -198,7 +198,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			klog.V(2).Infof("%s/%s has been deleted.", resource, evt.Key)
 			wq.Add(evt)
 		},
-		UpdateFunc: func(old interface{}, new interface{}) {
+		UpdateFunc: func(old any, new any) {
 			var evt utils.Event
 			var err error
 			evt.Key, err = cache.MetaNamespaceKeyFunc(new)
@@ -225,7 +225,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 	}
 }
 
-func objectMeta(obj interface{}) metav1.ObjectMeta {
+func objectMeta(obj any) metav1.ObjectMeta {
 	var meta metav1.ObjectMeta
 
 	switch object := obj.(type) {

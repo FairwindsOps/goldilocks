@@ -42,7 +42,7 @@ type baseTemplateData struct {
 	BasePath string
 
 	// Data is the data struct passed to writeTemplate()
-	Data interface{}
+	Data any
 
 	// JSON is the json version of Data
 	JSON template.JS
@@ -92,7 +92,7 @@ func parseTemplateFiles(tmpl *template.Template, includedTemplates []string) (*t
 }
 
 // writeTemplate executes the given template with the data and writes to the writer.
-func writeTemplate(tmpl *template.Template, opts Options, data interface{}, w http.ResponseWriter) {
+func writeTemplate(tmpl *template.Template, opts Options, data any, w http.ResponseWriter) {
 	buf := &bytes.Buffer{}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
