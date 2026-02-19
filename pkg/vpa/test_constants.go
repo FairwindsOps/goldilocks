@@ -130,7 +130,8 @@ var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 	},
 }
 
-var updateModeAuto = vpav1.UpdateModeAuto
+// updateModeAuto: "auto" is deprecated; we map it to InPlaceOrRecreate.
+var updateModeAuto = vpav1.UpdateModeInPlaceOrRecreate
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
 	Object: map[string]any{

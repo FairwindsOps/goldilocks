@@ -94,7 +94,7 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			name:       "labled: enabled=true, vpa-update-mode=auto",
 			ns:         &nsLabeledTrueUpdateModeAuto,
 			explicit:   true,
-			updateMode: vpav1.UpdateModeAuto,
+			updateMode: updateModeAuto,
 		},
 	}
 
@@ -123,7 +123,7 @@ func Test_getVPAObject(t *testing.T) {
 		{
 			name:       "example-vpa",
 			ns:         &nsLabeledTrueUpdateModeAuto,
-			updateMode: vpav1.UpdateModeAuto,
+			updateMode: updateModeAuto,
 			vpa:        nil,
 			controller: Controller{
 				APIVersion:   "apps/v1",
@@ -657,7 +657,7 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	vpaList1, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
-	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeAuto)
+	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, updateModeAuto)
 }
 
 func Test_ReconcileNamespaceDaemonset(t *testing.T) {

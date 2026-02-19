@@ -15,6 +15,7 @@ import (
 // GetMockClient returns a fake client instance for mocking
 func GetMockClient() *ClientInstance {
 	kc := ClientInstance{
+		//nolint:staticcheck // SA1019: NewSimpleClientset deprecated in favor of NewClientset (requires applyconfig)
 		Client: fake.NewSimpleClientset(),
 	}
 	SetInstance(kc)
@@ -24,6 +25,7 @@ func GetMockClient() *ClientInstance {
 // GetMockVPAClient returns fake vpa client instance for mocking.
 func GetMockVPAClient() *VPAClientInstance {
 	kc := VPAClientInstance{
+		//nolint:staticcheck // SA1019: NewSimpleClientset deprecated in favor of NewClientset (requires applyconfig)
 		Client: v1beta2fake.NewSimpleClientset(),
 	}
 	SetVPAInstance(kc)
