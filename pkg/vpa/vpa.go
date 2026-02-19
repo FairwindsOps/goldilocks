@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -145,15 +146,11 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 		return enabled
 	}
 
-	for _, included := range r.IncludeNamespaces {
-		if namespace.Name == included {
-			return true
-		}
+	if slices.Contains(r.IncludeNamespaces, namespace.Name) {
+		return true
 	}
-	for _, excluded := range r.ExcludeNamespaces {
-		if namespace.Name == excluded {
-			return false
-		}
+	if slices.Contains(r.ExcludeNamespaces, namespace.Name) {
+		return false
 	}
 
 	return r.OnByDefault

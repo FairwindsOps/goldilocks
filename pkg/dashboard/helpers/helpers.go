@@ -147,9 +147,9 @@ func GetUUID() string {
 	return uuid.New().String()
 }
 
-func HasField(v interface{}, name string) bool {
+func HasField(v any, name string) bool {
 	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	if rv.Kind() != reflect.Struct {
