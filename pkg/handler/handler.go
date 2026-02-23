@@ -26,7 +26,7 @@ import (
 // OnUpdate is a handler that should be called when an object is updated.
 // obj is the Kubernetes object that was updated.
 // event is the Event metadata representing the update.
-func OnUpdate(obj interface{}, event utils.Event) {
+func OnUpdate(obj any, event utils.Event) {
 	klog.V(10).Infof("Handler got an OnUpdate event of type %s", event.EventType)
 	if event.EventType == "delete" {
 		onDelete(event)

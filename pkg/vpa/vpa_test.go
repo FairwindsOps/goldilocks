@@ -99,7 +99,6 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			want := test.updateMode
@@ -136,7 +135,6 @@ func Test_getVPAObject(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -572,11 +570,11 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 
 	// Update the namespace labels to be false and reconcile
 	updatedNS := &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"kind": "Namespace",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name": "labeled-true",
-				"labels": map[string]interface{}{
+				"labels": map[string]any{
 					"goldilocks.fairwinds.com/enabled": "false",
 				},
 			},

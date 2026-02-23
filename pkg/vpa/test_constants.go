@@ -23,11 +23,11 @@ import (
 // Some namespaces that can be used for tests
 var nsLabeledTrue corev1.Namespace
 var nsLabeledTrueUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "labeled-true",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled": "true",
 			},
 		},
@@ -36,11 +36,11 @@ var nsLabeledTrueUnstructured = &unstructured.Unstructured{
 
 var nsLabeledFalse corev1.Namespace
 var nsLabeledFalseUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "labeled-false",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled": "false",
 			},
 		},
@@ -49,9 +49,9 @@ var nsLabeledFalseUnstructured = &unstructured.Unstructured{
 
 var nsNotLabeled corev1.Namespace
 var nsNotLabeledUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "not-labeled",
 		},
 	},
@@ -59,11 +59,11 @@ var nsNotLabeledUnstructured = &unstructured.Unstructured{
 
 var nsTesting corev1.Namespace
 var nsTestingUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "testing",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled": "True",
 			},
 		},
@@ -72,11 +72,11 @@ var nsTestingUnstructured = &unstructured.Unstructured{
 
 var nsLabeledTrueUpdateModeOff corev1.Namespace
 var nsLabeledTrueUpdateModeOffUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "labeled-true",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled":         "True",
 				"goldilocks.fairwinds.com/vpa-update-mode": "off",
 			},
@@ -86,11 +86,11 @@ var nsLabeledTrueUpdateModeOffUnstructured = &unstructured.Unstructured{
 
 var nsLabeledTrueUpdateModeAuto corev1.Namespace
 var nsLabeledTrueUpdateModeAutoUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "labeled-true",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled":         "True",
 				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
 			},
@@ -100,15 +100,15 @@ var nsLabeledTrueUpdateModeAutoUnstructured = &unstructured.Unstructured{
 
 var nsLabeledResourcePolicy corev1.Namespace
 var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind": "Namespace",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "labeled-true",
-			"labels": map[string]interface{}{
+			"labels": map[string]any{
 				"goldilocks.fairwinds.com/enabled":         "True",
 				"goldilocks.fairwinds.com/vpa-update-mode": "auto",
 			},
-			"annotations": map[string]interface{}{
+			"annotations": map[string]any{
 				"goldilocks.fairwinds.com/vpa-resource-policy": `
                 {
 					"containerPolicies":
@@ -133,12 +133,12 @@ var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 var updateModeAuto = vpav1.UpdateModeAuto
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "ReplicaSet",
 					"controller": true,
@@ -147,17 +147,17 @@ var testDeploymentPodUnstructured = &unstructured.Unstructured{
 			},
 			"name": "test-deploy-0123456789-01234",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentReplicaSetUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "ReplicaSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "Deployment",
 					"controller": true,
@@ -166,53 +166,53 @@ var testDeploymentReplicaSetUnstructured = &unstructured.Unstructured{
 			},
 			"name": "test-deploy-0123456789",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "test-deploy",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentExcludedUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "test-deploy",
-			"annotations": map[string]interface{}{
+			"annotations": map[string]any{
 				"goldilocks.fairwinds.com/vpa-update-mode": "off",
 			},
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDaemonsetUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "DaemonSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "test-ds",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDaemonsetPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "DaemonSet",
 					"controller": true,
@@ -220,29 +220,29 @@ var testDaemonsetPodUnstructured = &unstructured.Unstructured{
 				},
 			},
 			"name": "test-ds-01234",
-			"spec": map[string]interface{}{},
+			"spec": map[string]any{},
 		},
 	},
 }
 
 var testStatefulsetUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "StatefulSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name": "test-sts",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testStatefulsetPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "StatefulSet",
 					"controller": true,
@@ -250,7 +250,7 @@ var testStatefulsetPodUnstructured = &unstructured.Unstructured{
 				},
 			},
 			"name": "test-sts-01234",
-			"spec": map[string]interface{}{},
+			"spec": map[string]any{},
 		},
 	},
 }
