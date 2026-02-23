@@ -44,8 +44,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 2.5.0
-            GOLANGCI_LINT_CHECKSUM: c77313a77e19b06123962c411d9943cc0d092bbec76b956104d18964e274902e
+            GOLANGCI_LINT_VERSION: 2.10.1
+            GOLANGCI_LINT_CHECKSUM: dfa775874cf0561b404a02a8f4481fc69b28091da95aa697259820d429b09c99
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
@@ -78,7 +78,7 @@ jobs:
     working_directory: /go/src/github.com/fairwindsops/goldilocks
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v2.13.1
+      - image: goreleaser/goreleaser:v2.14.0
     steps:
       - checkout
       - setup_remote_docker
