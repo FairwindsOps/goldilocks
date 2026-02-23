@@ -381,6 +381,8 @@ var allowedUpdateModes = []vpav1.UpdateMode{
 	vpav1.UpdateModeOff,
 	vpav1.UpdateModeInitial,
 	vpav1.UpdateModeRecreate,
+	//nolint:staticcheck // SA1019: keep for validation; "auto" label is mapped to InPlaceOrRecreate below
+	vpav1.UpdateModeAuto,
 	vpav1.UpdateModeInPlaceOrRecreate,
 }
 
