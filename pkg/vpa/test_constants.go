@@ -130,8 +130,7 @@ var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 	},
 }
 
-// updateModeAuto: "auto" is deprecated; we map it to InPlaceOrRecreate.
-var updateModeAuto = vpav1.UpdateModeInPlaceOrRecreate
+var updateModeAuto = vpav1.UpdateModeAuto //nolint:staticcheck // SA1019: deprecated; keep for tests until E2E/API migration
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
 	Object: map[string]any{

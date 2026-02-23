@@ -381,8 +381,7 @@ var allowedUpdateModes = []vpav1.UpdateMode{
 	vpav1.UpdateModeOff,
 	vpav1.UpdateModeInitial,
 	vpav1.UpdateModeRecreate,
-	//nolint:staticcheck // SA1019: keep for validation; "auto" label is mapped to InPlaceOrRecreate below
-	vpav1.UpdateModeAuto,
+	vpav1.UpdateModeAuto, //nolint:staticcheck // SA1019: deprecated in VPA API; keep until migration
 	vpav1.UpdateModeInPlaceOrRecreate,
 }
 
@@ -401,11 +400,6 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 	}
 	if requestStr != "" {
 		requestStrLower := strings.ToLower(requestStr)
-		// Map deprecated "auto" to InPlaceOrRecreate (per kubernetes/autoscaler#8424)
-		if requestStrLower == "auto" {
-			mode := vpav1.UpdateModeInPlaceOrRecreate
-			return &mode, true
-		}
 		for _, mode := range allowedUpdateModes {
 			if requestStrLower == strings.ToLower(string(mode)) {
 				requestedVPAMode = mode
