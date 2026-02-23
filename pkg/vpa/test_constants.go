@@ -17,7 +17,6 @@ package vpa
 import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // Some namespaces that can be used for tests
@@ -129,8 +128,6 @@ var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 		},
 	},
 }
-
-var updateModeAuto = vpav1.UpdateModeAuto //nolint:staticcheck // SA1019: deprecated; keep for tests until E2E/API migration
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
 	Object: map[string]any{
