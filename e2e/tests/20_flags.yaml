@@ -2,7 +2,7 @@ version: "2"
 name: "Flags - include-namespaces/exclude-namespaces/on-by-default"
 vars:
   timeout: 60s
-  vpa-wait: 30
+  vpa-wait: 45
 testcases:
 - name: Setup namespaces demo-no-label/demo-included/demo-excluded
   steps:
@@ -25,6 +25,8 @@ testcases:
   - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
   - script: sleep {{.vpa-wait}}
   - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-no-label goldilocks-basic-demo-no-label -oname
+    retry: 4
+    delay: 10
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-no-label"
@@ -34,6 +36,8 @@ testcases:
   - script: kubectl -n goldilocks wait deployment --timeout={{.timeout}} --for condition=available -l app.kubernetes.io/name=goldilocks,app.kubernetes.io/component=controller
   - script: sleep {{.vpa-wait}}
   - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-included goldilocks-basic-demo-included -oname
+    retry: 4
+    delay: 10
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-included"

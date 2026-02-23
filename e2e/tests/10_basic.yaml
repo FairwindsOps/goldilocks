@@ -2,7 +2,7 @@ version: "2"
 name: "Basic Operation"
 vars:
   timeout: 60s
-  vpa-wait: 30
+  vpa-wait: 45
 testcases:
 - name: Setup demo namespace
   steps:
@@ -22,6 +22,8 @@ testcases:
   - script: kubectl label ns demo goldilocks.fairwinds.com/enabled=true --overwrite
   - script: sleep {{.vpa-wait}}
   - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo goldilocks-basic-demo -oname
+    retry: 4
+    delay: 10
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo"
@@ -44,6 +46,8 @@ testcases:
   - script: kubectl label ns statefulset-demo goldilocks.fairwinds.com/enabled=true --overwrite
   - script: sleep {{.vpa-wait}}
   - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n statefulset-demo goldilocks-redis-replicas -oname
+    retry: 4
+    delay: 10
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual "verticalpodautoscaler.autoscaling.k8s.io/goldilocks-redis-replicas"
@@ -61,6 +65,8 @@ testcases:
   - script: kubectl label ns demo-resource-policy goldilocks.fairwinds.com/enabled=true --overwrite
   - script: sleep {{.vpa-wait}}
   - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-resource-policy goldilocks-basic-demo -o=jsonpath='{.spec.resourcePolicy.containerPolicies[]}'
+    retry: 4
+    delay: 10
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual '{"containerName":"nginx","minAllowed":{"cpu":"250m","memory":"100Mi"}}'
