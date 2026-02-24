@@ -75,24 +75,24 @@ var testVPABasic = &vpav1.VerticalPodAutoscaler{
 }
 
 var testDeploymentBasicUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "test-basic",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentBasicReplicaSetUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "ReplicaSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "Deployment",
 					"controller": true,
@@ -102,17 +102,17 @@ var testDeploymentBasicReplicaSetUnstructured = &unstructured.Unstructured{
 			"name":      "test-basic-0123456789",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentBasicPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "ReplicaSet",
 					"controller": true,
@@ -122,7 +122,7 @@ var testDeploymentBasicPodUnstructured = &unstructured.Unstructured{
 			"name":      "test-basic-0123456789-01234",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
@@ -178,25 +178,25 @@ var testVPAWithReco = &vpav1.VerticalPodAutoscaler{
 }
 
 var testDeploymentWithRecoUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Deployment",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "test-vpa-with-reco",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{
-			"template": map[string]interface{}{
-				"spec": map[string]interface{}{
-					"containers": []interface{}{
-						map[string]interface{}{
+		"spec": map[string]any{
+			"template": map[string]any{
+				"spec": map[string]any{
+					"containers": []any{
+						map[string]any{
 							"name": "container",
-							"resources": map[string]interface{}{
-								"limits": map[string]interface{}{
+							"resources": map[string]any{
+								"limits": map[string]any{
 									"cpu":    "100m",
 									"memory": "100Mi",
 								},
-								"requests": map[string]interface{}{
+								"requests": map[string]any{
 									"cpu":    "100m",
 									"memory": "100Mi",
 								},
@@ -210,12 +210,12 @@ var testDeploymentWithRecoUnstructured = &unstructured.Unstructured{
 }
 
 var testDeploymentWithRecoReplicaSetUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "ReplicaSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "Deployment",
 					"controller": true,
@@ -225,17 +225,17 @@ var testDeploymentWithRecoReplicaSetUnstructured = &unstructured.Unstructured{
 			"name":      "test-vpa-with-reco-0123456789",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
 var testDeploymentWithRecoPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "ReplicaSet",
 					"controller": true,
@@ -245,7 +245,7 @@ var testDeploymentWithRecoPodUnstructured = &unstructured.Unstructured{
 			"name":      "test-vpa-with-reco-0123456789-01234",
 			"namespace": "testing",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
@@ -254,7 +254,7 @@ var testDeploymentWithRecoPodUnstructured = &unstructured.Unstructured{
 var testSummary = Summary{
 	Namespaces: map[string]namespaceSummary{
 		"testing": {
-			Namespace: "testing",
+			Namespace:       "testing",
 			IsOnlyNamespace: true,
 			Workloads: map[string]workloadSummary{
 				"test-basic": {
@@ -284,25 +284,25 @@ var testSummary = Summary{
 // DaemonSet test and VPA
 
 var testDaemonSettWithRecoUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "DaemonSet",
 		"apiVersion": "apps/v1",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      "test-ds-with-reco",
 			"namespace": "testing-daemonset",
 		},
-		"spec": map[string]interface{}{
-			"template": map[string]interface{}{
-				"spec": map[string]interface{}{
-					"containers": []interface{}{
-						map[string]interface{}{
+		"spec": map[string]any{
+			"template": map[string]any{
+				"spec": map[string]any{
+					"containers": []any{
+						map[string]any{
 							"name": "container",
-							"resources": map[string]interface{}{
-								"limits": map[string]interface{}{
+							"resources": map[string]any{
+								"limits": map[string]any{
 									"cpu":    "100m",
 									"memory": "100Mi",
 								},
-								"requests": map[string]interface{}{
+								"requests": map[string]any{
 									"cpu":    "100m",
 									"memory": "100Mi",
 								},
@@ -316,12 +316,12 @@ var testDaemonSettWithRecoUnstructured = &unstructured.Unstructured{
 }
 
 var testDaemonSetWithRecoPodUnstructured = &unstructured.Unstructured{
-	Object: map[string]interface{}{
+	Object: map[string]any{
 		"kind":       "Pod",
 		"apiVersion": "v1",
-		"metadata": map[string]interface{}{
-			"ownerReferences": []interface{}{
-				map[string]interface{}{
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
 					"apiVersion": "apps/v1",
 					"kind":       "DaemonSet",
 					"controller": true,
@@ -331,7 +331,7 @@ var testDaemonSetWithRecoPodUnstructured = &unstructured.Unstructured{
 			"name":      "test-ds-with-reco-01234",
 			"namespace": "testing-daemonset",
 		},
-		"spec": map[string]interface{}{},
+		"spec": map[string]any{},
 	},
 }
 
@@ -370,7 +370,7 @@ var testDaemonSetVPAWithReco = &vpav1.VerticalPodAutoscaler{
 var testSummaryDaemonSet = Summary{
 	Namespaces: map[string]namespaceSummary{
 		"testing-daemonset": {
-			Namespace: "testing-daemonset",
+			Namespace:       "testing-daemonset",
 			IsOnlyNamespace: true,
 			Workloads: map[string]workloadSummary{
 				"test-ds-with-reco": {
