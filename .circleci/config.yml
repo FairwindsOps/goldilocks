@@ -100,34 +100,6 @@ jobs:
               --entrypoint sh \
               goreleaser/goreleaser:v2.14.2 \
               -c 'tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp" && goreleaser --skip=sign'
-  release_dry_run:
-    machine:
-      image: ubuntu-2204:current
-    resource_class: large
-    shell: /bin/bash
-    steps:
-      - checkout
-      - *install_vault_machine
-      - rok8s/get_vault_env:
-          vault_path: repo/global/env
-      - *setup_qemu_binfmt
-      - run:
-          name: Run GoReleaser release (dry run – no publish)
-          command: |
-            set -e
-            REPO_ROOT="$(pwd)"
-            git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository (run from repo root). pwd=$(pwd)"; exit 1; }
-            docker run --rm \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              -v /root/.docker:/root/.docker \
-              -v "${REPO_ROOT}:/workspace" -w /workspace \
-              -e CIRCLE_SHA1 -e CIRCLE_BRANCH -e CIRCLE_TAG -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
-              --entrypoint sh \
-              goreleaser/goreleaser:v2.14.2 \
-              -c 'tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp" && goreleaser --snapshot --skip=sign --skip=publish'
-      - store_artifacts:
-          path: dist
-          destination: release-dry-run
   snapshot:
     machine:
       image: ubuntu-2204:current
@@ -194,12 +166,3 @@ workflows:
               ignore: /.*/
             tags:
               only: /^.*/
-  release-dry-run:
-    jobs:
-      - release_dry_run:
-          context: org-global
-          filters:
-            branches:
-              only: /.*/
-            tags:
-              ignore: /.*/
