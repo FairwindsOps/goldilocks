@@ -87,7 +87,10 @@ jobs:
       - run:
           name: docker login
           command: |
-            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | sudo docker login -u _json_key --password-stdin us-docker.pkg.dev
+            tmp=$(mktemp) && chmod 600 "$tmp"
+            printf '%s' "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp"
+            sudo docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp"
+            rm -f "$tmp"
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser release
@@ -114,7 +117,10 @@ jobs:
       - run:
           name: docker login
           command: |
-            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | sudo docker login -u _json_key --password-stdin us-docker.pkg.dev
+            tmp=$(mktemp) && chmod 600 "$tmp"
+            printf '%s' "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp"
+            sudo docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp"
+            rm -f "$tmp"
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser release (dry run – no publish)
