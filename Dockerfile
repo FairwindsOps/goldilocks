@@ -1,6 +1,6 @@
 FROM alpine:3.23
 
-RUN apk -U upgrade
+RUN apk update && apk upgrade --no-cache
 
 LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.vendor="FairwindsOps, Inc." \

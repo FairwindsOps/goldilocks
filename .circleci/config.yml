@@ -4,6 +4,12 @@ orbs:
   rok8s: fairwinds/rok8s-scripts@14
   oss-docs: fairwinds/oss-docs@0
 
+commands:
+  install_goreleaser_dependencies:
+    description: Register Docker platforms for multi-arch builds (arm64, armv7)
+    steps:
+      - run: docker run --privileged --rm tonistiigi/binfmt --install all
+
 references:
   install_vault: &install_vault
     run:
@@ -72,6 +78,7 @@ jobs:
           name: docker login
           command: |
             docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
+      - install_goreleaser_dependencies
       - run: echo 'export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"' >> $BASH_ENV
       - run: goreleaser --skip=sign
   snapshot:
