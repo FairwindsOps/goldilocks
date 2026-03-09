@@ -1,5 +1,8 @@
 FROM alpine:3.23
 
+# Upgrade system packages to include zlib 1.3.2+ (fixes CVE-2026-22184)
+RUN apk -U upgrade
+
 LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.vendor="FairwindsOps, Inc." \
       org.opencontainers.image.title="goldilocks" \
