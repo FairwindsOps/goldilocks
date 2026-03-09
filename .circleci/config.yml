@@ -94,7 +94,7 @@ jobs:
               -v "$(pwd):/workspace" -w /workspace \
               -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
               goreleaser/goreleaser:v2.14.2 \
-              sh -c 'echo "${GCP_ARTIFACTREADWRITE_JSON_KEY}" | base64 -d | docker login -u _json_key --password-stdin us-docker.pkg.dev && goreleaser --skip=sign'
+              sh -c 'docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev && goreleaser --skip=sign'
   snapshot:
     machine:
       image: ubuntu-2204:current
