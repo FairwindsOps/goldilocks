@@ -84,18 +84,52 @@ jobs:
       - *install_vault_machine
       - rok8s/get_vault_env:
           vault_path: repo/global/env
+      - run:
+          name: docker login
+          command: |
+            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | sudo docker login -u _json_key --password-stdin us-docker.pkg.dev
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser release
           command: |
+            set -e
+            REPO_ROOT="$(pwd)"
+            git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository (run from repo root). pwd=$(pwd)"; exit 1; }
             export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$(pwd):/workspace" -w /workspace \
-              -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
-              --entrypoint sh \
-              goreleaser/goreleaser:v2.14.2 \
-              -c 'docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev && goreleaser --skip=sign'
+              -v "${REPO_ROOT}:/workspace" -w /workspace \
+              -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN \
+              goreleaser/goreleaser:v2.14.2 --skip=sign
+  release_dry_run:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    shell: /bin/bash
+    steps:
+      - checkout
+      - *install_vault_machine
+      - rok8s/get_vault_env:
+          vault_path: repo/global/env
+      - run:
+          name: docker login
+          command: |
+            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | sudo docker login -u _json_key --password-stdin us-docker.pkg.dev
+      - *setup_qemu_binfmt
+      - run:
+          name: Run GoReleaser release (dry run – no publish)
+          command: |
+            set -e
+            REPO_ROOT="$(pwd)"
+            git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository (run from repo root). pwd=$(pwd)"; exit 1; }
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "${REPO_ROOT}:/workspace" -w /workspace \
+              -e CIRCLE_SHA1 -e CIRCLE_BRANCH -e CIRCLE_TAG -e GITHUB_TOKEN \
+              goreleaser/goreleaser:v2.14.2 --snapshot --skip=sign --skip=publish
+      - store_artifacts:
+          path: dist
+          destination: release-dry-run
   snapshot:
     machine:
       image: ubuntu-2204:current
@@ -149,6 +183,7 @@ workflows:
   release:
     jobs:
       - build_and_release:
+          context: org-global
           filters:
             branches:
               ignore: /.*/
@@ -161,3 +196,12 @@ workflows:
               ignore: /.*/
             tags:
               only: /^.*/
+  release-dry-run:
+    jobs:
+      - release_dry_run:
+          context: org-global
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
