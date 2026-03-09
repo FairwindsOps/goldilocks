@@ -84,10 +84,6 @@ jobs:
       - *install_vault_machine
       - rok8s/get_vault_env:
           vault_path: repo/global/env
-      - run:
-          name: docker login
-          command: |
-            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser release
@@ -96,8 +92,9 @@ jobs:
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "$(pwd):/workspace" -w /workspace \
-              -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN \
-              goreleaser/goreleaser:v2.14.2 --skip=sign
+              -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
+              goreleaser/goreleaser:v2.14.2 \
+              sh -c 'docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev && goreleaser --skip=sign'
   snapshot:
     machine:
       image: ubuntu-2204:current
