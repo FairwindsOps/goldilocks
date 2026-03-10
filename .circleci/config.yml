@@ -90,7 +90,11 @@ jobs:
           command: |
             set -e
             REPO_ROOT="$(pwd)"
-            git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "Not a git repository (run from repo root). pwd=$(pwd)"; exit 1; }
+            if [[ ! -d "${REPO_ROOT}/.git" ]]; then
+              echo "ERROR: .git not found in ${REPO_ROOT}. Contents:"
+              ls -la "${REPO_ROOT}"
+              exit 1
+            fi
             export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
@@ -99,7 +103,7 @@ jobs:
               -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
               --entrypoint sh \
               goreleaser/goreleaser:v2.14.2 \
-              -c 'tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp" && goreleaser --skip=sign'
+              -c 'cd /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser --skip=sign'
   snapshot:
     machine:
       image: ubuntu-2204:current
