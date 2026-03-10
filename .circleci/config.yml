@@ -79,6 +79,7 @@ jobs:
       image: ubuntu-2204:current
     resource_class: large
     shell: /bin/bash
+    working_directory: /home/circleci/project
     steps:
       - checkout
       - *install_vault_machine
@@ -89,21 +90,23 @@ jobs:
           name: Run GoReleaser release
           command: |
             set -e
-            REPO_ROOT="$(pwd)"
+            # Machine executor: home is /home/circleci, repo is at ~/project
+            REPO_ROOT="${HOME}/project"
             if [[ ! -d "${REPO_ROOT}/.git" ]]; then
               echo "ERROR: .git not found in ${REPO_ROOT}. Contents:"
               ls -la "${REPO_ROOT}"
               exit 1
             fi
             export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
+            # Use circleci user's Docker config (job runs as circleci, not root)
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v /root/.docker:/root/.docker \
+              -v "${HOME}/.docker:/root/.docker" \
               -v "${REPO_ROOT}:/workspace" -w /workspace \
               -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
               --entrypoint sh \
               goreleaser/goreleaser:v2.14.2 \
-              -c 'cd /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser --skip=sign'
+              -c 'ls -la /workspace && ls -la /workspace/.git && cd /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser --skip=sign'
   snapshot:
     machine:
       image: ubuntu-2204:current
