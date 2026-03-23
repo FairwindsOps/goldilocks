@@ -158,6 +158,34 @@ func Test_getVPAObject(t *testing.T) {
 	}
 }
 
+func Test_getVPAObject_recommenders(t *testing.T) {
+	setupVPAForTests(t)
+	rec := GetInstance()
+	t.Cleanup(func() { rec.RecommenderNames = nil })
+
+	rec.RecommenderNames = []string{"extra-recommender", "another-recommender"}
+
+	mode, _ := vpaUpdateModeForResource(&nsLabeledTrueUpdateModeAuto)
+	resourcePolicy, _ := vpaResourcePolicyForResource(&nsLabeledTrueUpdateModeAuto)
+	minReplicas, _ := vpaMinReplicasForResource(&nsLabeledTrueUpdateModeAuto)
+	controller := Controller{
+		APIVersion:   "apps/v1",
+		Kind:         "Deployment",
+		Name:         "hamster",
+		Unstructured: nil,
+	}
+	vpaObj := rec.getVPAObject(nil, &nsLabeledTrueUpdateModeAuto, controller, mode, resourcePolicy, minReplicas)
+
+	a := assert.New(t)
+	a.Len(vpaObj.Spec.Recommenders, 2)
+	a.Equal("extra-recommender", vpaObj.Spec.Recommenders[0].Name)
+	a.Equal("another-recommender", vpaObj.Spec.Recommenders[1].Name)
+
+	rec.RecommenderNames = nil
+	vpaObj = rec.getVPAObject(nil, &nsLabeledTrueUpdateModeAuto, controller, mode, resourcePolicy, minReplicas)
+	a.Nil(vpaObj.Spec.Recommenders)
+}
+
 func Test_createVPA(t *testing.T) {
 	setupVPAForTests(t)
 	VPAClient := GetInstance().VPAClient
