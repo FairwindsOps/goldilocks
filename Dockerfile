@@ -1,7 +1,5 @@
 FROM alpine:3.23
 
-RUN apk update && apk upgrade --no-cache
-
 LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.vendor="FairwindsOps, Inc." \
       org.opencontainers.image.title="goldilocks" \
@@ -10,7 +8,13 @@ LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.source="https://github.com/FairwindsOps/goldilocks" \
       org.opencontainers.image.url="https://github.com/FairwindsOps/goldilocks" \
       org.opencontainers.image.licenses="Apache License 2.0"
+
+# Install CA bundle for TLS; upgrade only CVE-prone deps (avoid full apk upgrade).
+RUN apk --no-cache add ca-certificates \
+    && apk --no-cache add --upgrade libcrypto3 libssl3 zlib
+
 # 'nobody' user in alpine
 USER 65534
 COPY goldilocks /
+
 CMD ["/goldilocks"]
