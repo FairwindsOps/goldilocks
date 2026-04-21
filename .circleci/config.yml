@@ -53,7 +53,7 @@ jobs:
   test:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.26.0
+      - image: cimg/go:1.26.2
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -105,7 +105,7 @@ jobs:
               -v "${REPO_ROOT}:/workspace" -w /workspace \
               -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
               --entrypoint sh \
-              goreleaser/goreleaser:v2.14.2 \
+              goreleaser/goreleaser:v2.15.4 \
               -c 'ls -la /workspace && ls -la /workspace/.git && cd /workspace && unset GIT_DIR GIT_WORK_TREE && git config --global --add safe.directory /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser --skip=sign'
   snapshot:
     machine:
@@ -121,7 +121,7 @@ jobs:
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "$(pwd):/workspace" -w /workspace \
               -e CIRCLE_SHA1 -e CIRCLE_BRANCH -e CIRCLE_TAG \
-              goreleaser/goreleaser:v2.14.2 --snapshot --skip=sign
+              goreleaser/goreleaser:v2.15.4 --snapshot --skip=sign
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
