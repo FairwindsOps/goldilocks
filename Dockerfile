@@ -1,4 +1,4 @@
-FROM alpine:3.23
+FROM alpine:3.23.4
 
 LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.vendor="FairwindsOps, Inc." \
@@ -9,9 +9,8 @@ LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
       org.opencontainers.image.url="https://github.com/FairwindsOps/goldilocks" \
       org.opencontainers.image.licenses="Apache License 2.0"
 
-# Install CA bundle for TLS; upgrade only CVE-prone deps (avoid full apk upgrade).
-RUN apk --no-cache add ca-certificates \
-    && apk --no-cache add --upgrade libcrypto3 libssl3 zlib
+# Install CA bundle for TLS.
+RUN apk --no-cache add ca-certificates
 
 # 'nobody' user in alpine
 USER 65534
