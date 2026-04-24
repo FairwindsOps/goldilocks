@@ -27,6 +27,43 @@ Once your VPAs are in place, you'll see recommendations appear in the Goldilocks
 <img src="/img/screenshot.png" alt="Goldilocks Screenshot" />
 </div>
 
+## Notice: Registry Migration and Immutable Images (v4.14.19 → v4.15.0)
+
+Starting with **v4.15.0**:
+
+- Images moved to `us-docker.pkg.dev/fairwinds-ops/oss/goldilocks`
+- `quay.io/fairwinds/goldilocks` is deprecated
+
+### Required action
+
+```diff
+- quay.io/fairwinds/goldilocks:<tag>
++ us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:<tag>
+```
+
+---
+
+## Immutable and signed images
+
+* Images are now **signed**
+* Tags are **immutable**
+* No more floating tags:
+
+  * `v4`
+  * `v4.14`
+  * `latest`
+
+Use full version tags:
+
+```
+us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:v<major>.<minor>.<patch>
+```
+
+Or pin by digest:
+
+```
+us-docker.pkg.dev/fairwinds-ops/oss/goldilocks@sha256:<digest>
+```
 
 <!-- Begin boilerplate -->
 ## Join the Fairwinds Open Source Community
