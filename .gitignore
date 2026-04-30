@@ -8,6 +8,7 @@ debug
 
 hack/kind/autoscaler
 .vscode
+.idea
 __debug_bin
 node_modules
 /dist

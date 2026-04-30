@@ -54,6 +54,7 @@ type Reconciler struct {
 	IncludeNamespaces     []string
 	ExcludeNamespaces     []string
 	IgnoreControllerKind  []string
+	RecommenderNames      []string
 }
 
 type Controller struct {
@@ -365,6 +366,7 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 			UpdateMode: updateMode,
 		},
 		ResourcePolicy: resourcePolicy,
+		Recommenders:   recommenderSelectors(r.RecommenderNames),
 	}
 
 	if minReplicas != nil {
@@ -375,6 +377,21 @@ func (r Reconciler) getVPAObject(existingVPA *vpav1.VerticalPodAutoscaler, ns *c
 	}
 
 	return desiredVPA
+}
+
+func recommenderSelectors(names []string) []*vpav1.VerticalPodAutoscalerRecommenderSelector {
+	var out []*vpav1.VerticalPodAutoscalerRecommenderSelector
+	for _, n := range names {
+		n = strings.TrimSpace(n)
+		if n == "" {
+			continue
+		}
+		out = append(out, &vpav1.VerticalPodAutoscalerRecommenderSelector{Name: n})
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
 }
 
 var allowedUpdateModes = []vpav1.UpdateMode{

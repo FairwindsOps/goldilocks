@@ -31,6 +31,7 @@ var includeNamespaces []string
 var ignoreControllerKind []string
 var excludeNamespaces []string
 var dryRun bool
+var vpaRecommenders []string
 
 func init() {
 	rootCmd.AddCommand(controllerCmd)
@@ -39,6 +40,7 @@ func init() {
 	controllerCmd.PersistentFlags().StringSliceVar(&includeNamespaces, "include-namespaces", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&excludeNamespaces, "exclude-namespaces", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&ignoreControllerKind, "ignore-controller-kind", []string{}, "Comma delimited list of controller kinds to exclude from recommendations.")
+	controllerCmd.PersistentFlags().StringSliceVar(&vpaRecommenders, "vpa-recommenders", []string{}, "Comma-separated list of VPA recommender names to set on created VerticalPodAutoscaler resources (autoscaling.k8s.io/v1 spec.recommenders). Empty uses the default recommender.")
 }
 
 var controllerCmd = &cobra.Command{
@@ -51,6 +53,7 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.IncludeNamespaces = includeNamespaces
 		vpaReconciler.ExcludeNamespaces = excludeNamespaces
 		vpaReconciler.IgnoreControllerKind = ignoreControllerKind
+		vpaReconciler.RecommenderNames = vpaRecommenders
 
 		klog.V(4).Infof("Starting controller with Reconciler: %+v", vpaReconciler)
 
