@@ -10,8 +10,8 @@ We provide security updates for the following versions of Goldilocks:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.x.x   | ✅ Yes              |
-| 4.x.x   | ✅ Yes (Critical only) |
+| 5.x     | ✅ Yes              |
+| 4.x     | ✅ Yes (Critical only) |
 | < 4.0   | ❌ No               |
 
 > **Note:** We strongly recommend running the latest release. Older minor releases within a supported major version will only receive patches for critical or high-severity vulnerabilities.
