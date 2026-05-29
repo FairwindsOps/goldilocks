@@ -104,9 +104,10 @@ jobs:
               -v "${HOME}/.docker:/root/.docker" \
               -v "${REPO_ROOT}:/workspace" -w /workspace \
               -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
+              -e VAULT_ADDR -e VAULT_TOKEN \
               --entrypoint sh \
               goreleaser/goreleaser:v2.15.4 \
-              -c 'ls -la /workspace && ls -la /workspace/.git && cd /workspace && unset GIT_DIR GIT_WORK_TREE && git config --global --add safe.directory /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser --skip=sign'
+              -c 'ls -la /workspace && ls -la /workspace/.git && cd /workspace && unset GIT_DIR GIT_WORK_TREE && git config --global --add safe.directory /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser release'
   snapshot:
     machine:
       image: ubuntu-2204:current
