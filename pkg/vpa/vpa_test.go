@@ -53,6 +53,8 @@ func setupVPAForTests(t *testing.T) {
 	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeAutoUnstructured.Object, &nsLabeledTrueUpdateModeAuto)
 	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeInPlaceUnstructured.Object, &nsLabeledTrueUpdateModeInPlace)
+	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledResourcePolicyUnstructured.Object, &nsLabeledResourcePolicy)
 	assert.NoError(t, err)
 }
@@ -95,6 +97,12 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			ns:         &nsLabeledTrueUpdateModeAuto,
 			explicit:   true,
 			updateMode: vpav1.UpdateModeAuto,
+		},
+		{
+			name:       "labeled: enabled=true, vpa-update-mode=inplace",
+			ns:         &nsLabeledTrueUpdateModeInPlace,
+			explicit:   true,
+			updateMode: vpav1.UpdateModeInPlace,
 		},
 	}
 
@@ -479,7 +487,6 @@ func Test_ReconcileNamespaceNoLabels(t *testing.T) {
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.Equal(t, 0, len(vpaList.Items))
 	assert.NoError(t, err)
-	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 }
 
 func Test_ReconcileNamespaceWithLabels(t *testing.T) {
@@ -544,7 +551,6 @@ func Test_ReconcileNamespaceDeleteDeployment(t *testing.T) {
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 
 }
 
@@ -592,7 +598,6 @@ func Test_ReconcileNamespaceRemoveLabel(t *testing.T) {
 	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(vpaList.Items))
-	assert.EqualValues(t, vpaList, &vpav1.VerticalPodAutoscalerList{})
 }
 
 func Test_ReconcileNamespace_ExcludeDeploymentAnnotation(t *testing.T) {

@@ -383,6 +383,7 @@ var allowedUpdateModes = []vpav1.UpdateMode{
 	vpav1.UpdateModeRecreate,
 	vpav1.UpdateModeAuto,
 	vpav1.UpdateModeInPlaceOrRecreate,
+	vpav1.UpdateModeInPlace,
 }
 
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
