@@ -98,6 +98,20 @@ var nsLabeledTrueUpdateModeAutoUnstructured = &unstructured.Unstructured{
 	},
 }
 
+var nsLabeledTrueUpdateModeInPlace corev1.Namespace
+var nsLabeledTrueUpdateModeInPlaceUnstructured = &unstructured.Unstructured{
+	Object: map[string]any{
+		"kind": "Namespace",
+		"metadata": map[string]any{
+			"name": "labeled-true",
+			"labels": map[string]any{
+				"goldilocks.fairwinds.com/enabled":         "True",
+				"goldilocks.fairwinds.com/vpa-update-mode": "inplace",
+			},
+		},
+	},
+}
+
 var nsLabeledResourcePolicy corev1.Namespace
 var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 	Object: map[string]any{

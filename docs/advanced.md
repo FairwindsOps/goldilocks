@@ -81,6 +81,9 @@ The update mode can be changed for a namespace by labels as well, for example:
 kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="auto"
 ```
 
+Supported update modes are `off`, `initial`, `recreate`, `auto`,
+`inplaceorrecreate`, and `inplace`.
+
 #### VPA Resource Policy
 
 > Note: This feature is for advanced usage only and is not recommended nor the default!
