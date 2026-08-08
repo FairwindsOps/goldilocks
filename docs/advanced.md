@@ -57,6 +57,16 @@ You can set the default behavior for VPA creation using some flags. When specifi
 * `--include-namespaces` - create VPAs in these namespaces, in addition to any that are labeled
 * `--exclude-namespaces` - when `--on-by-default` is set, exclude this comma-separated list of namespaces
 * `--ignore-controller-kind` - comma-separated list of controller kinds to ignore from automatic VPA creation. For example: `--ignore-controller-kind=Job,CronJob`
+* `--metrics-port` - the port to serve `/metrics` and `/healthz` on (default `8080`)
+
+#### Metrics
+
+The controller exposes a Prometheus-compatible `/metrics` endpoint (on `--metrics-port`, default `8080`) with standard Go process metrics as well as:
+
+* `goldilocks_controller_events_processed_total{resource, event_type}` - counts Kubernetes watch events processed by the controller, labeled by resource (`pod` or `namespace`) and event type (`create`, `update`, or `delete`)
+* `goldilocks_controller_process_errors_total{resource}` - counts events that failed to process after all retries were exhausted
+
+A `/healthz` endpoint is also served on the same port and can be used as a liveness or readiness probe.
 
 #### Enable Namespaces
 

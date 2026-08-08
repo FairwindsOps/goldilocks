@@ -15,6 +15,8 @@
 package cmd
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +25,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/fairwindsops/goldilocks/pkg/controller"
+	"github.com/fairwindsops/goldilocks/pkg/metrics"
 	"github.com/fairwindsops/goldilocks/pkg/vpa"
 )
 
@@ -31,6 +34,7 @@ var includeNamespaces []string
 var ignoreControllerKind []string
 var excludeNamespaces []string
 var dryRun bool
+var metricsPort int
 
 func init() {
 	rootCmd.AddCommand(controllerCmd)
@@ -39,6 +43,7 @@ func init() {
 	controllerCmd.PersistentFlags().StringSliceVar(&includeNamespaces, "include-namespaces", []string{}, "Comma delimited list of namespaces to include from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&excludeNamespaces, "exclude-namespaces", []string{}, "Comma delimited list of namespaces to exclude from recommendations.")
 	controllerCmd.PersistentFlags().StringSliceVar(&ignoreControllerKind, "ignore-controller-kind", []string{}, "Comma delimited list of controller kinds to exclude from recommendations.")
+	controllerCmd.PersistentFlags().IntVar(&metricsPort, "metrics-port", 8080, "The port to serve /metrics and /healthz on.")
 }
 
 var controllerCmd = &cobra.Command{
@@ -53,6 +58,8 @@ var controllerCmd = &cobra.Command{
 		vpaReconciler.IgnoreControllerKind = ignoreControllerKind
 
 		klog.V(4).Infof("Starting controller with Reconciler: %+v", vpaReconciler)
+
+		go serveMetrics(metricsPort)
 
 		// create a channel for sending a stop to kube watcher threads
 		stop := make(chan bool, 1)
@@ -69,4 +76,14 @@ var controllerCmd = &cobra.Command{
 		stop <- true
 		klog.Infof("Exiting, got signal: %v", s)
 	},
+}
+
+// serveMetrics starts an HTTP server exposing /metrics and /healthz on the given port.
+func serveMetrics(port int) {
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", metrics.Handler())
+	mux.Handle("/healthz", metrics.Healthz())
+
+	klog.Infof("Starting goldilocks controller metrics server on port %d", port)
+	klog.Fatalf("%v", http.ListenAndServe(fmt.Sprintf(":%d", port), mux))
 }

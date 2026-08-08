@@ -33,6 +33,7 @@ import (
 
 	"github.com/fairwindsops/goldilocks/pkg/handler"
 	"github.com/fairwindsops/goldilocks/pkg/kube"
+	"github.com/fairwindsops/goldilocks/pkg/metrics"
 	"github.com/fairwindsops/goldilocks/pkg/utils"
 )
 
@@ -106,6 +107,7 @@ func (watcher *KubeResourceWatcher) next() bool {
 			watcher.wq.AddRateLimited(evt)
 		} else {
 			klog.Errorf("Giving up trying to run queued item %s: %v", evt.(utils.Event).Key, processErr)
+			metrics.ProcessErrorsTotal.WithLabelValues(evt.(utils.Event).ResourceType).Inc()
 			watcher.wq.Forget(evt)
 			rt.HandleError(processErr)
 		}
@@ -182,6 +184,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
 			klog.V(2).Infof("%s/%s has been added.", resource, evt.Key)
+			metrics.EventsProcessedTotal.WithLabelValues(resource, evt.EventType).Inc()
 			wq.Add(evt)
 		},
 		DeleteFunc: func(obj any) {
@@ -196,6 +199,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(obj).Namespace
 			klog.V(2).Infof("%s/%s has been deleted.", resource, evt.Key)
+			metrics.EventsProcessedTotal.WithLabelValues(resource, evt.EventType).Inc()
 			wq.Add(evt)
 		},
 		UpdateFunc: func(old any, new any) {
@@ -210,6 +214,7 @@ func createController(kubeClient kubernetes.Interface, informer cache.SharedInde
 			evt.ResourceType = resource
 			evt.Namespace = objectMeta(new).Namespace
 			klog.V(8).Infof("%s/%s has been updated.", resource, evt.Key)
+			metrics.EventsProcessedTotal.WithLabelValues(resource, evt.EventType).Inc()
 			wq.Add(evt)
 		},
 	})
