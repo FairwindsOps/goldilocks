@@ -138,6 +138,11 @@ func (s Summarizer) GetSummary() (Summary, error) {
 	for _, vpa := range s.vpas {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.Name)
 
+		if vpa.Spec.TargetRef == nil {
+			klog.Errorf("no targetRef on VPA/%s", vpa.Name)
+			continue
+		}
+
 		// get or create the namespaceSummary for this VPA's namespace
 		namespace := vpa.Namespace
 		var nsSummary namespaceSummary
@@ -324,6 +329,10 @@ func (s *Summarizer) updateWorkloads() error {
 
 // vpaMatchesWorkload returns true if the VPA's target matches the workload
 func vpaMatchesWorkload(v vpav1.VerticalPodAutoscaler, w controllerUtils.Workload) bool {
+	// targetRef is optional in the VPA CRD, and a VPA without one targets nothing
+	if v.Spec.TargetRef == nil {
+		return false
+	}
 	// check if the VPA's target matches the workload's target
 	if v.Spec.TargetRef.Kind != w.TopController.GetKind() {
 		return false
