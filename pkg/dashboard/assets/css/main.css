@@ -357,6 +357,15 @@ COMPONENTS
   color: var(--color-text-1);
 }
 
+.badge.--match {
+  align-items: center;
+  background: var(--color-positive);
+  color: var(--color-text-inverse-1);
+  display: inline-flex;
+  gap: var(--gap--2);
+  margin-left: var(--gap--1);
+}
+
 .detailInfo:not(.--qos) {
   --gap-detail: var(--gap-0);
 

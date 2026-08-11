@@ -20,6 +20,7 @@ import (
 
 	controllerUtils "github.com/fairwindsops/controller-utils/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -71,6 +72,42 @@ type ContainerSummary struct {
 	ContainerCostInt  int
 	GuaranteedCostInt int
 	BurstableCostInt  int
+}
+
+// MatchesRecommendation reports whether this container's current CPU/memory
+// requests and limits are already set to exactly what the VPA recommends
+// (its Target). This is intentionally an exact match (via resource.Quantity's
+// Cmp, not naive string/struct equality) on all four values -- CPU request,
+// CPU limit, memory request, and memory limit -- rather than a fuzzy or
+// tolerance-based comparison. A container that matches on every value is
+// already sized the way the VPA would set it, and incidentally already
+// qualifies for the Guaranteed QoS class.
+//
+// A value that is unset (the zero Quantity) never counts as a match, even if
+// the corresponding target recommendation also happens to be zero, since an
+// unset request/limit is meaningfully different from an explicit one.
+func (c ContainerSummary) MatchesRecommendation() bool {
+	cpuTarget := c.Target[corev1.ResourceCPU]
+	memTarget := c.Target[corev1.ResourceMemory]
+
+	return quantityMatchesTarget(c.Requests[corev1.ResourceCPU], cpuTarget) &&
+		quantityMatchesTarget(c.Limits[corev1.ResourceCPU], cpuTarget) &&
+		quantityMatchesTarget(c.Requests[corev1.ResourceMemory], memTarget) &&
+		quantityMatchesTarget(c.Limits[corev1.ResourceMemory], memTarget)
+}
+
+// quantityMatchesTarget returns true if existing is set (non-zero) and is
+// exactly equal to target, as determined by resource.Quantity.Cmp(). Quantity
+// values can be semantically equal despite different internal representations
+// (e.g. "1000m" and "1" both represent one whole CPU, and "1Gi" and
+// "1073741824" both represent the same number of bytes), so Cmp is used
+// rather than reflect.DeepEqual or comparing the formatted strings, either of
+// which would report a false mismatch for values like these.
+func quantityMatchesTarget(existing, target resource.Quantity) bool {
+	if existing.IsZero() {
+		return false
+	}
+	return existing.Cmp(target) == 0
 }
 
 // Summarizer represents a source of generating a summary of VPAs
