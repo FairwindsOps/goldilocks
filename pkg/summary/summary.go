@@ -139,7 +139,7 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		klog.V(8).Infof("Analyzing vpa: %v", vpa.Name)
 
 		if vpa.Spec.TargetRef == nil {
-			klog.Errorf("no targetRef on VPA/%s", vpa.Name)
+			klog.Warningf("no targetRef on VPA/%s", vpa.Name)
 			continue
 		}
 
