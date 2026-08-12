@@ -391,3 +391,17 @@ var testSummaryDaemonSet = Summary{
 		},
 	},
 }
+
+// testVPANoTargetRef is a VPA whose spec omits targetRef, which the VPA CRD allows
+var testVPANoTargetRef = &vpav1.VerticalPodAutoscaler{
+	ObjectMeta: metav1.ObjectMeta{
+		Name:      "test-vpa-no-target-ref",
+		Labels:    utils.VPALabels,
+		Namespace: "testing",
+	},
+	Spec: vpav1.VerticalPodAutoscalerSpec{
+		UpdatePolicy: &vpav1.PodUpdatePolicy{
+			UpdateMode: &updateMode,
+		},
+	},
+}
