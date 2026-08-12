@@ -89,3 +89,30 @@ func Test_Summarizer_Daemonset(t *testing.T) {
 
 	assert.EqualValues(t, testSummaryDaemonSet, got)
 }
+
+func Test_Summarizer_VPAWithoutTargetRef(t *testing.T) {
+	kubeClientVPA := kube.GetMockVPAClient()
+	kubeClient := kube.GetMockClient()
+	dynamicClient := kube.GetMockDynamicClient()
+	controllerUtilsClient := kube.GetMockControllerUtilsClient(dynamicClient)
+
+	summarizer := NewSummarizer()
+	summarizer.kubeClient = kubeClient
+	summarizer.vpaClient = kubeClientVPA
+	summarizer.dynamicClient = dynamicClient
+	summarizer.controllerUtilsClient = controllerUtilsClient
+
+	_, err := dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = dynamicClient.Client.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace("testing").Create(context.TODO(), testDeploymentBasicPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = kubeClientVPA.Client.AutoscalingV1().VerticalPodAutoscalers("testing").Create(context.TODO(), testVPANoTargetRef, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// a VPA with no targetRef should be skipped, not bring the summary down
+	got, err := summarizer.GetSummary()
+	assert.NoError(t, err)
+	assert.Empty(t, got.Namespaces)
+}

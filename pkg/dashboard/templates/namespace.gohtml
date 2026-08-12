@@ -40,6 +40,12 @@
           <h4>
             <span class="badge detailBadge --container">Container</span>
             {{ $cName }}
+            {{ if $cSummary.MatchesRecommendation }}
+            <span class="badge --match" title="Current requests and limits already match the VPA recommendation">
+              <i aria-hidden="true" class="fas fa-check"></i>
+              Matches Recommendation
+            </span>
+            {{ end }}
           </h4>
 
           {{ if opts.EnableCost }}
