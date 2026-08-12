@@ -130,7 +130,7 @@ var nsLabeledResourcePolicyUnstructured = &unstructured.Unstructured{
 	},
 }
 
-var updateModeAuto = vpav1.UpdateModeAuto
+var updateModeRecreate = vpav1.UpdateModeRecreate
 
 var testDeploymentPodUnstructured = &unstructured.Unstructured{
 	Object: map[string]any{

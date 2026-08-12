@@ -94,7 +94,7 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			name:       "labled: enabled=true, vpa-update-mode=auto",
 			ns:         &nsLabeledTrueUpdateModeAuto,
 			explicit:   true,
-			updateMode: vpav1.UpdateModeAuto,
+			updateMode: vpav1.UpdateModeRecreate,
 		},
 	}
 
@@ -123,7 +123,7 @@ func Test_getVPAObject(t *testing.T) {
 		{
 			name:       "example-vpa",
 			ns:         &nsLabeledTrueUpdateModeAuto,
-			updateMode: vpav1.UpdateModeAuto,
+			updateMode: vpav1.UpdateModeRecreate,
 			vpa:        nil,
 			controller: Controller{
 				APIVersion:   "apps/v1",
@@ -305,7 +305,7 @@ func Test_updateVPA(t *testing.T) {
 	// no change between create and update
 	assert.NotEqual(t, &testVPA, currVPA)
 	// check that the update mode changed
-	assert.Equal(t, updateModeAuto, *currVPA.Spec.UpdatePolicy.UpdateMode)
+	assert.Equal(t, updateModeRecreate, *currVPA.Spec.UpdatePolicy.UpdateMode)
 }
 
 func Test_listVPA(t *testing.T) {
@@ -649,11 +649,11 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	err = GetInstance().ReconcileNamespace(&nsLabeledTrueUpdateModeAuto)
 	assert.NoError(t, err)
 
-	// There should be one vpa object with updatemode "auto"
+	// There should be one vpa object with updatemode "Recreate" (legacy "auto" maps to Recreate)
 	vpaList1, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
-	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeAuto)
+	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeRecreate)
 }
 
 func Test_ReconcileNamespaceDaemonset(t *testing.T) {
