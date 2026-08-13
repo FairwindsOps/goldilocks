@@ -381,8 +381,8 @@ var allowedUpdateModes = []vpav1.UpdateMode{
 	vpav1.UpdateModeOff,
 	vpav1.UpdateModeInitial,
 	vpav1.UpdateModeRecreate,
-	vpav1.UpdateModeAuto,
 	vpav1.UpdateModeInPlaceOrRecreate,
+	vpav1.UpdateModeInPlace,
 }
 
 // vpaUpdateModeForResource searches the resource's annotations and labels for a vpa-update-mode
@@ -400,11 +400,17 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 	}
 	if requestStr != "" {
 		requestStrLower := strings.ToLower(requestStr)
-		for _, mode := range allowedUpdateModes {
-			if requestStrLower == strings.ToLower(string(mode)) {
-				requestedVPAMode = mode
-				explicit = true
-				break
+		// "Auto" is deprecated in the VPA API and equivalent to Recreate; accept it as an alias.
+		if requestStrLower == "auto" {
+			requestedVPAMode = vpav1.UpdateModeRecreate
+			explicit = true
+		} else {
+			for _, mode := range allowedUpdateModes {
+				if requestStrLower == strings.ToLower(string(mode)) {
+					requestedVPAMode = mode
+					explicit = true
+					break
+				}
 			}
 		}
 		if !explicit {
