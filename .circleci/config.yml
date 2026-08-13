@@ -53,7 +53,7 @@ jobs:
   test:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.26.2
+      - image: cimg/go:1.26.5
         environment:
           GL_DEBUG: linters_output
           GOPACKAGESPRINTGOLISTERRORS: "1"
@@ -62,8 +62,8 @@ jobs:
       - run:
           name: golangci-lint
           environment:
-            GOLANGCI_LINT_VERSION: 2.10.1
-            GOLANGCI_LINT_CHECKSUM: dfa775874cf0561b404a02a8f4481fc69b28091da95aa697259820d429b09c99
+            GOLANGCI_LINT_VERSION: 2.12.2
+            GOLANGCI_LINT_CHECKSUM: 8df580d2670fed8fa984aac0507099af8df275e665215f5c7a2ae3943893a553
           command: |
             curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
             [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
