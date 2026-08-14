@@ -25,6 +25,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
+	clientfeatures "k8s.io/client-go/features"
+	clientfeaturestesting "k8s.io/client-go/features/testing"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
 
@@ -78,6 +80,15 @@ func Test_objectMeta(t *testing.T) {
 }
 
 func Test_createController_IncrementsEventMetrics(t *testing.T) {
+	// client-go's WatchListClient feature defaults to true as of v0.36 (k8s 1.35+).
+	// With it on, the reflector issues a streaming-list Watch and blocks waiting for
+	// a bookmark event marking the end of the initial list -- a bookmark
+	// fake.NewSimpleClientset()'s Watch() never sends, so the informer's initial
+	// cache sync (and this test) would hang until the reflector's internal retry
+	// loop is torn down by the test binary's own timeout. Force the pre-v0.36
+	// plain List+Watch behavior for this fake-clientset-backed test.
+	clientfeaturestesting.SetFeatureDuringTest(t, clientfeatures.WatchListClient, false)
+
 	fakeClient := fake.NewSimpleClientset()
 
 	informer := cache.NewSharedIndexInformer(
