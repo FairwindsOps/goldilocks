@@ -59,12 +59,22 @@ type ContainerSummary struct {
 	ContainerName string `json:"containerName"`
 
 	// recommendations
-	LowerBound        corev1.ResourceList `json:"lowerBound"`
-	UpperBound        corev1.ResourceList `json:"upperBound"`
-	Target            corev1.ResourceList `json:"target"`
-	UncappedTarget    corev1.ResourceList `json:"uncappedTarget"`
-	Limits            corev1.ResourceList `json:"limits"`
-	Requests          corev1.ResourceList `json:"requests"`
+	LowerBound     corev1.ResourceList `json:"lowerBound"`
+	UpperBound     corev1.ResourceList `json:"upperBound"`
+	Target         corev1.ResourceList `json:"target"`
+	UncappedTarget corev1.ResourceList `json:"uncappedTarget"`
+	Limits         corev1.ResourceList `json:"limits"`
+	Requests       corev1.ResourceList `json:"requests"`
+
+	// RequestsFromLimitRange/LimitsFromLimitRange record, per resource name (e.g. "cpu",
+	// "memory"), whether the corresponding entry in Requests/Limits was not set explicitly on
+	// the container and was instead resolved from a namespace LimitRange (see
+	// resolveEffectiveResources in limitrange.go). A resource name absent from these maps was
+	// either set explicitly on the container, or is genuinely unset (no LimitRange applied
+	// either), and both of those still render as "Not Set" when the value itself is zero.
+	RequestsFromLimitRange map[corev1.ResourceName]bool `json:"requestsFromLimitRange,omitempty"`
+	LimitsFromLimitRange   map[corev1.ResourceName]bool `json:"limitsFromLimitRange,omitempty"`
+
 	BasePath          string
 	ContainerCost     float64
 	GuaranteedCost    float64
@@ -119,6 +129,10 @@ type Summarizer struct {
 
 	// cached map of vpa name -> workload
 	workloadForVPANamed map[string]*controllerUtils.Workload
+
+	// cached map of namespace -> Container-typed LimitRangeItems found in that namespace,
+	// populated lazily as the summary is built. See containerLimitRangeItems in limitrange.go.
+	limitRangeItemsByNamespace map[string][]corev1.LimitRangeItem
 }
 
 // NewSummarizer returns a Summarizer for all goldilocks managed VPAs in all Namespaces
@@ -257,14 +271,19 @@ func (s Summarizer) GetSummary() (Summary, error) {
 			for _, c := range workloadPodSpec.Containers {
 				// find the matching container on the workload
 				if c.Name == containerRecommendation.ContainerName {
+					limitRangeItems := s.containerLimitRangeItems(namespace)
+					effRequests, effLimits, requestsFromLimitRange, limitsFromLimitRange := resolveEffectiveResources(c.Resources.Requests, c.Resources.Limits, limitRangeItems)
+
 					cSummary = ContainerSummary{
-						ContainerName:  containerRecommendation.ContainerName,
-						UpperBound:     utils.FormatResourceList(containerRecommendation.UpperBound),
-						LowerBound:     utils.FormatResourceList(containerRecommendation.LowerBound),
-						Target:         utils.FormatResourceList(containerRecommendation.Target),
-						UncappedTarget: utils.FormatResourceList(containerRecommendation.UncappedTarget),
-						Limits:         utils.FormatResourceList(c.Resources.Limits),
-						Requests:       utils.FormatResourceList(c.Resources.Requests),
+						ContainerName:          containerRecommendation.ContainerName,
+						UpperBound:             utils.FormatResourceList(containerRecommendation.UpperBound),
+						LowerBound:             utils.FormatResourceList(containerRecommendation.LowerBound),
+						Target:                 utils.FormatResourceList(containerRecommendation.Target),
+						UncappedTarget:         utils.FormatResourceList(containerRecommendation.UncappedTarget),
+						Limits:                 utils.FormatResourceList(effLimits),
+						Requests:               utils.FormatResourceList(effRequests),
+						RequestsFromLimitRange: requestsFromLimitRange,
+						LimitsFromLimitRange:   limitsFromLimitRange,
 					}
 					klog.V(6).Infof("Resources for %s/%s/%s: Requests: %v Limits: %v", wSummary.ControllerType, wSummary.ControllerName, c.Name, cSummary.Requests, cSummary.Limits)
 					wSummary.Containers[cSummary.ContainerName] = cSummary
