@@ -119,15 +119,19 @@ func NewController(stop <-chan bool) {
 	kubeClient := kube.GetInstance()
 
 	klog.Infof("Creating watcher for Pods.")
-	PodInformer := cache.NewSharedIndexInformer(
-		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
-			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.CoreV1().Pods("").Watch(context.TODO(), metav1.ListOptions{})
-			},
+	// Pass ListOptions through so client-go WatchList (enabled by default in
+	// client-go >= 0.35) can set SendInitialEvents and related fields. Ignoring
+	// options causes the reflector to hang waiting for an initial-events bookmark.
+	podListWatch := cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
+		ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.Client.CoreV1().Pods("").List(ctx, options)
 		},
+		WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.Client.CoreV1().Pods("").Watch(ctx, options)
+		},
+	}, kubeClient.Client)
+	PodInformer := cache.NewSharedIndexInformer(
+		podListWatch,
 		&corev1.Pod{},
 		0,
 		cache.Indexers{},
@@ -139,15 +143,16 @@ func NewController(stop <-chan bool) {
 	go PodWatcher.Watch(pTerm)
 
 	klog.Infof("Creating watcher for Namespaces.")
-	NSInformer := cache.NewSharedIndexInformer(
-		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return kubeClient.Client.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return kubeClient.Client.CoreV1().Namespaces().Watch(context.TODO(), metav1.ListOptions{})
-			},
+	nsListWatch := cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
+		ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+			return kubeClient.Client.CoreV1().Namespaces().List(ctx, options)
 		},
+		WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+			return kubeClient.Client.CoreV1().Namespaces().Watch(ctx, options)
+		},
+	}, kubeClient.Client)
+	NSInformer := cache.NewSharedIndexInformer(
+		nsListWatch,
 		&corev1.Namespace{},
 		0,
 		cache.Indexers{},

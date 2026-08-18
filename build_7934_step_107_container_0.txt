@@ -1,0 +1,687 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 7247k  100 7247k    0     0   102M      0 --:--:-- --:--:-- --:--:--  102M
+--2026-08-12 15:41:54--  https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
+Resolving github.com (github.com)... 140.82.114.4
+Connecting to github.com (github.com)|140.82.114.4|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/43225113/a10bed00-77da-11e9-8eaf-98e21eb499ef?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-08-12T16%3A32%3A37Z&rscd=attachment%3B+filename%3Dyq_linux_amd64&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-08-12T15%3A31%3A53Z&ske=2026-08-12T16%3A32%3A37Z&sks=b&skv=2018-11-09&sig=uKk913lcmU0DeIQyFVS3%2BiKptkUgAW8PrTnNUHZnjsg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4NjU0OTU2NywibmJmIjoxNzg2NTQ5MjY3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.EYVLns221cG094zaECjm8fcHiDCugZFRqRnftvgCZOc&response-content-disposition=attachment%3B%20filename%3Dyq_linux_amd64&response-content-type=application%2Foctet-stream [following]
+--2026-08-12 15:41:54--  https://release-assets.githubusercontent.com/github-production-release-asset/43225113/a10bed00-77da-11e9-8eaf-98e21eb499ef?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-08-12T16%3A32%3A37Z&rscd=attachment%3B+filename%3Dyq_linux_amd64&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-08-12T15%3A31%3A53Z&ske=2026-08-12T16%3A32%3A37Z&sks=b&skv=2018-11-09&sig=uKk913lcmU0DeIQyFVS3%2BiKptkUgAW8PrTnNUHZnjsg%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4NjU0OTU2NywibmJmIjoxNzg2NTQ5MjY3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.EYVLns221cG094zaECjm8fcHiDCugZFRqRnftvgCZOc&response-content-disposition=attachment%3B%20filename%3Dyq_linux_amd64&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.110.133, 185.199.111.133, 185.199.109.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 5268030 (5.0M) [application/octet-stream]
+Saving to: ‘/usr/local/bin/yq’
+
+/usr/local/bin/yq     0%[                    ]       0  --.-KB/s               /usr/local/bin/yq   100%[===================>]   5.02M  --.-KB/s    in 0.02s   
+
+2026-08-12 15:41:54 (324 MB/s) - ‘/usr/local/bin/yq’ saved [5268030/5268030]
+
+CI_SHA1: d5f352278d09ec1daef8f380cb6fb08e2f362d70
+
+
+********************************************************************
+** LOADING IMAGES TO DOCKER AND KIND **
+********************************************************************
+
+
+
+[1A[2K34884abbe928: Loading layer   98.3kB/8.698MB[1B[1A[2K34884abbe928: Loading layer  8.698MB/8.698MB[1B
+[1A[2K2da0cc7a0791: Loading layer  32.77kB/650.2kB[1B[1A[2K2da0cc7a0791: Loading layer  650.2kB/650.2kB[1B[1A[2K2da0cc7a0791: Loading layer  650.2kB/650.2kB[1B
+[1A[2K4f5d7734ace3: Loading layer  491.5kB/48.52MB[1B[1A[2K4f5d7734ace3: Loading layer  35.39MB/48.52MB[1B[1A[2K4f5d7734ace3: Loading layer  48.52MB/48.52MB[1BLoaded image: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:d5f352278d09ec1daef8f380cb6fb08e2f362d70-amd64
+Image: "us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:d5f352278d09ec1daef8f380cb6fb08e2f362d70-amd64" with ID "sha256:2347019c70421361276fa1d2327204b5f5d5ad729dc1b4044d61d2949b47ddde" not yet present on node "e2e-control-plane", loading...
+
+
+********************************************************************
+** END LOADING IMAGE **
+********************************************************************
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goldilocks-dashboard
+  labels:
+    app.kubernetes.io/name: goldilocks
+    app.kubernetes.io/component: dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: goldilocks
+      app.kubernetes.io/component: dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: goldilocks
+        app.kubernetes.io/component: dashboard
+    spec:
+      serviceAccountName: goldilocks-dashboard
+      containers:
+      - name: goldilocks
+        image: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:d5f352278d09ec1daef8f380cb6fb08e2f362d70-amd64
+        imagePullPolicy: Never
+        command:
+        - /goldilocks
+        - dashboard
+        - --exclude-containers=linkerd-proxy,istio-proxy
+        - -v3
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 10324
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 25m
+            memory: 32Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goldilocks-controller
+  labels:
+    app.kubernetes.io/name: goldilocks
+    app.kubernetes.io/component: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: goldilocks
+      app.kubernetes.io/component: controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: goldilocks
+        app.kubernetes.io/component: controller
+    spec:
+      serviceAccountName: goldilocks-controller
+      containers:
+      - name: goldilocks
+        image: us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:d5f352278d09ec1daef8f380cb6fb08e2f362d70-amd64
+        imagePullPolicy: Never
+        command:
+        - /goldilocks
+        - controller
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 10324
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 25m
+            memory: 32Mi
+
+
+**************************
+** Begin E2E Test Setup **
+**************************
+
+
+
+
+**************************
+** Install Dependencies **
+**************************
+
+
+--2026-08-12 15:41:59--  https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
+Resolving github.com (github.com)... 140.82.113.3
+Connecting to github.com (github.com)|140.82.113.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/43225113/a10bed00-77da-11e9-8eaf-98e21eb499ef?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-08-12T16%3A39%3A46Z&rscd=attachment%3B+filename%3Dyq_linux_amd64&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-08-12T15%3A39%3A39Z&ske=2026-08-12T16%3A39%3A46Z&sks=b&skv=2018-11-09&sig=M4Ue5SekVnHJyvTcesGNxBo1Pe7mNzbB3ZXHJVZuduo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4NjU0OTYxOSwibmJmIjoxNzg2NTQ5MzE5LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.ajsXfYVzgCxJaqvRHZF_ZCqQQe5dX-mjCCaPnl0jR7g&response-content-disposition=attachment%3B%20filename%3Dyq_linux_amd64&response-content-type=application%2Foctet-stream [following]
+--2026-08-12 15:41:59--  https://release-assets.githubusercontent.com/github-production-release-asset/43225113/a10bed00-77da-11e9-8eaf-98e21eb499ef?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-08-12T16%3A39%3A46Z&rscd=attachment%3B+filename%3Dyq_linux_amd64&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-08-12T15%3A39%3A39Z&ske=2026-08-12T16%3A39%3A46Z&sks=b&skv=2018-11-09&sig=M4Ue5SekVnHJyvTcesGNxBo1Pe7mNzbB3ZXHJVZuduo%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4NjU0OTYxOSwibmJmIjoxNzg2NTQ5MzE5LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.ajsXfYVzgCxJaqvRHZF_ZCqQQe5dX-mjCCaPnl0jR7g&response-content-disposition=attachment%3B%20filename%3Dyq_linux_amd64&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.108.133, 185.199.110.133, 185.199.111.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 5268030 (5.0M) [application/octet-stream]
+Saving to: ‘/usr/local/bin/yq’
+
+     0K .......... .......... .......... .......... ..........  0% 37.3M 0s
+    50K .......... .......... .......... .......... ..........  1% 43.9M 0s
+   100K .......... .......... .......... .......... ..........  2%  173M 0s
+   150K .......... .......... .......... .......... ..........  3%  132M 0s
+   200K .......... .......... .......... .......... ..........  4% 92.9M 0s
+   250K .......... .......... .......... .......... ..........  5%  105M 0s
+   300K .......... .......... .......... .......... ..........  6%  434M 0s
+   350K .......... .......... .......... .......... ..........  7%  405M 0s
+   400K .......... .......... .......... .......... ..........  8%  183M 0s
+   450K .......... .......... .......... .......... ..........  9% 86.7M 0s
+   500K .......... .......... .......... .......... .......... 10% 47.9M 0s
+   550K .......... .......... .......... .......... .......... 11%  336M 0s
+   600K .......... .......... .......... .......... .......... 12%  405M 0s
+   650K .......... .......... .......... .......... .......... 13%  354M 0s
+   700K .......... .......... .......... .......... .......... 14% 76.9M 0s
+   750K .......... .......... .......... .......... .......... 15% 77.9M 0s
+   800K .......... .......... .......... .......... .......... 16%  103M 0s
+   850K .......... .......... .......... .......... .......... 17% 56.8M 0s
+   900K .......... .......... .......... .......... .......... 18% 69.1M 0s
+   950K .......... .......... .......... .......... .......... 19%  149M 0s
+  1000K .......... .......... .......... .......... .......... 20%  154M 0s
+  1050K .......... .......... .......... .......... .......... 21%  333M 0s
+  1100K .......... .......... .......... .......... .......... 22%  386M 0s
+  1150K .......... .......... .......... .......... .......... 23%  411M 0s
+  1200K .......... .......... .......... .......... .......... 24%  282M 0s
+  1250K .......... .......... .......... .......... .......... 25%  335M 0s
+  1300K .......... .......... .......... .......... .......... 26%  391M 0s
+  1350K .......... .......... .......... .......... .......... 27%  386M 0s
+  1400K .......... .......... .......... .......... .......... 28%  403M 0s
+  1450K .......... .......... .......... .......... .......... 29%  311M 0s
+  1500K .......... .......... .......... .......... .......... 30%  428M 0s
+  1550K .......... .......... .......... .......... .......... 31%  144M 0s
+  1600K .......... .......... .......... .......... .......... 32%  173M 0s
+  1650K .......... .......... .......... .......... .......... 33%  250M 0s
+  1700K .......... .......... .......... .......... .......... 34% 79.7M 0s
+  1750K .......... .......... .......... .......... .......... 34%  197M 0s
+  1800K .......... .......... .......... .......... .......... 35%  113M 0s
+  1850K .......... .......... .......... .......... .......... 36%  388M 0s
+  1900K .......... .......... .......... .......... .......... 37%  373M 0s
+  1950K .......... .......... .......... .......... .......... 38%  212M 0s
+  2000K .......... .......... .......... .......... .......... 39%  183M 0s
+  2050K .......... .......... .......... .......... .......... 40%  332M 0s
+  2100K .......... .......... .......... .......... .......... 41%  269M 0s
+  2150K .......... .......... .......... .......... .......... 42%  205M 0s
+  2200K .......... .......... .......... .......... .......... 43%  330M 0s
+  2250K .......... .......... .......... .......... .......... 44%  159M 0s
+  2300K .......... .......... .......... .......... .......... 45%  421M 0s
+  2350K .......... .......... .......... .......... .......... 46%  191M 0s
+  2400K .......... .......... .......... .......... .......... 47%  386M 0s
+  2450K .......... .......... .......... .......... .......... 48%  415M 0s
+  2500K .......... .......... .......... .......... .......... 49%  185M 0s
+  2550K .......... .......... .......... .......... .......... 50%  369M 0s
+  2600K .......... .......... .......... .......... .......... 51%  186M 0s
+  2650K .......... .......... .......... .......... .......... 52%  376M 0s
+  2700K .......... .......... .......... .......... .......... 53%  223M 0s
+  2750K .......... .......... .......... .......... .......... 54%  282M 0s
+  2800K .......... .......... .......... .......... .......... 55%  401M 0s
+  2850K .......... .......... .......... .......... .......... 56%  195M 0s
+  2900K .......... .......... .......... .......... .......... 57%  200M 0s
+  2950K .......... .......... .......... .......... .......... 58%  241M 0s
+  3000K .......... .......... .......... .......... .......... 59%  310M 0s
+  3050K .......... .......... .......... .......... .......... 60%  220M 0s
+  3100K .......... .......... .......... .......... .......... 61%  390M 0s
+  3150K .......... .......... .......... .......... .......... 62%  349M 0s
+  3200K .......... .......... .......... .......... .......... 63%  339M 0s
+  3250K .......... .......... .......... .......... .......... 64%  352M 0s
+  3300K .......... .......... .......... .......... .......... 65%  389M 0s
+  3350K .......... .......... .......... .......... .......... 66%  391M 0s
+  3400K .......... .......... .......... .......... .......... 67%  281M 0s
+  3450K .......... .......... .......... .......... .......... 68%  316M 0s
+  3500K .......... .......... .......... .......... .......... 69%  346M 0s
+  3550K .......... .......... .......... .......... .......... 69%  353M 0s
+  3600K .......... .......... .......... .......... .......... 70%  360M 0s
+  3650K .......... .......... .......... .......... .......... 71%  408M 0s
+  3700K .......... .......... .......... .......... .......... 72%  406M 0s
+  3750K .......... .......... .......... .......... .......... 73%  393M 0s
+  3800K .......... .......... .......... .......... .......... 74%  337M 0s
+  3850K .......... .......... .......... .......... .......... 75%  389M 0s
+  3900K .......... .......... .......... .......... .......... 76%  360M 0s
+  3950K .......... .......... .......... .......... .......... 77%  333M 0s
+  4000K .......... .......... .......... .......... .......... 78%  352M 0s
+  4050K .......... .......... .......... .......... .......... 79%  398M 0s
+  4100K .......... .......... .......... .......... .......... 80%  405M 0s
+  4150K .......... .......... .......... .......... .......... 81%  385M 0s
+  4200K .......... .......... .......... .......... .......... 82%  332M 0s
+  4250K .......... .......... .......... .......... .......... 83%  338M 0s
+  4300K .......... .......... .......... .......... .......... 84%  234M 0s
+  4350K .......... .......... .......... .......... .......... 85%  385M 0s
+  4400K .......... .......... .......... .......... .......... 86%  366M 0s
+  4450K .......... .......... .......... .......... .......... 87%  405M 0s
+  4500K .......... .......... .......... .......... .......... 88%  376M 0s
+  4550K .......... .......... .......... .......... .......... 89%  417M 0s
+  4600K .......... .......... .......... .......... .......... 90%  273M 0s
+  4650K .......... .......... .......... .......... .......... 91%  362M 0s
+  4700K .......... .......... .......... .......... .......... 92%  405M 0s
+  4750K .......... .......... .......... .......... .......... 93%  366M 0s
+  4800K .......... .......... .......... .......... .......... 94%  440M 0s
+  4850K .......... .......... .......... .......... .......... 95%  378M 0s
+  4900K .......... .......... .......... .......... .......... 96%  326M 0s
+  4950K .......... .......... .......... .......... .......... 97%  249M 0s
+  5000K .......... .......... .......... .......... .......... 98%  347M 0s
+  5050K .......... .......... .......... .......... .......... 99%  366M 0s
+  5100K .......... .......... .......... .......... ....      100%  439M=0.02s
+
+2026-08-12 15:41:59 (206 MB/s) - ‘/usr/local/bin/yq’ saved [5268030/5268030]
+
+
+
+***************************
+** Install and Run Venom **
+***************************
+
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100 24.1M  100 24.1M    0     0   150M      0 --:--:-- --:--:-- --:--:--  150M
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/00_setup.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/10_basic.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/20_flags.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/99_cleanup.yaml
+time="2026-08-12T15:41:59Z" level=info msg="Parsing testsuite tests/00_setup.yaml"
+time="2026-08-12T15:41:59Z" level=info msg="Parsing testsuite tests/10_basic.yaml"
+time="2026-08-12T15:41:59Z" level=info msg="Parsing testsuite tests/20_flags.yaml"
+time="2026-08-12T15:41:59Z" level=info msg="Parsing testsuite tests/99_cleanup.yaml"
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/00_setup.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/10_basic.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/20_flags.yaml
+time="2026-08-12T15:41:59Z" level=info msg=Readingtests/99_cleanup.yaml
+time="2026-08-12T15:41:59Z" level=debug msg="work with tmp file /tmp/venom-402939902" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:41:59Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-402939902'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:41:59Z" level=debug msg="\"metrics-server\" has been added to your repositories\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:41:59Z" level=debug msg="Hang tight while we grab the latest from your chart repositories...\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:41:59Z" level=debug msg="...Successfully got an update from the \"metrics-server\" chart repository\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:41:59Z" level=debug msg="Update Complete. ⎈Happy Helming!⎈\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="Release \"metrics-server\" does not exist. Installing it now.\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="NAME: metrics-server\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:42:00 2026\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="NAMESPACE: metrics-server\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="STATUS: deployed\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="REVISION: 1\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="NOTES:\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="***********************************************************************\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="* Metrics Server                                                      *\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="***********************************************************************\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="  Chart version: 3.13.1\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="  App version:   0.8.1\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="  Image tag:     registry.k8s.io/metrics-server/metrics-server:v0.8.1\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="***********************************************************************\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install metrics-server"
+time="2026-08-12T15:42:00Z" level=debug msg="work with tmp file /tmp/venom-000870725" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-000870725'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="\"fairwinds-stable\" has been added to your repositories\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="Hang tight while we grab the latest from your chart repositories...\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="...Successfully got an update from the \"metrics-server\" chart repository\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="...Successfully got an update from the \"fairwinds-stable\" chart repository\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:00Z" level=debug msg="Update Complete. ⎈Happy Helming!⎈\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="NAME: vpa\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:42:03 2026\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="NAMESPACE: vpa\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="STATUS: deployed\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="REVISION: 1\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="NOTES:\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="Congratulations on installing the Vertical Pod Autoscaler!\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="Components Installed:\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="  - recommender\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="  - updater\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="  - admission-controller\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:14Z" level=debug msg="To verify functionality, you can try running 'helm -n vpa test vpa'\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:15Z" level=debug msg="work with tmp file /tmp/venom-953456096" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-953456096'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:15Z" level=debug msg="customresourcedefinition.apiextensions.k8s.io/verticalpodautoscalers.autoscaling.k8s.io\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install VPA Recommender"
+time="2026-08-12T15:42:15Z" level=debug msg="work with tmp file /tmp/venom-350718399" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-350718399'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="namespace/goldilocks created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="work with tmp file /tmp/venom-846693394" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-846693394'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="clusterrole.rbac.authorization.k8s.io/goldilocks-dashboard created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="clusterrolebinding.rbac.authorization.k8s.io/goldilocks-dashboard created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="deployment.apps/goldilocks-dashboard created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="service/goldilocks-dashboard created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="serviceaccount/goldilocks-dashboard created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="clusterrole.rbac.authorization.k8s.io/goldilocks-controller created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="clusterrolebinding.rbac.authorization.k8s.io/goldilocks-controller created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="deployment.apps/goldilocks-controller created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="serviceaccount/goldilocks-controller created\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="work with tmp file /tmp/venom-191477833" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-191477833'" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:20Z" level=debug msg="deployment.apps/goldilocks-dashboard condition met\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+time="2026-08-12T15:42:20Z" level=debug msg="deployment.apps/goldilocks-controller condition met\n" v.testsuite="Setup [tests/00_setup.yaml]" x.testcase="Install Goldilocks"
+SUCCESS tests/00_setup.yaml                            21.485698853s
+time="2026-08-12T15:42:20Z" level=debug msg="work with tmp file /tmp/venom-929311508" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:20Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-929311508'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="\"fairwinds-incubator\" has been added to your repositories\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="NAME: basic-demo\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:42:21 2026\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="NAMESPACE: demo\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="STATUS: deployed\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="REVISION: 1\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="NOTES:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="1. Get the application URL by running these commands:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="  export POD_NAME=$(kubectl get pods --namespace demo -l \"app.kubernetes.io/name=basic-demo,app.kubernetes.io/instance=basic-demo\" -o jsonpath=\"{.items[0].metadata.name}\")\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="  echo \"Visit http://127.0.0.1:8080 to use your application\"\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:21Z" level=debug msg="  kubectl port-forward $POD_NAME 8080:80\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="deployment.apps/basic-demo condition met\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="work with tmp file /tmp/venom-715332451" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA Anywhere Before Labels"
+time="2026-08-12T15:42:24Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-715332451'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA Anywhere Before Labels"
+time="2026-08-12T15:42:24Z" level=debug msg="No resources found\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA Anywhere Before Labels"
+time="2026-08-12T15:42:24Z" level=debug msg="work with tmp file /tmp/venom-273402214" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-273402214'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="namespace/demo labeled\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="work with tmp file /tmp/venom-984380301" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:24Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-984380301'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:54Z" level=debug msg="work with tmp file /tmp/venom-114504072" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:54Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-114504072'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:54Z" level=debug msg="Error from server (NotFound): verticalpodautoscalers.autoscaling.k8s.io \"goldilocks-basic-demo\" not found\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in demo namespace"
+time="2026-08-12T15:42:54Z" level=debug msg="work with tmp file /tmp/venom-809656647" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:54Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-809656647'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:58Z" level=debug msg="\"bitnami\" has been added to your repositories\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:58Z" level=debug msg="Hang tight while we grab the latest from your chart repositories...\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:58Z" level=debug msg="...Successfully got an update from the \"metrics-server\" chart repository\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:58Z" level=debug msg="...Successfully got an update from the \"fairwinds-incubator\" chart repository\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:42:58Z" level=debug msg="...Successfully got an update from the \"fairwinds-stable\" chart repository\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:01Z" level=debug msg="...Successfully got an update from the \"bitnami\" chart repository\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:01Z" level=debug msg="Update Complete. ⎈Happy Helming!⎈\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:01Z" level=debug msg="namespace/statefulset-demo created\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="NAME: redis\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:43:04 2026\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="NAMESPACE: statefulset-demo\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="STATUS: deployed\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="REVISION: 1\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="NOTES:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="CHART NAME: redis\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="CHART VERSION: 28.0.2\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="APP VERSION: 8.10.0\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="⚠ WARNING: Since August 28th, 2025, only a limited subset of images/charts are available for free.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    Subscribe to Bitnami Secure Images to receive continued support and security updates.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    More info at https://bitnami.com and https://github.com/bitnami/containers/issues/83267\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="** Please be patient while the chart is being deployed **\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="Redis(R) can be accessed on the following DNS names from within your cluster:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    redis-master.statefulset-demo.svc.cluster.local for read/write operations (port 6379)\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    redis-replicas.statefulset-demo.svc.cluster.local for read-only operations (port 6379)\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="To get your password run:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    export REDIS_PASSWORD=$(kubectl get secret --namespace statefulset-demo redis -o jsonpath=\"{.data.redis-password}\" | base64 -d)\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="To connect to your Redis(R) server:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="1. Run a Redis(R) pod that you can use as a client:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   kubectl run --namespace statefulset-demo redis-client --restart='Never'  --env REDIS_PASSWORD=$REDIS_PASSWORD  --image registry-1.docker.io/bitnami/redis:latest --command -- sleep infinity\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   Use the following command to attach to the pod:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   kubectl exec --tty -i redis-client \\\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   --namespace statefulset-demo -- bash\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="2. Connect using the Redis(R) CLI:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli -h redis-master\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="   REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli -h redis-replicas\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="To connect to your database from outside the cluster execute the following commands:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    kubectl port-forward --namespace statefulset-demo svc/redis-master 6379:6379 &\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="    REDISCLI_AUTH=\"$REDIS_PASSWORD\" redis-cli -h 127.0.0.1 -p 6379\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: Rolling tag detected (bitnami/redis:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: Rolling tag detected (bitnami/redis-sentinel:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: Rolling tag detected (bitnami/redis-exporter:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: Rolling tag detected (bitnami/os-shell:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: Rolling tag detected (bitnami/os-shell:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="WARNING: There are \"resources\" sections in the chart not set. Using \"resourcesPreset\" is not recommended for production. For production installations, please set the following values according to your workload needs:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="  - replica.resources\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="  - master.resources\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="+info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup redis in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="work with tmp file /tmp/venom-265777146" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA in statefulset-demo namespace Before Labels"
+time="2026-08-12T15:43:05Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-265777146'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA in statefulset-demo namespace Before Labels"
+time="2026-08-12T15:43:05Z" level=debug msg="No resources found in statefulset-demo namespace.\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="No VPA in statefulset-demo namespace Before Labels"
+time="2026-08-12T15:43:05Z" level=debug msg="work with tmp file /tmp/venom-496427281" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-496427281'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="namespace/statefulset-demo labeled\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="work with tmp file /tmp/venom-494333244" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:05Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-494333244'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="work with tmp file /tmp/venom-222305643" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-222305643'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="Error from server (NotFound): verticalpodautoscalers.autoscaling.k8s.io \"goldilocks-redis-replicas\" not found\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA in statefulset-demo namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="work with tmp file /tmp/venom-241432526" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-241432526'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="namespace/demo-resource-policy created\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:35Z" level=debug msg="\"fairwinds-incubator\" already exists with the same configuration, skipping\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="NAME: basic-demo\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:43:35 2026\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="NAMESPACE: demo-resource-policy\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="STATUS: deployed\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="REVISION: 1\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="NOTES:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="1. Get the application URL by running these commands:\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="  export POD_NAME=$(kubectl get pods --namespace demo-resource-policy -l \"app.kubernetes.io/name=basic-demo,app.kubernetes.io/instance=basic-demo\" -o jsonpath=\"{.items[0].metadata.name}\")\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="  echo \"Visit http://127.0.0.1:8080 to use your application\"\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:36Z" level=debug msg="  kubectl port-forward $POD_NAME 8080:80\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:38Z" level=debug msg="deployment.apps/basic-demo condition met\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="Setup demo-resource-policy namespace"
+time="2026-08-12T15:43:38Z" level=debug msg="work with tmp file /tmp/venom-197826773" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:38Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-197826773'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="namespace/demo-resource-policy annotated\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="work with tmp file /tmp/venom-905082928" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-905082928'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="namespace/demo-resource-policy labeled\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="work with tmp file /tmp/venom-589651919" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:43:39Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-589651919'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:44:09Z" level=debug msg="work with tmp file /tmp/venom-526962402" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:44:09Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-526962402'" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+time="2026-08-12T15:44:09Z" level=debug msg="Error from server (NotFound): verticalpodautoscalers.autoscaling.k8s.io \"goldilocks-basic-demo\" not found\n" v.testsuite="Basic Operation [tests/10_basic.yaml]" x.testcase="VPA with Resource Policy in demo-resource-policy namespace"
+FAILURE tests/10_basic.yaml                            1m48.247574422s
+time="2026-08-12T15:44:09Z" level=debug msg="work with tmp file /tmp/venom-410067673" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-410067673'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="namespace/demo-no-label created\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="namespace/demo-included created\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="namespace/demo-excluded created\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="\"fairwinds-incubator\" already exists with the same configuration, skipping\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="NAME: basic-demo-no-label\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:44:09 2026\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="NAMESPACE: demo-no-label\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="STATUS: deployed\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="REVISION: 1\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="NOTES:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="1. Get the application URL by running these commands:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="  export POD_NAME=$(kubectl get pods --namespace demo-no-label -l \"app.kubernetes.io/name=basic-demo,app.kubernetes.io/instance=basic-demo-no-label\" -o jsonpath=\"{.items[0].metadata.name}\")\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="  echo \"Visit http://127.0.0.1:8080 to use your application\"\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:09Z" level=debug msg="  kubectl port-forward $POD_NAME 8080:80\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NAME: basic-demo-included\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:44:10 2026\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NAMESPACE: demo-included\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="STATUS: deployed\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="REVISION: 1\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NOTES:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="1. Get the application URL by running these commands:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  export POD_NAME=$(kubectl get pods --namespace demo-included -l \"app.kubernetes.io/name=basic-demo,app.kubernetes.io/instance=basic-demo-included\" -o jsonpath=\"{.items[0].metadata.name}\")\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  echo \"Visit http://127.0.0.1:8080 to use your application\"\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  kubectl port-forward $POD_NAME 8080:80\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NAME: basic-demo-excluded\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="LAST DEPLOYED: Wed Aug 12 15:44:10 2026\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NAMESPACE: demo-excluded\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="STATUS: deployed\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="REVISION: 1\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="TEST SUITE: None\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="NOTES:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="1. Get the application URL by running these commands:\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  export POD_NAME=$(kubectl get pods --namespace demo-excluded -l \"app.kubernetes.io/name=basic-demo,app.kubernetes.io/instance=basic-demo-excluded\" -o jsonpath=\"{.items[0].metadata.name}\")\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  echo \"Visit http://127.0.0.1:8080 to use your application\"\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:10Z" level=debug msg="  kubectl port-forward $POD_NAME 8080:80\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:14Z" level=debug msg="deployment.apps/basic-demo-no-label condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:14Z" level=debug msg="deployment.apps/basic-demo-included condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:14Z" level=debug msg="deployment.apps/basic-demo-excluded condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Setup namespaces demo-no-label/demo-included/demo-excluded"
+time="2026-08-12T15:44:14Z" level=debug msg="work with tmp file /tmp/venom-028256868" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-028256868'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="deployment.apps/goldilocks-controller configured\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="work with tmp file /tmp/venom-924754035" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-924754035'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="deployment.apps/goldilocks-controller condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="work with tmp file /tmp/venom-268833078" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:14Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-268833078'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:44Z" level=debug msg="work with tmp file /tmp/venom-843928349" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:44Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-843928349'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:44Z" level=debug msg="Error from server (NotFound): verticalpodautoscalers.autoscaling.k8s.io \"goldilocks-basic-demo-no-label\" not found\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="On By Default"
+time="2026-08-12T15:44:44Z" level=debug msg="work with tmp file /tmp/venom-614923224" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:44Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-614923224'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="deployment.apps/goldilocks-controller configured\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="work with tmp file /tmp/venom-962186583" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-962186583'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="deployment.apps/goldilocks-controller condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="work with tmp file /tmp/venom-216195786" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:44:45Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-216195786'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="work with tmp file /tmp/venom-627833761" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-627833761'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="Error from server (NotFound): verticalpodautoscalers.autoscaling.k8s.io \"goldilocks-basic-demo-included\" not found\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Include Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="work with tmp file /tmp/venom-152404620" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-152404620'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="deployment.apps/goldilocks-controller configured\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="work with tmp file /tmp/venom-279206011" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-279206011'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="deployment.apps/goldilocks-controller condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="work with tmp file /tmp/venom-707666334" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:15Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-707666334'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:45Z" level=debug msg="work with tmp file /tmp/venom-846840421" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:45Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-846840421'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Exclude Namespaces"
+time="2026-08-12T15:45:45Z" level=debug msg="work with tmp file /tmp/venom-482493056" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:45Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-482493056'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="deployment.apps/goldilocks-controller configured\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="work with tmp file /tmp/venom-912330207" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-912330207'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="deployment.apps/goldilocks-controller condition met\n" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="work with tmp file /tmp/venom-929561010" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:45:46Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-929561010'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:46:16Z" level=debug msg="work with tmp file /tmp/venom-240321897" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+time="2026-08-12T15:46:16Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-240321897'" v.testsuite="Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]" x.testcase="Ignore Controller Kind"
+FAILURE tests/20_flags.yaml                            2m7.162897243s
+time="2026-08-12T15:46:16Z" level=debug msg="work with tmp file /tmp/venom-284961204" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-284961204'" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="namespace \"demo\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="namespace \"demo-no-label\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="namespace \"demo-included\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="namespace \"demo-excluded\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:16Z" level=debug msg="namespace \"goldilocks\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:30Z" level=debug msg="work with tmp file /tmp/venom-506791811" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:30Z" level=debug msg="teststep exec '/bin/sh /tmp/venom-506791811'" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:30Z" level=debug msg="release \"metrics-server\" uninstalled\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:30Z" level=debug msg="namespace \"metrics-server\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:36Z" level=debug msg="release \"vpa\" uninstalled\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:36Z" level=debug msg="namespace \"vpa\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+time="2026-08-12T15:46:41Z" level=debug msg="namespace \"statefulset-demo\" deleted\n" v.testsuite="Cleanup [tests/99_cleanup.yaml]" x.testcase=Cleanup
+SUCCESS tests/99_cleanup.yaml                          32.202753638s
+
+FAILED Basic Operation [tests/10_basic.yaml]
+Failure in "tests/10_basic.yaml"
+In test case "VPA in demo namespace", at step 2
+Assertion "result.code ShouldEqual 0" failed
+Expected: '0'
+Actual:   '1'
+(Should be equal)
+
+Failure in "tests/10_basic.yaml"
+In test case "VPA in demo namespace", at step 2
+Assertion "result.systemout ShouldEqual \"verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo\"" failed
+Expected: 'verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo'
+Actual:   ''
+(Should be equal)
+
+Failure in "tests/10_basic.yaml"
+In test case "VPA in statefulset-demo namespace", at step 2
+Assertion "result.code ShouldEqual 0" failed
+Expected: '0'
+Actual:   '1'
+(Should be equal)
+
+Failure in "tests/10_basic.yaml"
+In test case "VPA in statefulset-demo namespace", at step 2
+Assertion "result.systemout ShouldEqual \"verticalpodautoscaler.autoscaling.k8s.io/goldilocks-redis-replicas\"" failed
+Expected: 'verticalpodautoscaler.autoscaling.k8s.io/goldilocks-redis-replicas'
+Actual:   ''
+(Should be equal)
+
+Failure in "tests/10_basic.yaml"
+In test case "VPA with Resource Policy in demo-resource-policy namespace", at step 3
+Assertion "result.code ShouldEqual 0" failed
+Expected: '0'
+Actual:   '1'
+(Should be equal)
+
+Failure in "tests/10_basic.yaml"
+In test case "VPA with Resource Policy in demo-resource-policy namespace", at step 3
+Assertion "result.systemout ShouldEqual '{\"containerName\":\"nginx\",\"minAllowed\":{\"cpu\":\"250m\",\"memory\":\"100Mi\"}}'" failed
+Expected: '{"containerName":"nginx","minAllowed":{"cpu":"250m","memory":"100Mi"}}'
+Actual:   ''
+(Should be equal)
+
+FAILED Flags - include-namespaces/exclude-namespaces/on-by-default [tests/20_flags.yaml]
+Failure in "tests/20_flags.yaml"
+In test case "On By Default", at step 3
+Assertion "result.code ShouldEqual 0" failed
+Expected: '0'
+Actual:   '1'
+(Should be equal)
+
+Failure in "tests/20_flags.yaml"
+In test case "On By Default", at step 3
+Assertion "result.systemout ShouldEqual \"verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-no-label\"" failed
+Expected: 'verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-no-label'
+Actual:   ''
+(Should be equal)
+
+Failure in "tests/20_flags.yaml"
+In test case "Include Namespaces", at step 3
+Assertion "result.code ShouldEqual 0" failed
+Expected: '0'
+Actual:   '1'
+(Should be equal)
+
+Failure in "tests/20_flags.yaml"
+In test case "Include Namespaces", at step 3
+Assertion "result.systemout ShouldEqual \"verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-included\"" failed
+Expected: 'verticalpodautoscaler.autoscaling.k8s.io/goldilocks-basic-demo-included'
+Actual:   ''
+(Should be equal)
+
+Total:14 Duration:4m49.105650862s
+OK:4
+KO:10
+Skipped:0
+TestSuite:4
+TestCase:17
+
+File /tmp/test-results/test_results.xml is written
+File /tmp/test-results/basic-operation.vpa-in-demo-namespace.dump is written
+File /tmp/test-results/basic-operation.vpa-in-demo-namespace.dump is written
+File /tmp/test-results/basic-operation.vpa-in-statefulset-demo-namespace.dump is written
+File /tmp/test-results/basic-operation.vpa-in-statefulset-demo-namespace.dump is written
+File /tmp/test-results/basic-operation.vpa-with-resource-policy-in-demo-resource-policy-namespace.dump is written
+File /tmp/test-results/basic-operation.vpa-with-resource-policy-in-demo-resource-policy-namespace.dump is written
+File /tmp/test-results/flags-include-namespaces-exclude-namespaces-on-by-default.on-by-default.dump is written
+File /tmp/test-results/flags-include-namespaces-exclude-namespaces-on-by-default.on-by-default.dump is written
+File /tmp/test-results/flags-include-namespaces-exclude-namespaces-on-by-default.include-namespaces.dump is written
+File /tmp/test-results/flags-include-namespaces-exclude-namespaces-on-by-default.include-namespaces.dump is written
