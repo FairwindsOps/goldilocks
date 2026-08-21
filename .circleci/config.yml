@@ -59,7 +59,10 @@ jobs:
       - run:
           name: golangci-lint
           command: |
-            go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+            curl -fsSL -o golangci-lint.tar.gz https://github.com/golangci/golangci-lint/releases/download/v2.12.2/golangci-lint-2.12.2-linux-amd64.tar.gz
+            echo '8df580d2670fed8fa984aac0507099af8df275e665215f5c7a2ae3943893a553  golangci-lint.tar.gz' | sha256sum -c
+            tar -xzf golangci-lint.tar.gz
+            mv golangci-lint-2.12.2-linux-amd64/golangci-lint "$(go env GOPATH)/bin/golangci-lint"
             golangci-lint run --timeout 5m
       - run:
           name: test
@@ -78,7 +81,7 @@ jobs:
           command: |
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$$(pwd):/workspace" -w /workspace \
+              -v "$(pwd):/workspace" -w /workspace \
               -e CIRCLE_SHA1 \
               -e CIRCLE_BRANCH \
               -e CIRCLE_TAG \
@@ -108,7 +111,7 @@ jobs:
       - run:
           name: docker login Google Artifact Registry
           command: |
-            docker login -u _json_key -p "$$(echo $$GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
+            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser release
@@ -116,7 +119,7 @@ jobs:
             export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "$$(pwd):/workspace" -w /workspace \
+              -v "$(pwd):/workspace" -w /workspace \
               -v "${HOME}/.docker:/root/.docker" \
               -e GORELEASER_CURRENT_TAG \
               -e CIRCLE_TAG \
