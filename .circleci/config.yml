@@ -45,12 +45,12 @@ references:
 executors:
   golang-exec:
     docker:
-      - image: cimg/go:1.26.5
+      - image: cimg/go:1.26.6
 
 jobs:
   test:
     docker:
-      - image: cimg/go:1.26.5
+      - image: cimg/go:1.26.6
     steps:
       - checkout
       - run:
@@ -170,7 +170,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              ignore: /^testing-.*/
+              only: /.*/
       - release:
           requires:
             - test
@@ -179,7 +179,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              ignore: /^testing-.*/
+              only: /.*/
       - oss-docs/publish-docs:
           requires:
             - release
@@ -188,4 +188,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              ignore: /^testing-.*/
+              only: /.*/
