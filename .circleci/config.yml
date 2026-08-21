@@ -38,7 +38,6 @@ references:
     filters:
       branches:
         only: /.*/
-        ignore: /pull\/[0-9]+/
       tags:
         ignore: /.*/
 
@@ -144,7 +143,6 @@ workflows:
           filters:
             branches:
               only: /.*/
-              ignore: /pull\/[0-9]+/
             tags:
               ignore: /.*/
       - rok8s/kubernetes_e2e_tests:
