@@ -53,6 +53,8 @@ func setupVPAForTests(t *testing.T) {
 	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeAutoUnstructured.Object, &nsLabeledTrueUpdateModeAuto)
 	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeInPlaceUnstructured.Object, &nsLabeledTrueUpdateModeInPlace)
+	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledResourcePolicyUnstructured.Object, &nsLabeledResourcePolicy)
 	assert.NoError(t, err)
 }
@@ -95,6 +97,12 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			ns:         &nsLabeledTrueUpdateModeAuto,
 			explicit:   true,
 			updateMode: vpav1.UpdateModeRecreate,
+		},
+		{
+			name:       "labled: enabled=true, vpa-update-mode=InPlace",
+			ns:         &nsLabeledTrueUpdateModeInPlace,
+			explicit:   true,
+			updateMode: vpav1.UpdateModeInPlace,
 		},
 	}
 
