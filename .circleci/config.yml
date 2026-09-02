@@ -1,20 +1,11 @@
+## DO NOT EDIT - Managed by Terraform
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@14
+  rok8s: fairwinds/rok8s-scripts@16.0.0
   oss-docs: fairwinds/oss-docs@0
 
 references:
-  install_vault: &install_vault
-    run:
-      name: install hashicorp vault
-      command: |
-        apk --update add curl yq
-        cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.21.4/vault_1.21.4_linux_amd64.zip
-        sha256sum vault_1.21.4_linux_amd64.zip | grep 889b681990fe221b884b7932fa9c9dd0ee9811b9349554f1aa287ab63c9f3dae
-        unzip vault_1.21.4_linux_amd64.zip
-        mv vault /usr/bin/vault
   install_vault_machine: &install_vault_machine
     run:
       name: install hashicorp vault
@@ -34,6 +25,7 @@ references:
         docker buildx create --use || true
         docker buildx inspect --bootstrap
   e2e_configuration: &e2e_configuration
+    executor: golang-exec
     pre_script: e2e/pre.sh
     script: e2e/run.sh
     command_runner_image: quay.io/reactiveops/ci-images:v14.1-bullseye
@@ -47,67 +39,35 @@ references:
       branches:
         only: /.*/
       tags:
-        ignore: /v.*/
+        ignore: /.*/
+
+executors:
+  golang-exec:
+    docker:
+      - image: cimg/go:1.26.7
 
 jobs:
   test:
-    working_directory: /home/circleci/go/src/github.com/fairwindsops/goldilocks
     docker:
-      - image: cimg/go:1.26.5
-        environment:
-          GL_DEBUG: linters_output
-          GOPACKAGESPRINTGOLISTERRORS: "1"
+      - image: cimg/go:1.26.7
     steps:
       - checkout
+      - run:
+          name: Go Mod Download
+          command: go mod download && go mod verify
       - run:
           name: golangci-lint
-          environment:
-            GOLANGCI_LINT_VERSION: 2.12.2
-            GOLANGCI_LINT_CHECKSUM: 8df580d2670fed8fa984aac0507099af8df275e665215f5c7a2ae3943893a553
           command: |
-            curl -OL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
-            [[ "$(sha256sum golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz)" == "${GOLANGCI_LINT_CHECKSUM}  golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" ]]
-            tar xzf golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz && mv golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint $(go env GOPATH)/bin/golangci-lint
-            go mod tidy
-            golangci-lint run -v --timeout 2m0s
+            curl -fsSL -o golangci-lint.tar.gz https://github.com/golangci/golangci-lint/releases/download/v2.12.2/golangci-lint-2.12.2-linux-amd64.tar.gz
+            echo '8df580d2670fed8fa984aac0507099af8df275e665215f5c7a2ae3943893a553  golangci-lint.tar.gz' | sha256sum -c
+            tar -xzf golangci-lint.tar.gz
+            mv golangci-lint-2.12.2-linux-amd64/golangci-lint "$(go env GOPATH)/bin/golangci-lint"
+            golangci-lint run --timeout 5m
       - run:
-          name: Run Tests
-          command: make test
-
-  build_and_release:
-    machine:
-      image: ubuntu-2204:current
-    resource_class: large
-    shell: /bin/bash
-    working_directory: /home/circleci/project
-    steps:
-      - checkout
-      - *install_vault_machine
-      - rok8s/get_vault_env:
-          vault_path: repo/global/env
-      - *setup_qemu_binfmt
-      - run:
-          name: Run GoReleaser release
+          name: test
           command: |
-            set -e
-            # Machine executor: home is /home/circleci, repo is at ~/project
-            REPO_ROOT="${HOME}/project"
-            if [[ ! -d "${REPO_ROOT}/.git" ]]; then
-              echo "ERROR: .git not found in ${REPO_ROOT}. Contents:"
-              ls -la "${REPO_ROOT}"
-              exit 1
-            fi
-            export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
-            # Use circleci user's Docker config (job runs as circleci, not root)
-            docker run --rm \
-              -v /var/run/docker.sock:/var/run/docker.sock \
-              -v "${HOME}/.docker:/root/.docker" \
-              -v "${REPO_ROOT}:/workspace" -w /workspace \
-              -e GORELEASER_CURRENT_TAG -e CIRCLE_TAG -e CIRCLE_SHA1 -e GITHUB_TOKEN -e GCP_ARTIFACTREADWRITE_JSON_KEY \
-              -e VAULT_ADDR -e VAULT_TOKEN \
-              --entrypoint sh \
-              goreleaser/goreleaser:v2.17.1 \
-              -c 'ls -la /workspace && ls -la /workspace/.git && cd /workspace && unset GIT_DIR GIT_WORK_TREE && git config --global --add safe.directory /workspace && (tmp=$(mktemp) && chmod 600 "$tmp" && printf "%s" "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d > "$tmp" && docker login -u _json_key --password-stdin us-docker.pkg.dev < "$tmp" && rm -f "$tmp"); goreleaser release'
+            go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+            go vet ./...
   snapshot:
     machine:
       image: ubuntu-2204:current
@@ -121,27 +81,70 @@ jobs:
             docker run --rm \
               -v /var/run/docker.sock:/var/run/docker.sock \
               -v "$(pwd):/workspace" -w /workspace \
-              -e CIRCLE_SHA1 -e CIRCLE_BRANCH -e CIRCLE_TAG \
-              goreleaser/goreleaser:v2.17.1 --snapshot --skip=sign
-      - run: mkdir -p /tmp/workspace/docker_save/
-      - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
+              -e CIRCLE_SHA1 \
+              -e CIRCLE_BRANCH \
+              -e CIRCLE_TAG \
+              goreleaser/goreleaser:v2.17.1 release --snapshot --skip=sign
+      - run:
+          name: Save snapshot amd64 image for e2e
+          command: |
+            mkdir -p /tmp/workspace/docker_save
+            docker save us-docker.pkg.dev/fairwinds-ops/oss/goldilocks:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/goldilocks_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
           root: /tmp/workspace/
           paths:
-          - docker_save
+            - docker_save
       - store_artifacts:
           path: dist
           destination: snapshot
+  release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    shell: /bin/bash
+    steps:
+      - checkout
+      - *install_vault_machine
+      - rok8s/get_vault_env:
+          vault_path: repo/global/env
+      - run:
+          name: docker login Google Artifact Registry
+          command: |
+            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | docker login -u _json_key --password-stdin us-docker.pkg.dev
+      - *setup_qemu_binfmt
+      - run:
+          name: Run GoReleaser release
+          command: |
+            export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$(pwd):/workspace" -w /workspace \
+              -v "${HOME}/.docker:/root/.docker" \
+              -e GORELEASER_CURRENT_TAG \
+              -e CIRCLE_TAG \
+              -e CIRCLE_SHA1 \
+              -e GO111MODULE=on \
+              -e GITHUB_TOKEN \
+              -e VAULT_ADDR \
+              -e VAULT_TOKEN \
+              goreleaser/goreleaser:v2.17.1 release
 
 workflows:
   version: 2
-  tests:
+  test_and_build:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              ignore: /.*/
       - snapshot:
-          context: org-global
           requires:
             - test
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.31"
           kind_node_image: "kindest/node:v1.31.6@sha256:28b7cbb993dfe093c76641a0c95807637213c9109b761f1d422c2400e22b8e87"
@@ -160,7 +163,15 @@ workflows:
           <<: *e2e_configuration
   release:
     jobs:
-      - build_and_release:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - release:
+          requires:
+            - test
           context: org-global
           filters:
             branches:
@@ -168,9 +179,11 @@ workflows:
             tags:
               only: /v.*/
       - oss-docs/publish-docs:
+          requires:
+            - release
           repository: goldilocks
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^.*/
+              only: /v.*/
