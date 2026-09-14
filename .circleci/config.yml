@@ -146,20 +146,16 @@ workflows:
             tags:
               ignore: /.*/
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.31"
-          kind_node_image: "kindest/node:v1.31.6@sha256:28b7cbb993dfe093c76641a0c95807637213c9109b761f1d422c2400e22b8e87"
+          name: "End-To-End Kubernetes 1.35"
+          kind_node_image: "kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.32"
-          kind_node_image: "kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f"
+          name: "End-To-End Kubernetes 1.36"
+          kind_node_image: "kindest/node:v1.36.4@sha256:099e049362a1526b2db71494e1947aae99bd16290d7c895f2b7ea312e3cbfaed"
           <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.33"
-          kind_node_image: "kindest/node:v1.33.1@sha256:8d866994839cd096b3590681c55a6fa4a071fdaf33be7b9660e5697d2ed13002"
-          <<: *e2e_configuration
-      - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.34"
-          kind_node_image: "kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a"
+          name: "End-To-End Kubernetes 1.37"
+          kind_node_image: "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5"
           <<: *e2e_configuration
   release:
     jobs:
