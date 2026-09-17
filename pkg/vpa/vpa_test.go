@@ -662,6 +662,18 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
 	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeRecreate)
+
+	// A camel-cased mode must reach the VPA spec with the exact casing the VPA
+	// API expects ("InPlace"), not a mangled value such as "Inplace".
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Update(context.TODO(), nsLabeledTrueUpdateModeInPlaceUnstructured, metav1.UpdateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrueUpdateModeInPlace)
+	assert.NoError(t, err)
+
+	vpaList2, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList2.Items))
+	assert.EqualValues(t, *vpaList2.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeInPlace)
 }
 
 func Test_ReconcileNamespaceDaemonset(t *testing.T) {
