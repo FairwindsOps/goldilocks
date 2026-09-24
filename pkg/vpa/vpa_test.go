@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -56,6 +57,8 @@ func setupVPAForTests(t *testing.T) {
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueUpdateModeInPlaceUnstructured.Object, &nsLabeledTrueUpdateModeInPlace)
 	assert.NoError(t, err)
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledResourcePolicyUnstructured.Object, &nsLabeledResourcePolicy)
+	assert.NoError(t, err)
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(nsLabeledTrueControlledValuesUnstructured.Object, &nsLabeledTrueControlledValues)
 	assert.NoError(t, err)
 }
 
@@ -115,6 +118,101 @@ func Test_vpaUpdateModeForNamespace(t *testing.T) {
 			assert.Equal(t, test.explicit, explicit)
 		})
 	}
+}
+
+func Test_vpaControlledValuesForResource(t *testing.T) {
+	requestsOnly := vpav1.ContainerControlledValuesRequestsOnly
+	requestsAndLimits := vpav1.ContainerControlledValuesRequestsAndLimits
+
+	tests := []struct {
+		name        string
+		labels      map[string]string
+		annotations map[string]string
+		explicit    bool
+		want        *vpav1.ContainerControlledValues
+	}{
+		{name: "unset (default)", explicit: false, want: nil},
+		{
+			name:     "label: RequestsOnly",
+			labels:   map[string]string{utils.VpaControlledValuesKey: "RequestsOnly"},
+			explicit: true,
+			want:     &requestsOnly,
+		},
+		{
+			name:        "annotation: RequestsOnly",
+			annotations: map[string]string{utils.VpaControlledValuesKey: "RequestsOnly"},
+			explicit:    true,
+			want:        &requestsOnly,
+		},
+		{
+			name:     "case insensitive: requestsandlimits",
+			labels:   map[string]string{utils.VpaControlledValuesKey: "requestsandlimits"},
+			explicit: true,
+			want:     &requestsAndLimits,
+		},
+		{
+			name:     "invalid value is ignored",
+			labels:   map[string]string{utils.VpaControlledValuesKey: "bogus"},
+			explicit: false,
+			want:     nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			obj := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Labels: test.labels, Annotations: test.annotations}}
+			got, explicit := vpaControlledValuesForResource(obj)
+			assert.Equal(t, test.explicit, explicit)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
+func Test_applyControlledValues(t *testing.T) {
+	requestsOnly := vpav1.ContainerControlledValuesRequestsOnly
+	requestsAndLimits := vpav1.ContainerControlledValuesRequestsAndLimits
+
+	t.Run("nil controlled values returns policy untouched", func(t *testing.T) {
+		policy := &vpav1.PodResourcePolicy{}
+		assert.Same(t, policy, applyControlledValues(policy, nil))
+		assert.Nil(t, applyControlledValues(nil, nil))
+	})
+
+	t.Run("nil policy gets a default container policy", func(t *testing.T) {
+		got := applyControlledValues(nil, &requestsOnly)
+		assert.Equal(t, &vpav1.PodResourcePolicy{
+			ContainerPolicies: []vpav1.ContainerResourcePolicy{
+				{ContainerName: vpav1.DefaultContainerResourcePolicy, ControlledValues: &requestsOnly},
+			},
+		}, got)
+	})
+
+	t.Run("explicit json value wins and other fields are preserved", func(t *testing.T) {
+		minAllowed := corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("250m")}
+		policy := &vpav1.PodResourcePolicy{
+			ContainerPolicies: []vpav1.ContainerResourcePolicy{
+				{ContainerName: "nginx", MinAllowed: minAllowed},
+				{ContainerName: "istio-proxy", ControlledValues: &requestsAndLimits},
+			},
+		}
+		got := applyControlledValues(policy, &requestsOnly)
+		assert.Len(t, got.ContainerPolicies, 3)
+		assert.Equal(t, "nginx", got.ContainerPolicies[0].ContainerName)
+		assert.Equal(t, minAllowed, got.ContainerPolicies[0].MinAllowed)
+		assert.Equal(t, requestsOnly, *got.ContainerPolicies[0].ControlledValues)
+		assert.Equal(t, requestsAndLimits, *got.ContainerPolicies[1].ControlledValues)
+		assert.Equal(t, vpav1.DefaultContainerResourcePolicy, got.ContainerPolicies[2].ContainerName)
+		assert.Equal(t, requestsOnly, *got.ContainerPolicies[2].ControlledValues)
+	})
+
+	t.Run("input policy is not mutated", func(t *testing.T) {
+		policy := &vpav1.PodResourcePolicy{
+			ContainerPolicies: []vpav1.ContainerResourcePolicy{{ContainerName: "nginx"}},
+		}
+		_ = applyControlledValues(policy, &requestsOnly)
+		assert.Len(t, policy.ContainerPolicies, 1)
+		assert.Nil(t, policy.ContainerPolicies[0].ControlledValues)
+	})
 }
 
 func Test_getVPAObject(t *testing.T) {
@@ -662,6 +760,33 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
 	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeRecreate)
+}
+
+func Test_ReconcileNamespace_ControlledValues(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	nsName := nsLabeledTrueControlledValues.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueControlledValuesUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrueControlledValues)
+	assert.NoError(t, err)
+
+	// The vpa should control requests only for all containers
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList.Items))
+	policies := vpaList.Items[0].Spec.ResourcePolicy.ContainerPolicies
+	assert.Equal(t, 1, len(policies))
+	assert.Equal(t, vpav1.DefaultContainerResourcePolicy, policies[0].ContainerName)
+	assert.EqualValues(t, vpav1.ContainerControlledValuesRequestsOnly, *policies[0].ControlledValues)
 }
 
 func Test_ReconcileNamespaceDaemonset(t *testing.T) {
