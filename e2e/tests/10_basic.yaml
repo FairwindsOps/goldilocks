@@ -64,3 +64,13 @@ testcases:
     assertions:
     - result.code ShouldEqual 0
     - result.systemout ShouldEqual '{"containerName":"nginx","minAllowed":{"cpu":"250m","memory":"100Mi"}}'
+- name: VPA with Controlled Values in demo-resource-policy namespace
+  steps:
+  - script: |
+      kubectl annotate ns demo-resource-policy goldilocks.fairwinds.com/vpa-resource-policy- --overwrite
+      kubectl label ns demo-resource-policy goldilocks.fairwinds.com/vpa-controlled-values=RequestsOnly --overwrite
+  - script: sleep {{.vpa-wait}}
+  - script: kubectl get verticalpodautoscalers.autoscaling.k8s.io -n demo-resource-policy goldilocks-basic-demo -o=jsonpath='{.spec.resourcePolicy.containerPolicies[]}'
+    assertions:
+    - result.code ShouldEqual 0
+    - result.systemout ShouldEqual '{"containerName":"*","controlledValues":"RequestsOnly"}'
