@@ -65,17 +65,55 @@ func Test_resolveEffectiveResources(t *testing.T) {
 			},
 		},
 		{
-			name:     "only Default set: unset container fills in Limit but Request stays unset",
+			// The API server defaults a LimitRange's unset DefaultRequest to its Default
+			// (SetDefaults_LimitRangeItem), so a Default-only LimitRange fills both.
+			name:     "only Default set: unset container gets Default for both Limit and Request",
 			requests: corev1.ResourceList{},
 			limits:   corev1.ResourceList{},
 			limitRangeItems: []corev1.LimitRangeItem{
 				containerItem(corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("512Mi")}, nil),
 			},
-			wantRequests: corev1.ResourceList{},
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceMemory: resource.MustParse("512Mi"),
+			},
 			wantLimits: corev1.ResourceList{
 				corev1.ResourceMemory: resource.MustParse("512Mi"),
 			},
-			wantLimitsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+			wantRequestsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+			wantLimitsFromLimitRange:   map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+		},
+		{
+			name:     "only Max set: Default is defaulted to Max, and DefaultRequest to that Default",
+			requests: corev1.ResourceList{},
+			limits:   corev1.ResourceList{},
+			limitRangeItems: []corev1.LimitRangeItem{
+				{Type: corev1.LimitTypeContainer, Max: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("2")}},
+			},
+			wantRequests:               corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("2")},
+			wantLimits:                 corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("2")},
+			wantRequestsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceCPU: true},
+			wantLimitsFromLimitRange:   map[corev1.ResourceName]bool{corev1.ResourceCPU: true},
+		},
+		{
+			name:     "only Min set: DefaultRequest is defaulted to Min, Limit stays unset",
+			requests: corev1.ResourceList{},
+			limits:   corev1.ResourceList{},
+			limitRangeItems: []corev1.LimitRangeItem{
+				{Type: corev1.LimitTypeContainer, Min: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("64Mi")}},
+			},
+			wantRequests:               corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("64Mi")},
+			wantLimits:                 corev1.ResourceList{},
+			wantRequestsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+		},
+		{
+			name:     "explicit limit with a Default-only LimitRange: request copies the explicit limit",
+			requests: corev1.ResourceList{},
+			limits:   corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")},
+			limitRangeItems: []corev1.LimitRangeItem{
+				containerItem(corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("512Mi")}, nil),
+			},
+			wantRequests: corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")},
+			wantLimits:   corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("1Gi")},
 		},
 		{
 			name:     "only DefaultRequest set: unset container fills in Request but Limit stays unset",
@@ -212,8 +250,11 @@ func Test_resolveEffectiveResources(t *testing.T) {
 			wantLimits: corev1.ResourceList{
 				corev1.ResourceMemory: resource.MustParse("256Mi"),
 			},
-			wantRequests:             corev1.ResourceList{},
-			wantLimitsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+			wantRequests: corev1.ResourceList{
+				corev1.ResourceMemory: resource.MustParse("256Mi"),
+			},
+			wantRequestsFromLimitRange: map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
+			wantLimitsFromLimitRange:   map[corev1.ResourceName]bool{corev1.ResourceMemory: true},
 		},
 	}
 

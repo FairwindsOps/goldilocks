@@ -202,9 +202,10 @@ func Test_Summarizer_LimitRange(t *testing.T) {
 	assert.True(t, cpuLimit.IsZero())
 	assert.False(t, cSummary.LimitsFromLimitRange[corev1.ResourceCPU])
 
-	// memory request has no DefaultRequest and the container has no explicit memory limit
-	// either (so there's nothing to copy into the request) -- stays unset ("Not Set")
-	memRequest := cSummary.Requests[corev1.ResourceMemory]
-	assert.True(t, memRequest.IsZero())
-	assert.False(t, cSummary.RequestsFromLimitRange[corev1.ResourceMemory])
+	// memory has no explicit DefaultRequest, but the API server defaults a LimitRange's
+	// DefaultRequest to its Default (SetDefaults_LimitRangeItem), so a real Pod gets a 512Mi
+	// memory request from this LimitRange too.
+	assert.True(t, quantitiesEqual(corev1.ResourceList{corev1.ResourceMemory: resource.MustParse("512Mi")},
+		corev1.ResourceList{corev1.ResourceMemory: cSummary.Requests[corev1.ResourceMemory]}))
+	assert.True(t, cSummary.RequestsFromLimitRange[corev1.ResourceMemory])
 }
