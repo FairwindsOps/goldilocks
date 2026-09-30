@@ -4,6 +4,11 @@
 {{ $memRequest := (index $.Requests (resourceName "memory")) }}
 {{ $memLimit := (index $.Limits (resourceName "memory")) }}
 
+{{ $cpuRequestFromLimitRange := (index $.RequestsFromLimitRange (resourceName "cpu")) }}
+{{ $cpuLimitFromLimitRange := (index $.LimitsFromLimitRange (resourceName "cpu")) }}
+{{ $memRequestFromLimitRange := (index $.RequestsFromLimitRange (resourceName "memory")) }}
+{{ $memLimitFromLimitRange := (index $.LimitsFromLimitRange (resourceName "memory")) }}
+
 {{ $cpuLowerBound := (index $.LowerBound (resourceName "cpu")) }}
 {{ $cpuUpperBound := (index $.UpperBound (resourceName "cpu")) }}
 {{ $memLowerBound := (index $.LowerBound (resourceName "memory")) }}
@@ -47,7 +52,7 @@
     <tbody>
       <tr>
         <th scope="row">CPU Request</th>
-        <td>{{ printResource $cpuRequest}}</td>
+        <td>{{ printResource $cpuRequest}}{{ template "limitRangeBadge" $cpuRequestFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -60,7 +65,7 @@
 
       <tr>
         <th scope="row">CPU Limit</th>
-        <td>{{ printResource $cpuLimit}}</td>
+        <td>{{ printResource $cpuLimit}}{{ template "limitRangeBadge" $cpuLimitFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -73,7 +78,7 @@
 
       <tr>
         <th scope="row">Memory Request</th>
-        <td>{{ printResource $memRequest}}</td>
+        <td>{{ printResource $memRequest}}{{ template "limitRangeBadge" $memRequestFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -86,7 +91,7 @@
 
       <tr>
         <th scope="row">Memory Limit</th>
-        <td>{{ printResource $memLimit}}</td>
+        <td>{{ printResource $memLimit}}{{ template "limitRangeBadge" $memLimitFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -141,7 +146,7 @@
     <tbody>
       <tr>
         <th scope="row">CPU Request</th>
-        <td>{{ printResource $cpuRequest}}</td>
+        <td>{{ printResource $cpuRequest}}{{ template "limitRangeBadge" $cpuRequestFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -154,7 +159,7 @@
 
       <tr>
         <th scope="row">CPU Limit</th>
-        <td>{{ printResource $cpuLimit}}</td>
+        <td>{{ printResource $cpuLimit}}{{ template "limitRangeBadge" $cpuLimitFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -167,7 +172,7 @@
 
       <tr>
         <th scope="row">Memory Request</th>
-        <td>{{ printResource $memRequest}}</td>
+        <td>{{ printResource $memRequest}}{{ template "limitRangeBadge" $memRequestFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -180,7 +185,7 @@
 
       <tr>
         <th scope="row">Memory Limit</th>
-        <td>{{ printResource $memLimit}}</td>
+        <td>{{ printResource $memLimit}}{{ template "limitRangeBadge" $memLimitFromLimitRange }}</td>
         <td>
           <i
             aria-hidden="true"
@@ -205,4 +210,13 @@
     memory: {{ printResource $memUpperBound }}</code></pre>
   </details>
 </section>
+{{ end }}
+
+{{ define "limitRangeBadge" }}
+{{ if . }}
+<span class="badge --limitrange" title="This value isn't set on the container itself; it's the effective value the container would get from the namespace's LimitRange default">
+  <i aria-hidden="true" class="fas fa-layer-group"></i>
+  From LimitRange
+</span>
+{{ end }}
 {{ end }}
