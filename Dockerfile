@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.authors="FairwindsOps, Inc." \
 
 # Install CA bundle for TLS.
 RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add --upgrade libcrypto3 libssl3
 
 # 'nobody' user in alpine
 USER 65534

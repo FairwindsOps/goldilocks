@@ -93,11 +93,11 @@ func Test_createController_IncrementsEventMetrics(t *testing.T) {
 
 	informer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return fakeClient.CoreV1().Pods("").List(context.TODO(), options)
+			ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return fakeClient.CoreV1().Pods("").List(ctx, options)
 			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-				return fakeClient.CoreV1().Pods("").Watch(context.TODO(), options)
+			WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return fakeClient.CoreV1().Pods("").Watch(ctx, options)
 			},
 		},
 		&corev1.Pod{},
