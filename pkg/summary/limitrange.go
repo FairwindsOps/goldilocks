@@ -82,14 +82,21 @@ func (s *Summarizer) containerLimitRangeItems(namespace string) []corev1.LimitRa
 //     decode time, before any admission plugin (including LimitRanger) ever sees the object, and
 //     it only ever looks at what the container itself already specifies -- never at a value a
 //     LimitRange might go on to supply.
+//     The LimitRange object itself is also defaulted by the API server when it is created
+//     (`SetDefaults_LimitRangeItem`, same file): an unset `Default` is filled from `Max`, and an
+//     unset `DefaultRequest` is filled from `Default`, falling back to `Min`. Objects read back
+//     from a real API server therefore already carry those values; withContainerLimitRangeItemDefaults
+//     re-applies the same (idempotent) rules so the result doesn't depend on whether the items
+//     were server-defaulted (e.g. fake clientsets in tests).
 //  2. LimitRanger admission (plugin/pkg/admission/limitranger): for any resource whose Limit is
 //     *still* unset after step 1, apply the namespace LimitRange's `Default`. For any resource
 //     whose Request is *still* unset after step 1, apply the namespace LimitRange's
 //     `DefaultRequest`. Because step 1 has already run, a Limit that only becomes set here (via
 //     `Default`) is never copied into a still-unset Request -- `DefaultRequest` is the only thing
-//     that can fill an unset Request at this stage. This is the trap: it's tempting to assume
-//     "Limit ends up set -> Request defaults to it" applies regardless of *how* the Limit was
-//     set, but Kubernetes' own ordering means that only holds for an explicit Limit.
+//     that can fill an unset Request at this stage. In practice `DefaultRequest` usually equals
+//     `Default` anyway (see the LimitRange defaulting above), unless the LimitRange explicitly
+//     sets a different `DefaultRequest` or a `Min`; the distinction matters when a container sets
+//     an explicit Limit, in which case the Request is that Limit rather than `DefaultRequest`.
 //
 // Multiple LimitRange objects (or multiple Container-typed items) in one namespace are also
 // possible. Per the Kubernetes docs (https://kubernetes.io/docs/concepts/policy/limit-range/,
@@ -132,6 +139,7 @@ func resolveEffectiveResources(requests, limits corev1.ResourceList, limitRangeI
 		if item.Type != corev1.LimitTypeContainer {
 			continue
 		}
+		item = withContainerLimitRangeItemDefaults(item)
 		for name, def := range item.Default {
 			if _, has := effLimits[name]; !has {
 				effLimits[name] = def.DeepCopy()
@@ -153,4 +161,40 @@ func resolveEffectiveResources(requests, limits corev1.ResourceList, limitRangeI
 	}
 
 	return effRequests, effLimits, requestsFromLimitRange, limitsFromLimitRange
+}
+
+// withContainerLimitRangeItemDefaults returns a copy of a Container-typed LimitRangeItem with the
+// same defaulting the API server applies to LimitRange objects on create/update
+// (SetDefaults_LimitRangeItem in k8s.io/kubernetes/pkg/apis/core/v1/defaults.go):
+//
+//   - a resource with a Max but no Default gets Default = Max
+//   - a resource with a Default but no DefaultRequest gets DefaultRequest = Default
+//   - a resource with a Min but still no DefaultRequest gets DefaultRequest = Min
+//
+// The rules are idempotent, so applying them to an item that was already defaulted by a real API
+// server is a no-op.
+func withContainerLimitRangeItemDefaults(item corev1.LimitRangeItem) corev1.LimitRangeItem {
+	out := *item.DeepCopy()
+	if out.Default == nil {
+		out.Default = corev1.ResourceList{}
+	}
+	if out.DefaultRequest == nil {
+		out.DefaultRequest = corev1.ResourceList{}
+	}
+	for name, maxQty := range out.Max {
+		if _, ok := out.Default[name]; !ok {
+			out.Default[name] = maxQty.DeepCopy()
+		}
+	}
+	for name, def := range out.Default {
+		if _, ok := out.DefaultRequest[name]; !ok {
+			out.DefaultRequest[name] = def.DeepCopy()
+		}
+	}
+	for name, minQty := range out.Min {
+		if _, ok := out.DefaultRequest[name]; !ok {
+			out.DefaultRequest[name] = minQty.DeepCopy()
+		}
+	}
+	return out
 }
