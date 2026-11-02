@@ -29,6 +29,7 @@ import (
 	autoscaling "k8s.io/api/autoscaling/v1"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/meta"
 
 	controllerLog "github.com/fairwindsops/controller-utils/pkg/log"
@@ -227,6 +228,10 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 		if err != nil {
 			return err
 		}
+	} else if equality.Semantic.DeepEqual(vpa.Labels, desiredVPA.Labels) && equality.Semantic.DeepEqual(vpa.Spec, desiredVPA.Spec) {
+		// vpa exists and is already up to date. Every pod event in a namespace reconciles all of its VPAs,
+		// so skipping the no-op update avoids a constant stream of writes to the API server.
+		klog.V(5).Infof("%s/%s has an up-to-date VPA/%s, skipping update", controller.Kind, controller.Name, vpa.Name)
 	} else {
 		// vpa exists
 		klog.V(5).Infof("%s/%s has a VPA currently, updating VPA/%s", controller.Kind, controller.Name, controller.Name)
