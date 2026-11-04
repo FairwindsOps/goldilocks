@@ -298,7 +298,13 @@ export function buildSiteConfig(extras, root) {
     },
     search: { provider: 'local' },
     editLink: {
-      pattern: `https://github.com/${repo}/edit/${branch}/${docsDirName}/:path`,
+      // VitePress serializes this function and runs it later, so the repo
+      // path has to be written into the function body. index.md is generated
+      // from the repository README and is not committed.
+      pattern: new Function('page', [
+        'const file = page.filePath === "index.md" ? "README.md" : ' + JSON.stringify(`${docsDirName}/`) + ' + page.filePath',
+        'return ' + JSON.stringify(`https://github.com/${repo}/edit/${branch}/`) + ' + file',
+      ].join('\n')),
       text: themeExtras.editLinkText || 'Help us improve this page',
     },
     nav: [
@@ -342,8 +348,11 @@ export function buildSiteConfig(extras, root) {
     themeConfig,
     ...rest,
     rewrites: s3Rewrite,
+    // VitePress 1.6 runs @mdit-vue/plugin-headers only when markdown.headers
+    // is set. The outline (VuePress sidebarDepth) stays empty without it.
     markdown: {
       ...userMarkdown,
+      headers: userMarkdown?.headers ?? true,
       config(md) {
         userMarkdown?.config?.(md)
         slashInternalLinks(md, root)
@@ -524,7 +533,12 @@ function selfCheck() {
         sidebar: [{ title: 'Home', path: '/' }],
       },
     }, root)
-    assert.equal(cfg.themeConfig.editLink.pattern, 'https://github.com/FairwindsOps/insights-docs/edit/main/docs/:path')
+    assert.equal(cfg.markdown.headers, true)
+    assert.equal(cfg.themeConfig.editLink.pattern({ filePath: 'cli.md' }), 'https://github.com/FairwindsOps/insights-docs/edit/main/docs/cli.md')
+    assert.equal(cfg.themeConfig.editLink.pattern({ filePath: 'index.md' }), 'https://github.com/FairwindsOps/insights-docs/edit/main/README.md')
+    // VitePress round-trips the function through toString().
+    const revived = new Function(`return ${cfg.themeConfig.editLink.pattern.toString()}`)()
+    assert.equal(revived({ filePath: 'index.md' }), 'https://github.com/FairwindsOps/insights-docs/edit/main/README.md')
     assert.equal(cfg.themeConfig.docsRepo, undefined)
     assert.deepEqual(cfg.themeConfig.logo, { src: '/img/logo.svg', alt: 'Fairwinds' })
     assert.equal(cfg.base, '/')

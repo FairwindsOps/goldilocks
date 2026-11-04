@@ -1,6 +1,8 @@
-// To see all options:
-// https://vuepress.vuejs.org/config/
-// https://vuepress.vuejs.org/theme/default-theme-config.html
+// Project-owned. The shared VitePress config loads this file.
+// Sidebar groups may use the VuePress shape (title, path, children, collapsable)
+// or the VitePress shape (text, link, items, collapsed).
+// Set themeConfig.docsBranch when the default branch is not master.
+// https://vitepress.dev/reference/default-theme-sidebar
 module.exports = {
   title: "goldilocks Documentation",
   description: "Documentation for Fairwinds' goldilocks",
