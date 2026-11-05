@@ -20,8 +20,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/fairwindsops/goldilocks/pkg/kube"
 )
@@ -364,5 +369,16 @@ func Test_Summarizer_containerLimitRangeItems(t *testing.T) {
 
 		second := s.containerLimitRangeItems("testing")
 		assert.Len(t, second, 1, "expected cached result to be reused instead of re-querying the API")
+	})
+	t.Run("a Forbidden list (RBAC without limitranges) falls back to no items", func(t *testing.T) {
+		kubeClient := kube.GetMockClient()
+		kubeClient.Client.(*fake.Clientset).PrependReactor("list", "limitranges", func(k8stesting.Action) (bool, runtime.Object, error) {
+			return true, nil, apierrors.NewForbidden(schema.GroupResource{Resource: "limitranges"}, "", nil)
+		})
+		s := &Summarizer{options: options{kubeClient: kubeClient}}
+
+		got := s.containerLimitRangeItems("testing")
+		assert.NotNil(t, got)
+		assert.Empty(t, got)
 	})
 }

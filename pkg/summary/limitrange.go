@@ -18,6 +18,7 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 )
@@ -41,10 +42,16 @@ func (s *Summarizer) containerLimitRangeItems(namespace string) []corev1.LimitRa
 	items := []corev1.LimitRangeItem{}
 	limitRanges, err := s.kubeClient.Client.CoreV1().LimitRanges(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		// Don't fail the whole summary just because LimitRanges couldn't be listed (e.g. an
-		// RBAC restriction) -- fall back to behaving as if there were none, which is the same
-		// "Not Set" behavior this feature is layered on top of.
-		klog.Errorf("unable to list LimitRanges in namespace '%s', proceeding as if none exist: %v", namespace, err)
+		// Don't fail the whole summary just because LimitRanges couldn't be listed -- fall back
+		// to behaving as if there were none, which is the same "Not Set" behavior this feature
+		// is layered on top of. A Forbidden error is expected when the dashboard runs with RBAC
+		// that predates LimitRange support (no list on limitranges), so keep that quiet rather
+		// than logging an error for every namespace on every dashboard request.
+		if apierrors.IsForbidden(err) {
+			klog.V(2).Infof("not permitted to list LimitRanges in namespace '%s', proceeding as if none exist: %v", namespace, err)
+		} else {
+			klog.Errorf("unable to list LimitRanges in namespace '%s', proceeding as if none exist: %v", namespace, err)
+		}
 	} else {
 		for _, lr := range limitRanges.Items {
 			for _, item := range lr.Spec.Limits {
