@@ -2,7 +2,7 @@
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@17.0.0
+  rok8s: fairwinds/rok8s-scripts@17.1.1
   oss-docs: fairwinds/oss-docs@0
 
 references:
@@ -12,9 +12,9 @@ references:
       command: |
         sudo apt-get update -y && sudo apt-get install -y curl unzip
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.21.4/vault_1.21.4_linux_amd64.zip
-        echo '889b681990fe221b884b7932fa9c9dd0ee9811b9349554f1aa287ab63c9f3dae  vault_1.21.4_linux_amd64.zip' | sha256sum -c
-        unzip -o vault_1.21.4_linux_amd64.zip
+        curl -LO https://releases.hashicorp.com/vault/2.2.1/vault_2.2.1_linux_amd64.zip
+        echo '079435de8ff146bdec4cdbe3be71d672ef4e59e4df6af0f2dba672e71be21a68  vault_2.2.1_linux_amd64.zip' | sha256sum -c
+        unzip -o vault_2.2.1_linux_amd64.zip
         sudo mv vault /usr/bin/vault
   setup_qemu_binfmt: &setup_qemu_binfmt
     run:
@@ -28,7 +28,7 @@ references:
     executor: golang-exec
     pre_script: e2e/pre.sh
     script: e2e/run.sh
-    command_runner_image: quay.io/reactiveops/ci-images:v17.0-cimg-24.04
+    command_runner_image: quay.io/reactiveops/ci-images:v17.1-cimg-24.04
     enable_docker_layer_caching: true
     store-test-results: /tmp/test-results
     attach-workspace: true
@@ -44,12 +44,12 @@ references:
 executors:
   golang-exec:
     docker:
-      - image: cimg/go:1.27.1
+      - image: cimg/go:1.27.3
 
 jobs:
   test:
     docker:
-      - image: cimg/go:1.27.1
+      - image: cimg/go:1.27.3
     steps:
       - checkout
       - run:
@@ -58,10 +58,10 @@ jobs:
       - run:
           name: golangci-lint
           command: |
-            curl -fsSL -o golangci-lint.tar.gz https://github.com/golangci/golangci-lint/releases/download/v2.13.2/golangci-lint-2.13.2-linux-amd64.tar.gz
-            echo '2277d43b98ec0054280f2ac26b53268bae97682444678a59a657dd565da021d6  golangci-lint.tar.gz' | sha256sum -c
+            curl -fsSL -o golangci-lint.tar.gz https://github.com/golangci/golangci-lint/releases/download/v2.15.0/golangci-lint-2.15.0-linux-amd64.tar.gz
+            echo '9b7fe6a6bf6334b98decf8d86b11415ea7889afdabdd1959fdce23af2a9ebcea  golangci-lint.tar.gz' | sha256sum -c
             tar -xzf golangci-lint.tar.gz
-            mv golangci-lint-2.13.2-linux-amd64/golangci-lint "$(go env GOPATH)/bin/golangci-lint"
+            mv golangci-lint-2.15.0-linux-amd64/golangci-lint "$(go env GOPATH)/bin/golangci-lint"
             golangci-lint run --timeout 5m
       - run:
           name: test
@@ -84,7 +84,7 @@ jobs:
               -e CIRCLE_SHA1 \
               -e CIRCLE_BRANCH \
               -e CIRCLE_TAG \
-              goreleaser/goreleaser:v2.18.1 release --snapshot --skip=sign
+              goreleaser/goreleaser:v2.19.0 release --snapshot --skip=sign
       - run:
           name: Save snapshot amd64 image for e2e
           command: |
@@ -127,7 +127,7 @@ jobs:
               -e GITHUB_TOKEN \
               -e VAULT_ADDR \
               -e VAULT_TOKEN \
-              goreleaser/goreleaser:v2.18.1 release
+              goreleaser/goreleaser:v2.19.0 release
 
 workflows:
   version: 2
