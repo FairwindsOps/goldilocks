@@ -73,7 +73,11 @@ jobs:
       image: ubuntu-2204:current
     resource_class: large
     steps:
-      - checkout
+      # Blobless checkout makes `git show` lazy-fetch over SSH. That fails
+      # inside the goreleaser image (no host keys), and --snapshot then tags
+      # the image :none-amd64, which docker save cannot find.
+      - checkout:
+          method: full
       - *setup_qemu_binfmt
       - run:
           name: Run GoReleaser snapshot
@@ -103,7 +107,8 @@ jobs:
     resource_class: large
     shell: /bin/bash
     steps:
-      - checkout
+      - checkout:
+          method: full
       - *install_vault_machine
       - rok8s/get_vault_env:
           vault_path: repo/global/env
