@@ -19,6 +19,7 @@ rules:
     resources:
       - 'namespaces'
       - 'pods'
+      - 'limitranges'
     verbs:
       - 'get'
       - 'list'
