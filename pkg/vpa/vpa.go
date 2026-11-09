@@ -159,6 +159,7 @@ func (r Reconciler) namespaceIsManaged(namespace *corev1.Namespace) bool {
 func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpav1.VerticalPodAutoscaler, controllers []Controller) error {
 	defaultUpdateMode, _ := vpaUpdateModeForResource(ns)
 	defaultResourcePolicy, _ := vpaResourcePolicyForResource(ns)
+	defaultControlledValues, _ := vpaControlledValuesForResource(ns)
 	defaultMinReplicas, _ := vpaMinReplicasForResource(ns)
 
 	// these keys will eventually contain the leftover vpas that do not have a matching controller associated
@@ -186,7 +187,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 			vpaName = cvpa.Name
 		}
 		klog.V(2).Infof("Reconciling Namespace/%s for %s/%s with VPA/%s", ns.Name, controller.Kind, controller.Name, vpaName)
-		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy, defaultMinReplicas)
+		err := r.reconcileControllerAndVPA(ns, controller, cvpa, defaultUpdateMode, defaultResourcePolicy, defaultControlledValues, defaultMinReplicas)
 		if err != nil {
 			return err
 		}
@@ -206,7 +207,7 @@ func (r Reconciler) reconcileControllersAndVPAs(ns *corev1.Namespace, vpas []vpa
 	return nil
 }
 
-func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, minReplicas *int32) error {
+func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller Controller, vpa *vpav1.VerticalPodAutoscaler, vpaUpdateMode *vpav1.UpdateMode, vpaResourcePolicy *vpav1.PodResourcePolicy, controlledValues *vpav1.ContainerControlledValues, minReplicas *int32) error {
 	controllerObj := controller.Unstructured.DeepCopyObject()
 	if vpaUpdateModeOverride, explicit := vpaUpdateModeForResource(controllerObj); explicit {
 		vpaUpdateMode = vpaUpdateModeOverride
@@ -217,6 +218,12 @@ func (r Reconciler) reconcileControllerAndVPA(ns *corev1.Namespace, controller C
 		vpaResourcePolicy = vpaResourcePolicyOverride
 		klog.V(5).Infof("%s/%s has custom vpa-resource-policy", controller.Kind, controller.Name)
 	}
+
+	if controlledValuesOverride, explicit := vpaControlledValuesForResource(controllerObj); explicit {
+		controlledValues = controlledValuesOverride
+		klog.V(5).Infof("%s/%s has custom vpa-controlled-values=%s", controller.Kind, controller.Name, *controlledValues)
+	}
+	vpaResourcePolicy = applyControlledValues(vpaResourcePolicy, controlledValues)
 
 	desiredVPA := r.getVPAObject(vpa, ns, controller, vpaUpdateMode, vpaResourcePolicy, minReplicas)
 
@@ -419,6 +426,71 @@ func vpaUpdateModeForResource(obj runtime.Object) (*vpav1.UpdateMode, bool) {
 	}
 
 	return &requestedVPAMode, explicit
+}
+
+var allowedControlledValues = []vpav1.ContainerControlledValues{
+	vpav1.ContainerControlledValuesRequestsAndLimits,
+	vpav1.ContainerControlledValuesRequestsOnly,
+}
+
+// vpaControlledValuesForResource searches the resource's annotations and labels for a vpa-controlled-values
+// key/value and uses that key/value to return the proper ContainerControlledValues type
+func vpaControlledValuesForResource(obj runtime.Object) (*vpav1.ContainerControlledValues, bool) {
+	requestStr := ""
+	accessor, _ := meta.Accessor(obj)
+	if val, ok := accessor.GetAnnotations()[utils.VpaControlledValuesKey]; ok {
+		requestStr = val
+	} else if val, ok := accessor.GetLabels()[utils.VpaControlledValuesKey]; ok {
+		requestStr = val
+	}
+	if requestStr == "" {
+		return nil, false
+	}
+
+	for _, value := range allowedControlledValues {
+		if strings.EqualFold(requestStr, string(value)) {
+			return &value, true
+		}
+	}
+
+	klog.Warningf("Invalid vpa-controlled-values value: %s, ignoring", requestStr)
+	return nil, false
+}
+
+// applyControlledValues returns a copy of the resource policy with controlledValues set on the
+// default ("*") container policy, and on any named container policy that does not set its own.
+// A controlledValues that is explicitly set in the resource policy is never overridden.
+func applyControlledValues(resourcePolicy *vpav1.PodResourcePolicy, controlledValues *vpav1.ContainerControlledValues) *vpav1.PodResourcePolicy {
+	if controlledValues == nil {
+		return resourcePolicy
+	}
+
+	// the namespace default policy is shared between controllers, so never mutate it
+	result := &vpav1.PodResourcePolicy{}
+	if resourcePolicy != nil {
+		result = resourcePolicy.DeepCopy()
+	}
+
+	hasDefaultPolicy := false
+	for i := range result.ContainerPolicies {
+		policy := &result.ContainerPolicies[i]
+		if policy.ContainerName == vpav1.DefaultContainerResourcePolicy {
+			hasDefaultPolicy = true
+		}
+		if policy.ControlledValues == nil {
+			value := *controlledValues
+			policy.ControlledValues = &value
+		}
+	}
+	if !hasDefaultPolicy {
+		value := *controlledValues
+		result.ContainerPolicies = append(result.ContainerPolicies, vpav1.ContainerResourcePolicy{
+			ContainerName:    vpav1.DefaultContainerResourcePolicy,
+			ControlledValues: &value,
+		})
+	}
+
+	return result
 }
 
 // vpaResourcePolicyForResource get the resource's annotation for the vpa pod resource policy
