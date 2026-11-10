@@ -30,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	vpav1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpafake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 )
 
 func setupVPAForTests(t *testing.T) {
@@ -662,6 +663,40 @@ func Test_ReconcileNamespace_ChangeUpdateMode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(vpaList1.Items))
 	assert.EqualValues(t, *vpaList1.Items[0].Spec.UpdatePolicy.UpdateMode, vpav1.UpdateModeRecreate)
+}
+
+func Test_ReconcileNamespace_SkipsUnchangedVPA(t *testing.T) {
+	setupVPAForTests(t)
+	VPAClient := GetInstance().VPAClient
+	DynamicClient := GetInstance().DynamicClient.Client
+
+	// Create ns
+	nsName := nsLabeledTrue.Name
+	_, err := DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}).Create(context.TODO(), nsLabeledTrueUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+
+	// Create a deployment in the namespace and reconcile
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}).Namespace(nsName).Create(context.TODO(), testDeploymentUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}).Namespace(nsName).Create(context.TODO(), testDeploymentReplicaSetUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	_, err = DynamicClient.Resource(schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}).Namespace(nsName).Create(context.TODO(), testDeploymentPodUnstructured, metav1.CreateOptions{})
+	assert.NoError(t, err)
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+
+	vpaList, err := VPAClient.Client.AutoscalingV1().VerticalPodAutoscalers(nsName).List(context.TODO(), metav1.ListOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(vpaList.Items))
+
+	// Reconciling again with nothing changed (as happens on every pod event) must not write the VPA
+	fakeVPAClient := VPAClient.Client.(*vpafake.Clientset)
+	fakeVPAClient.ClearActions()
+	err = GetInstance().ReconcileNamespace(&nsLabeledTrue)
+	assert.NoError(t, err)
+	for _, action := range fakeVPAClient.Actions() {
+		assert.NotContains(t, []string{"create", "update", "patch", "delete"}, action.GetVerb(), "unexpected %s of %s", action.GetVerb(), action.GetResource().Resource)
+	}
 }
 
 func Test_ReconcileNamespaceDaemonset(t *testing.T) {
