@@ -26,6 +26,8 @@ var (
 	VpaEnabledLabel = LabelOrAnnotationBase + "/" + "enabled"
 	// VpaUpdateModeKey is the label used to indicate the vpa update mode.
 	VpaUpdateModeKey = LabelOrAnnotationBase + "/" + "vpa-update-mode"
+	// VpaControlledValuesKey is the label or annotation used to indicate the vpa controlled values (RequestsAndLimits or RequestsOnly).
+	VpaControlledValuesKey = LabelOrAnnotationBase + "/" + "vpa-controlled-values"
 	// VpaMinReplicas is the annotation to use to define minimum replicas for eviction of a VPA
 	VpaMinReplicasAnnotation = LabelOrAnnotationBase + "/" + "vpa-min-replicas"
 	// DeploymentExcludeContainersAnnotation is the label used to exclude container names from being reported.
