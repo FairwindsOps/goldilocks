@@ -221,7 +221,9 @@ func (s Summarizer) GetSummary() (Summary, error) {
 		// get the full set of excluded containers for this workload
 		excludedContainers := (sets.Set[string]{}).Union(s.excludedContainers)
 		if val, exists := workload.TopController.GetAnnotations()[utils.WorkloadExcludeContainersAnnotation]; exists {
-			excludedContainers.Insert(strings.Split(val, ",")...)
+			for _, name := range strings.Split(val, ",") {
+				excludedContainers.Insert(strings.TrimSpace(name))
+			}
 		}
 
 	CONTAINER_REC_LOOP:

@@ -405,3 +405,109 @@ var testVPANoTargetRef = &vpav1.VerticalPodAutoscaler{
 		},
 	},
 }
+
+// A DaemonSet with three containers, used to test container exclusions
+
+var excludeContainerNames = []string{"app", "istio-proxy", "linkerd-proxy"}
+
+// testDaemonSetExcludeContainers returns a DaemonSet running the containers in excludeContainerNames.
+// The exclude-containers annotation is only set when annotation is not empty.
+func testDaemonSetExcludeContainers(annotation string) *unstructured.Unstructured {
+	containers := []any{}
+	for _, name := range excludeContainerNames {
+		containers = append(containers, map[string]any{
+			"name": name,
+			"resources": map[string]any{
+				"limits": map[string]any{
+					"cpu":    "100m",
+					"memory": "100Mi",
+				},
+				"requests": map[string]any{
+					"cpu":    "100m",
+					"memory": "100Mi",
+				},
+			},
+		})
+	}
+
+	metadata := map[string]any{
+		"name":      "test-ds-exclude",
+		"namespace": "testing-exclude",
+	}
+	if annotation != "" {
+		metadata["annotations"] = map[string]any{
+			utils.WorkloadExcludeContainersAnnotation: annotation,
+		}
+	}
+
+	return &unstructured.Unstructured{
+		Object: map[string]any{
+			"kind":       "DaemonSet",
+			"apiVersion": "apps/v1",
+			"metadata":   metadata,
+			"spec": map[string]any{
+				"template": map[string]any{
+					"spec": map[string]any{
+						"containers": containers,
+					},
+				},
+			},
+		},
+	}
+}
+
+var testDaemonSetExcludePodUnstructured = &unstructured.Unstructured{
+	Object: map[string]any{
+		"kind":       "Pod",
+		"apiVersion": "v1",
+		"metadata": map[string]any{
+			"ownerReferences": []any{
+				map[string]any{
+					"apiVersion": "apps/v1",
+					"kind":       "DaemonSet",
+					"controller": true,
+					"name":       "test-ds-exclude",
+				},
+			},
+			"name":      "test-ds-exclude-01234",
+			"namespace": "testing-exclude",
+		},
+		"spec": map[string]any{},
+	},
+}
+
+// testDaemonSetExcludeVPA has a recommendation for every container in excludeContainerNames.
+func testDaemonSetExcludeVPA() *vpav1.VerticalPodAutoscaler {
+	recommendations := []vpav1.RecommendedContainerResources{}
+	for _, name := range excludeContainerNames {
+		recommendations = append(recommendations, vpav1.RecommendedContainerResources{
+			ContainerName: name,
+			Target:        targetResources,
+			UpperBound:    upperBound,
+			LowerBound:    lowerBound,
+		})
+	}
+
+	return &vpav1.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "goldilocks-test-ds-exclude",
+			Namespace: "testing-exclude",
+			Labels:    utils.VPALabels,
+		},
+		Spec: vpav1.VerticalPodAutoscalerSpec{
+			TargetRef: &autoscalingv1.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "DaemonSet",
+				Name:       "test-ds-exclude",
+			},
+			UpdatePolicy: &vpav1.PodUpdatePolicy{
+				UpdateMode: &updateMode,
+			},
+		},
+		Status: vpav1.VerticalPodAutoscalerStatus{
+			Recommendation: &vpav1.RecommendedPodResources{
+				ContainerRecommendations: recommendations,
+			},
+		},
+	}
+}
