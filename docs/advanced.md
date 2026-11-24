@@ -91,6 +91,26 @@ The update mode can be changed for a namespace by labels as well, for example:
 kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-update-mode="auto"
 ```
 
+#### VPA Controlled Values
+
+> Note: This feature is for advanced usage only and is not recommended nor the default!
+
+By default a VPA controls both requests and limits (`RequestsAndLimits`). To make the VPAs only adjust requests, set
+the `controlledValues` of every container with a label (or annotation) on the Namespace, for example:
+
+```
+kubectl label ns goldilocks goldilocks.fairwinds.com/vpa-controlled-values="RequestsOnly"
+```
+
+Accepted values are `RequestsAndLimits` and `RequestsOnly` (case-insensitive). Invalid values are ignored with a warning.
+This generates a container policy for all containers (`containerName: "*"`) in the VPA `resourcePolicy`.
+
+The same label or annotation can be set on a workload to override the value of the Namespace.
+
+If a `vpa-resource-policy` is also defined (see below), the two are merged: a `controlledValues` set explicitly
+in the resource policy always wins, and containers in the resource policy that do not set `controlledValues` get the value
+of `vpa-controlled-values`.
+
 #### VPA Resource Policy
 
 > Note: This feature is for advanced usage only and is not recommended nor the default!
@@ -142,6 +162,7 @@ Example of an annotation
 If you want a specific workload to have a VPA in a specific update mode,
 then you can annotate the workload with `goldilocks.fairwinds.com/vpa-update-mode=<mode>`
 to control the update mode for a specific workload in a Namespace (regardless of labeling on the Namespace).
+The same applies to `goldilocks.fairwinds.com/vpa-controlled-values=<value>`.
 
 ### create-vpas
 
